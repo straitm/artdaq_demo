@@ -41,6 +41,9 @@ prompted for this location.
 -f            force download
 --skip-check  skip the free diskspace check
 --HEAD        all git repo'd packages checked out from HEAD of develop branches
+--tag         check out a specific tag of artdaq-demo
+-e, -s        Use speific qualifiers when building ARTDAQ (both must be specified
+              to have any effect).
 "
 
 # Process script arguments and options
@@ -61,6 +64,8 @@ while [ -n "${1-}" ];do
         x*)         eval $op1chr; set -x;;
         f*)         eval $op1chr; opt_force=1;;
         t*|-tag)    eval $reqarg; tag=$1;    shift;;
+        s*)         eval $op1arg; squalifier=$1; shift;;
+        e*)         eval $op1arg; equalifier=$1; shift;;
         -products-dir)    eval $reqarg; productsdir=$1;    shift;;
         -skip-check)opt_skip_check=1;;
         -run-demo)  opt_run_demo=--run-demo;;
@@ -151,6 +156,13 @@ defaultqualWithS=$defaultqual
 # More fun - we now want to strip away the "sX" part of the qualifier...
 defaultqual=$(echo $defaultqual | sed -r 's/.*(e[0-9]).*/\1/')
 
+# ELF, 11/20/15
+# Even more fun - if the user specified a qualifier set, throw this all away...
+if [ -n "${equalifier-}" ] && [ -n "${squalifier-}" ]; then
+  defaultqual="e${equalifier}"
+  defaultqualWithS="s${squalifier}-e${equalifier}"
+fi
+
 vecho() { test $opt_v -gt 0 && echo "$@"; }
 starttime=`date`
 
@@ -234,7 +246,7 @@ elif [[ -n ${productsdir:-} ]] ; then
 fi
 
 
-$git_working_path/tools/installArtDaqDemo.sh ${productsdir:-products} $git_working_path ${opt_debug-} ${opt_HEAD-}
+$git_working_path/tools/installArtDaqDemo.sh ${productsdir:-products} $git_working_path ${opt_debug-} ${opt_HEAD-} --quals ${defaultqualWithS}
 
 installStatus=$?
 
