@@ -232,6 +232,10 @@ if [[ ! -n ${productsdir:-} && ( ! -d products || ! -d download || -n "${opt_for
 
     echo "Running ./pullProducts ../products ${os} artdaq-${version} $defaultqualWithS $build_type"
     ./pullProducts ../products ${os} artdaq-${version} $defaultqualWithS $build_type
+    if [ $? -ne 0 ]; then
+      echo "Error in pullProducts. Please go to http://scisoft.fnal.gov/scisoft/bundles/artdaq/${version}/manifest and make sure that a manifest for the specified qualifiers ($defaultqualWithS) exists."
+      exit 1
+    fi
 #    $git_working_path/tools/downloadDeps.sh  ../products $defaultqual $build_type
 
     (source ../products/setups;setup artdaq_mfextensions v1_0_3 -q$defaultqualForUPS && exit 0 || exit 1)
