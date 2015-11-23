@@ -163,6 +163,9 @@ defaultqual=$(echo $defaultqual | sed -r 's/.*(e[0-9]).*/\1/')
 if [ -n "${equalifier-}" ] && [ -n "${squalifier-}" ]; then
   defaultqual="e${equalifier}"
   defaultqualWithS="s${squalifier}-e${equalifier}"
+else
+  equalifier=`echo $defaultqualWithS|cut -d'-' -s -f2`
+  squalifier=`echo $defaultqualWithS|cut -d'-' -s -f1`
 fi
 
 vecho() { test $opt_v -gt 0 && echo "$@"; }
@@ -238,25 +241,25 @@ if [[ ! -n ${productsdir:-} && ( ! -d products || ! -d download || -n "${opt_for
     fi
 #    $git_working_path/tools/downloadDeps.sh  ../products $defaultqual $build_type
 
-    (source ../products/setups;setup artdaq_mfextensions v1_0_3 -q$defaultqualForUPS && exit 0 || exit 1)
+    (source ../products/setups;setup artdaq_mfextensions v1_0_4 -q$defaultqualForUPS && exit 0 || exit 1)
     if [ $? -ne 0 ]; then
         echo "artdaq_mfextensions not found, installing..."
-        wget http://scisoft.fnal.gov/scisoft/packages/artdaq_mfextensions/v1_0_3/artdaq_mfextensions-1.0.3-${os}-x86_64-$defaultqualForScisoft-$build_type.tar.bz2
+        wget http://scisoft.fnal.gov/scisoft/packages/artdaq_mfextensions/v1_0_4/artdaq_mfextensions-1.0.4-${os}-x86_64-$defaultqualForScisoft-$build_type.tar.bz2
         cd ../products
         tar -xf ../download/artdaq_mfextensions*.tar.bz2
     fi
-    (source ../products/setups;setup artdaq_ganglia_plugin v1_0_8 -q$defaultqualForUPS:g371 && exit 0 || exit 1)
+    (source ../products/setups;setup artdaq_ganglia_plugin v1_0_10 -q$defaultqualForUPS:g371 && exit 0 || exit 1)
     if [ $? -ne 0 ]; then
         echo "artdaq_ganglia_plugin not found, installing..."
-        wget http://scisoft.fnal.gov/scisoft/packages/artdaq_ganglia_plugin/v1_0_9/artdaq_ganglia_plugin-1.0.9-${os}-x86_64-e7-g371-s15-$build_type.tar.bz2
+        wget http://scisoft.fnal.gov/scisoft/packages/artdaq_ganglia_plugin/v1_0_10/artdaq_ganglia_plugin-1.0.10-${os}-x86_64-e${equalifier}-g371-s${squalifier}-$build_type.tar.bz2
         cd ../products
         tar -xf ../download/artdaq_ganglia_plugin*.tar.bz2
     fi
     # 10/21/15 ELF: artdaq_epics_plugin not on scisoft yet...
-    #(source ../products/setups;setup artdaq_epics_plugin v1_0_0-q$defaultqualForUPS && exit 0 || exit 1)
+    #(source ../products/setups;setup artdaq_epics_plugin v1_0_2-q$defaultqualForUPS && exit 0 || exit 1)
     #if [ $? -ne 0 ]; then
     #    echo "artdaq_epics_plugin not found, installing..."
-    #    wget http://scisoft.fnal.gov/scisoft/packages/artdaq_epics_plugin/v1_0_0/artdaq_epics_plugin-1.0.0-${os}-x86_64-$defaultqualForScisoft-$build_type.tar.bz2
+    #    wget http://scisoft.fnal.gov/scisoft/packages/artdaq_epics_plugin/v1_0_2/artdaq_epics_plugin-1.0.2-${os}-x86_64-$defaultqualForScisoft-$build_type.tar.bz2
     #    cd ../products
     #    tar -xf ../download/artdaq_epics_plugin*.tar.bz2
     #fi
