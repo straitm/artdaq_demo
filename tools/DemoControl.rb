@@ -388,7 +388,7 @@ class CommandLineParser
               "specified host and port.  Also specify the",
               "number of events to pass to art per bunch,",
               "and the compression level.") do |ag|
-        if ag.length != 4
+        if ag.length < 4
           puts "You must specifiy a host, port, bunch size, and"
           puts "compression level."
           exit

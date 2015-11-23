@@ -9,6 +9,7 @@ example: `basename $0` products artdaq-demo --run-demo
 --HEAD        all git repo'd packages checked out from HEAD of develop branches
 --debug      perform a debug build
 -c           \"clean\" build dirs -- may be need during development
+--quals      pullProducts-style qualifiers to use for build
 Currently this script will clone (if not already cloned) artdaq
 along side of the artdaq-demo dir.
 Also it will create, if not already created, build directories
@@ -32,6 +33,7 @@ while [ -n "${1-}" ];do
         x*)        eval $op1chr; set -x;;
 	    -HEAD) opt_HEAD=--HEAD;;
         -debug)    opt_debug=--debug;;
+        -quals)    eval $op1arg; qualifiers=$1; shift;;
         c*)        eval $op1chr; opt_clean=1;;
         *)         echo "Unknown option -$op"; do_help=1;;
         esac
@@ -47,6 +49,10 @@ test -d $1 || { echo "products directory ($1) not found"; exit 1; }
 products_dir=`cd "$1" >/dev/null;pwd`
 artdaq_demo_dir=`cd "$2" >/dev/null;pwd`
 demo_dir=`dirname "$artdaq_demo_dir"`
+
+equalifier=`echo $qualifiers|cut -d'-' -s -f2`
+squalifier=`echo $qualifiers|cut -d'-' -s -f1`
+echo "Building ARTDAQ-DEMO with qualifiers: $equalifier:$squalifier:eth"
 
 export CETPKG_INSTALL=$products_dir
 export CETPKG_J=16
@@ -81,7 +87,7 @@ function install_package {
     cd ../build_$packagename
 
     echo IN $PWD: about to . ../$packagename/ups/setup_for_development
-    . ../$packagename/ups/setup_for_development -${build_arg} $@
+    . ../$packagename/ups/setup_for_development -${build_arg} $equalifier $squalifier $@
     echo FINISHED ../$packagename/ups/setup_for_development
     buildtool ${opt_clean+-c} -i && res=0 || res=1
     cd ..
@@ -99,30 +105,30 @@ function install_package {
 # else
 # install_package artdaq-core v1_04_20 e7 s15 || exit 1
 # fi
-install_package artdaq-core v1_04_20 e7 s15 || exit 1
+install_package artdaq-core v1_04_24 || exit 1
 
 if [ -n "${opt_HEAD-}" ];then
 install_package artdaq-core-demo develop || exit 1
 else
-install_package artdaq-core-demo v1_04_02 e7 s15 || exit 1
+install_package artdaq-core-demo v1_04_03 || exit 1
 fi
 
 if [ -n "${opt_HEAD-}" ];then
     install_package artdaq-utilities develop || exit 1
 else
-    install_package artdaq-utilities v1_00_03 e7 s15 || exit 1
+    install_package artdaq-utilities v1_00_04 || exit 1
 fi
 
 if [ -n "${opt_HEAD-}" ];then
-install_package artdaq develop || exit 1
+install_package artdaq develop eth || exit 1
 else
-install_package artdaq v1_12_13 e7 s15 eth || exit 1
+install_package artdaq v1_12_14 eth || exit 1
 fi
 
 if [  -n "${opt_HEAD-}" ];then
 setup_qualifier=""
 else
-setup_qualifier="e7 eth"
+setup_qualifier="$equalifier eth"
 fi
 
 if [ ! -e ./setupARTDAQDEMO -o "${opt_clean-}" == 1 ]; then
