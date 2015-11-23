@@ -41,6 +41,9 @@ prompted for this location.
 -f            force download
 --skip-check  skip the free diskspace check
 --HEAD        all git repo'd packages checked out from HEAD of develop branches
+--tag         check out a specific tag of artdaq-demo
+-e, -s        Use speific qualifiers when building ARTDAQ (both must be specified
+              to have any effect).
 "
 
 # Process script arguments and options
@@ -61,6 +64,8 @@ while [ -n "${1-}" ];do
         x*)         eval $op1chr; set -x;;
         f*)         eval $op1chr; opt_force=1;;
         t*|-tag)    eval $reqarg; tag=$1;    shift;;
+        s*)         eval $op1arg; squalifier=$1; shift;;
+        e*)         eval $op1arg; equalifier=$1; shift;;
         -products-dir)    eval $reqarg; productsdir=$1;    shift;;
         -skip-check)opt_skip_check=1;;
         -run-demo)  opt_run_demo=--run-demo;;
@@ -153,6 +158,13 @@ defaultqualForUPS=`echo $defaultqualForScisoft:$build_type|sed 's/-/:/g'`
 # More fun - we now want to strip away the "sX" part of the qualifier...
 defaultqual=$(echo $defaultqual | sed -r 's/.*(e[0-9]).*/\1/')
 
+# ELF, 11/20/15
+# Even more fun - if the user specified a qualifier set, throw this all away...
+if [ -n "${equalifier-}" ] && [ -n "${squalifier-}" ]; then
+  defaultqual="e${equalifier}"
+  defaultqualWithS="s${squalifier}-e${equalifier}"
+fi
+
 vecho() { test $opt_v -gt 0 && echo "$@"; }
 starttime=`date`
 
@@ -220,12 +232,16 @@ if [[ ! -n ${productsdir:-} && ( ! -d products || ! -d download || -n "${opt_for
 
     echo "Running ./pullProducts ../products ${os} artdaq-${version} $defaultqualWithS $build_type"
     ./pullProducts ../products ${os} artdaq-${version} $defaultqualWithS $build_type
+    if [ $? -ne 0 ]; then
+      echo "Error in pullProducts. Please go to http://scisoft.fnal.gov/scisoft/bundles/artdaq/${version}/manifest and make sure that a manifest for the specified qualifiers ($defaultqualWithS) exists."
+      exit 1
+    fi
 #    $git_working_path/tools/downloadDeps.sh  ../products $defaultqual $build_type
 
-    (source ../products/setups;setup artdaq_mfextensions v1_0_3 -q$defaultqualForUPS && exit 0 || exit 1)
+    (source ../products/setups;setup artdaq_mfextensions v1_0_4 -q$defaultqualForUPS && exit 0 || exit 1)
     if [ $? -ne 0 ]; then
         echo "artdaq_mfextensions not found, installing..."
-        wget http://scisoft.fnal.gov/scisoft/packages/artdaq_mfextensions/v1_0_3/artdaq_mfextensions-1.0.3-${os}-x86_64-$defaultqualForScisoft-$build_type.tar.bz2
+        wget http://scisoft.fnal.gov/scisoft/packages/artdaq_mfextensions/v1_0_4/artdaq_mfextensions-1.0.4-${os}-x86_64-$defaultqualForScisoft-$build_type.tar.bz2
         cd ../products
         tar -xf ../download/artdaq_mfextensions*.tar.bz2
     fi
@@ -244,7 +260,7 @@ elif [[ -n ${productsdir:-} ]] ; then
 fi
 
 
-$git_working_path/tools/installArtDaqDemo.sh ${productsdir:-products} $git_working_path ${opt_debug-} ${opt_HEAD-}
+$git_working_path/tools/installArtDaqDemo.sh ${productsdir:-products} $git_working_path ${opt_debug-} ${opt_HEAD-} --quals $defaultqualWithS
 
 if [ $? -eq 0 ]; then
 	echo doing the demo
