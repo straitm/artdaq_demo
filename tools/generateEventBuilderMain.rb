@@ -18,6 +18,7 @@ def generateEventBuilderMain(ebIndex, totalFRs, totalEBs, totalAGs, compressionL
 services: {
   scheduler: {
     fileMode: NOMERGE
+    errorOnFailureToPut: false
   }
   NetMonTransportServiceInterface: {
     service_provider: NetMonTransportService
