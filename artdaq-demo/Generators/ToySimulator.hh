@@ -6,7 +6,18 @@
 // a generator in the "best practices" manner. Derived from artdaq's
 // CommandableFragmentGenerator class, it can be used in a full DAQ
 // simulation, generating all ADC counts with equal probability via
-// the std::uniform_int_distribution class
+// the std::uniform_int_distribution class. To see the interface
+// provided by the CommandableFragmentGenerator class, its header can
+// be found in the following places:
+
+// -Online at
+// https://cdcvs.fnal.gov/redmine/projects/artdaq/repository/revisions/develop/entry/artdaq/Application/CommandableFragmentGenerator.hh
+
+// -Locally at
+// $ARTDAQDEMO_REPO/../artdaq/artdaq/Application/CommandableFragmentGenerator.hh
+// (assuming you've already set up the artdaq-demo environment-
+// otherwise, replace "$ARTDAQDEMO_REPO/.." with the directory in
+// which you installed artdaq-demo, artdaq, etc.)
 
 // ToySimulator is designed to simulate values coming in from one of
 // two types of digitizer boards, one called "TOY1" and the other
