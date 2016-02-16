@@ -771,10 +771,10 @@ class SystemControl
     totalFRs = @options.boardReaders.length
     totalEBs = @options.eventBuilders.length
     totalAGs = @options.aggregators.length
-    inputBuffSizeWords = 2097152
+    fullEventBuffSizeWords = 2097152
 
     #if Integer(totalv1720s) > 0
-    #  inputBuffSizeWords = 8192 * @options.v1720s[0].gate_width
+    #  fullEventBuffSizeWords = 8192 * @options.v1720s[0].gate_width
     #end
     xmlrpcClients = @configGen.generateXmlRpcClientList(@options)
 
@@ -845,8 +845,10 @@ class SystemControl
             end
           end
 
-          cfg = generateBoardReaderMain(totalEBs, totalFRs,
-                                        Integer(inputBuffSizeWords/8), 
+          # 16-Feb-2016, KAB: Here in the Demo, we don't know whether the data is equally
+          # split between the BoardReaders or mainly concentrated in a single BoardReader, so
+          # we do the safest thing and make all of the BoardReader MPI buffers the maximum size.
+          cfg = generateBoardReaderMain(totalEBs, totalFRs, fullEventBuffSizeWords,
                                         generatorCode, br.host, br.port)
 
           br.cfgList[listIndex] = cfg
@@ -907,7 +909,7 @@ class SystemControl
       currentTime = DateTime.now.strftime("%Y/%m/%d %H:%M:%S")
       puts "%s: Sending the INIT command to %s:%d." %
         [currentTime, ebOptions.host, ebOptions.port]
-      threads << Thread.new() do
+      threads << Thread.new( ebIndex ) do | ebIndexThread |
         xmlrpcClient = XMLRPC::Client.new(ebOptions.host, "/RPC2", 
                                           ebOptions.port)
 
@@ -917,11 +919,11 @@ class SystemControl
 
         puts "HAVE %d v1720s and %d v1724s" % [ totalv1720s, totalv1724s ]
 
-        cfg = generateEventBuilderMain(ebIndex, totalFRs, totalEBs, totalAGs,
+        cfg = generateEventBuilderMain(ebIndexThread, totalFRs, totalEBs, totalAGs,
                                    ebOptions.compression_level,
                                    totalv1720s, totalv1724s,
                                    @options.dataDir, @options.runOnmon,
-                                   @options.writeData, inputBuffSizeWords,
+                                   @options.writeData, fullEventBuffSizeWords,
                                    totalBoards, 
                                    fclWFViewer, ebOptions.host, ebOptions.port
                                    )
@@ -962,7 +964,7 @@ class SystemControl
                                  agOptions.compression_level,
                                  totalv1720s, totalv1724s,
                                  @options.runOnmon, @options.writeData, agOptions.demoPrescale,
-                                 agIndexThread, totalAGs, inputBuffSizeWords,
+                                 agIndexThread, totalAGs, fullEventBuffSizeWords,
                                  xmlrpcClients, @options.fileSizeThreshold,
                                  @options.fileDurationSeconds,
                                  @options.eventsInFile, fclWFViewer, ONMON_EVENT_PRESCALE,
