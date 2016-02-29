@@ -135,7 +135,7 @@ void demo::ToyDump::analyze(art::Event const & evt)
             for (uint32_t jdx = 0; jdx < columns_to_display_on_screen_; ++jdx) {
               if (adc_counter >= num_adcs_to_show_) {break;}
               std::cout << std::setw(6) << std::setfill(' ');
-              std::cout << (bb.dataBegin()[adc_counter]);
+              std::cout << bb.adc_value(adc_counter);
               ++adc_counter;
             }
             std::cout << std::endl;
