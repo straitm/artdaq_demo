@@ -152,6 +152,7 @@ if [ ! -e ./setupARTDAQDEMO -o "${opt_clean-}" == 1 ]; then
 	cd \$ARTDAQDEMO_BUILD  # note: next line adjusts PATH based one cwd
 	. \$ARTDAQDEMO_REPO/ups/setup_for_development -${build_arg} $setup_qualifier
 
+	alias toy1toy2EventDump="art -c $artdaq_demo_dir/artdaq-demo/ArtModules/fcl/toy1toy2Dump.fcl"
 	alias rawEventDump="art -c $artdaq_demo_dir/artdaq-demo/ArtModules/fcl/rawEventDump.fcl"
 	alias compressedEventDump="art -c $artdaq_demo_dir/artdaq-demo/ArtModules/fcl/compressedEventDump.fcl"
 	alias compressedEventComparison="art -c $artdaq_demo_dir/artdaq-demo/ArtModules/fcl/compressedEventComparison.fcl"
