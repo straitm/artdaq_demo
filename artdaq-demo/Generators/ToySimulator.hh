@@ -6,18 +6,7 @@
 // a generator in the "best practices" manner. Derived from artdaq's
 // CommandableFragmentGenerator class, it can be used in a full DAQ
 // simulation, generating all ADC counts with equal probability via
-// the std::uniform_int_distribution class. To see the interface
-// provided by the CommandableFragmentGenerator class, its header can
-// be found in the following places:
-
-// -Online at
-// https://cdcvs.fnal.gov/redmine/projects/artdaq/repository/revisions/develop/entry/artdaq/Application/CommandableFragmentGenerator.hh
-
-// -Locally at
-// $ARTDAQDEMO_REPO/../artdaq/artdaq/Application/CommandableFragmentGenerator.hh
-// (assuming you've already set up the artdaq-demo environment-
-// otherwise, replace "$ARTDAQDEMO_REPO/.." with the directory in
-// which you installed artdaq-demo, artdaq, etc.)
+// the std::uniform_int_distribution class
 
 // ToySimulator is designed to simulate values coming in from one of
 // two types of digitizer boards, one called "TOY1" and the other
@@ -53,6 +42,12 @@ namespace demo {
     // getNext_ function declared in CommandableFragmentGenerator
 
     bool getNext_(artdaq::FragmentPtrs & output) override;
+
+    // Explicitly declare that there is nothing special to be done
+    // by the start, stop, and stopNoMutex methods in this class
+    void start() override {}
+    void stop() override {}
+    void stopNoMutex() override {}
 
     // FHiCL-configurable variables. Note that the C++ variable names
     // are the FHiCL variable names with a "_" appended

@@ -74,6 +74,7 @@ struct CommandPacket {
 
     void start_() override;
     void stop() override;
+    void stopNoMutex() override {}  // nothing special needs to be done in this method
     void pause() override;
     void resume_() override;
    

@@ -43,6 +43,12 @@ namespace demo {
 
     bool getNext_(artdaq::FragmentPtrs & output) override;
 
+    // Explicitly declare that there is nothing special to be done
+    // by the start, stop, and stopNoMutex methods in this class
+    void start() override {}
+    void stop() override {}
+    void stopNoMutex() override {}
+
     // FHiCL-configurable variables. Note that the C++ variable names
     // are the FHiCL variable names with a "_" appended
 
