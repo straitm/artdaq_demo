@@ -1,3 +1,8 @@
+
+// For an explanation of this class, look at its header,
+// ToySimulator.hh, as well as
+// https://cdcvs.fnal.gov/redmine/projects/artdaq-demo/wiki/Fragments_and_FragmentGenerators_w_Toy_Fragments_as_Examples
+
 #include "artdaq-demo/Generators/ToySimulator.hh"
 
 #include "art/Utilities/Exception.h"
@@ -132,7 +137,7 @@ bool demo::ToySimulator::getNext_(artdaq::FragmentPtrs & frags) {
 
   ToyFragmentWriter newfrag(*frags.back());
 
-  newfrag.set_hdr_run_number(999);
+  newfrag.set_hdr_trigger_number(ev_counter());
 
   newfrag.resize(nADCcounts_);
 

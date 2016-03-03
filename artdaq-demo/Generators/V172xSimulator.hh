@@ -23,6 +23,12 @@ namespace demo {
   private:
     bool getNext_(artdaq::FragmentPtrs & output) override;
 
+    // Explicitly declare that there is nothing special to be done
+    // by the start, stop, and stopNoMutex methods in this class
+    void start() override {}
+    void stop() override {}
+    void stopNoMutex() override {}
+
     // Configuration.
     std::size_t const nChannels_;
     FragmentType const fragment_type_;

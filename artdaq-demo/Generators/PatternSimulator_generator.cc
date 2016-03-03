@@ -130,7 +130,7 @@ bool demo::PatternSimulator::getNext_(artdaq::FragmentPtrs & frags) {
 
   ToyFragmentWriter newfrag(*frags.back());
 
-  newfrag.set_hdr_run_number(999);
+  newfrag.set_hdr_trigger_number(ev_counter());
 
   newfrag.resize(nADCcounts_);
 

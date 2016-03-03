@@ -28,6 +28,12 @@ namespace demo {
                      demo::FragmentType dType,
                      artdaq::Fragment::fragment_id_t id);
 
+    // Explicitly declare that there is nothing special to be done
+    // by the start, stop, and stopNoMutex methods in this class
+    void start() override {}
+    void stop() override {}
+    void stopNoMutex() override {}
+
     // Configuration.
     std::vector<std::string> const fileNames_;
     uint64_t const max_set_size_bytes_;

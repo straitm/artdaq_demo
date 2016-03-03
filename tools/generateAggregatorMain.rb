@@ -95,7 +95,7 @@ physics: {
   %{enable_onmon}a1: %{onmon_modules}
 
   %{root_output}my_output_modules: [ normalOutput ]
-  %{root_output2}my_output_modules: [ normalOutput, normalOutputMod2, normalOutputMod3 ]
+  %{root_output2}my_output_modules: [ normalOutputMod2, normalOutputMod3 ]
 }
 process_name: DAQAG"
 )
@@ -173,13 +173,15 @@ process_name: DAQAG"
   puts "Final aggregator " + String(agIndex) + " disk writing setting = " +
   String(diskWritingEnable)
   if Integer(diskWritingEnable) != 0
-    agConfig.gsub!(/\%\{root_output\}/, "")
+    if Integer(demoPrescale) != 0
+      agConfig.gsub!(/\%\{root_output\}/, "#")
+      agConfig.gsub!(/\%\{root_output2\}/,"")
+    else
+      agConfig.gsub!(/\%\{root_output\}/, "")
+      agConfig.gsub!(/\%\{root_output2\}/,"#")
+    end
   else
     agConfig.gsub!(/\%\{root_output\}/, "#")
-  end
-  if Integer(demoPrescale) != 0
-    agConfig.gsub!(/\%\{root_output2\}/,"")
-  else
     agConfig.gsub!(/\%\{root_output2\}/,"#")
   end
   if Integer(onmonEnable) != 0
