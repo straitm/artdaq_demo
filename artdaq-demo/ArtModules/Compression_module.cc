@@ -16,7 +16,6 @@
 #include "artdaq-core/Data/Fragment.hh"
 #include "artdaq-core/Data/Fragments.hh"
 #include "artdaq-core/Utilities/SimpleLookupPolicy.h"
-#include "cpp0x/memory"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -27,6 +26,7 @@
 #include <fstream>
 #include <string>
 #include <utility>
+#include <memory>
 
 #include <sys/types.h>
 #include <unistd.h>
