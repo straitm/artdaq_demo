@@ -125,11 +125,7 @@ else
 install_package artdaq v1_12_15 eth || exit 1
 fi
 
-if [  -n "${opt_HEAD-}" ];then
-setup_qualifier=""
-else
-setup_qualifier="$equalifier eth"
-fi
+setup_qualifier="$equalifier $squalifier eth"
 
 if [ ! -e ./setupARTDAQDEMO -o "${opt_clean-}" == 1 ]; then
     cat >setupARTDAQDEMO <<-EOF
