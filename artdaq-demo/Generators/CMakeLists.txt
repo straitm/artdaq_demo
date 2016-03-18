@@ -21,6 +21,7 @@ simple_plugin(V172xSimulator "generator"
   )
 
 simple_plugin(ToySimulator "generator"
+  artdaq-demo_Generators_ToyHardwareInterface
   artdaq-core-demo_Overlays
   artdaq_Application
   artdaq_DAQdata
@@ -78,3 +79,4 @@ simple_plugin(UDPReceiver "generator"
     ${CETLIB}
     )
 
+add_subdirectory(ToyHardwareInterface)

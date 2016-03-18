@@ -6,13 +6,16 @@
 #include "artdaq-demo/Generators/ToySimulator.hh"
 
 #include "art/Utilities/Exception.h"
+
 #include "artdaq/Application/GeneratorMacros.hh"
-#include "cetlib/exception.h"
-#include "artdaq-core-demo/Overlays/ToyFragment.hh"
-#include "artdaq-core-demo/Overlays/ToyFragmentWriter.hh"
-#include "artdaq-core-demo/Overlays/FragmentType.hh"
-#include "fhiclcpp/ParameterSet.h"
 #include "artdaq-core/Utilities/SimpleLookupPolicy.h"
+
+#include "artdaq-core-demo/Overlays/ToyFragment.hh"
+#include "artdaq-core-demo/Overlays/FragmentType.hh"
+
+
+#include "cetlib/exception.h"
+#include "fhiclcpp/ParameterSet.h"
 
 #include <fstream>
 #include <iomanip>
@@ -21,95 +24,31 @@
 
 #include <unistd.h>
 
-namespace {
-
-  size_t typeToADC(demo::FragmentType type)
-  {
-    switch (type) {
-    case demo::FragmentType::TOY1:
-      return 12;
-      break;
-    case demo::FragmentType::TOY2:
-      return 14;
-      break;
-    default:
-      throw art::Exception(art::errors::Configuration)
-        << "Unknown board type "
-        << type
-        << " ("
-        << demo::fragmentTypeToString(type)
-        << ").\n";
-    };
-  }
-
-}
-
-
 
 demo::ToySimulator::ToySimulator(fhicl::ParameterSet const & ps)
   :
   CommandableFragmentGenerator(ps),
-  nADCcounts_(ps.get<size_t>("nADCcounts", 600000)),
-  fragment_type_(toFragmentType(ps.get<std::string>("fragment_type"))),
-  throttle_usecs_(ps.get<size_t>("throttle_usecs", 100000)),
-  throttle_usecs_check_(ps.get<size_t>("throttle_usecs_check", 10000)),
-  engine_(ps.get<int64_t>("random_seed", 314159)),
-  uniform_distn_(new std::uniform_int_distribution<int>(0, pow(2, typeToADC( fragment_type_ ) ) - 1 ))
+  hardware_interface_( new ToyHardwareInterface(ps) ),
+  readout_buffer_(nullptr)
 {
+  hardware_interface_->AllocateReadoutBuffer(&readout_buffer_);   
 
-  // Check and make sure that the fragment type will be one of the "toy" types
-  
-  std::vector<artdaq::Fragment::type_t> const ftypes = 
-    {FragmentType::TOY1, FragmentType::TOY2 };
-
-  if (std::find( ftypes.begin(), ftypes.end(), fragment_type_) == ftypes.end() ) {
-    throw cet::exception("Error in ToySimulator: unexpected fragment type supplied to constructor");
-  }
-
-  if (throttle_usecs_ > 0 && (throttle_usecs_check_ >= throttle_usecs_ ||
-			      throttle_usecs_ % throttle_usecs_check_ != 0) ) {
-    throw cet::exception("Error in ToySimulator: disallowed combination of throttle_usecs and throttle_usecs_check (see ToySimulator.hh for rules)");
-  }
-    
+  metadata_.board_serial_number = hardware_interface_->SerialNumber();
+  metadata_.num_adc_bits = hardware_interface_->NumADCBits();
 }
 
+demo::ToySimulator::~ToySimulator() {
+  hardware_interface_->FreeReadoutBuffer(readout_buffer_);
+}
 
 bool demo::ToySimulator::getNext_(artdaq::FragmentPtrs & frags) {
 
-  // JCF, 9/23/14
-
-  // If throttle_usecs_ is greater than zero (i.e., user requests a
-  // sleep interval before generating the pseudodata) then during that
-  // interval perform a periodic check to see whether a stop request
-  // has been received
-
-  // Values for throttle_usecs_ and throttle_usecs_check_ will have
-  // been tested for validity in constructor
-
-  if (throttle_usecs_ > 0) {
-    size_t nchecks = throttle_usecs_ / throttle_usecs_check_;
-
-    for (size_t i_c = 0; i_c < nchecks; ++i_c) {
-      usleep( throttle_usecs_check_ );
-
-      if (should_stop()) {
-	return false;
-      }
-    }
-  } else {
-    if (should_stop()) {
-      return false;
-    }
+  if (should_stop()) {
+    return false;
   }
 
-  // Set fragment's metadata
-
-  ToyFragment::Metadata metadata;
-  metadata.board_serial_number = 999;
-  metadata.num_adc_bits = typeToADC(fragment_type_);
-
-  // And use it, along with the artdaq::Fragment header information
-  // (fragment id, sequence id, and user type) to create a fragment
+  std::size_t bytes_read = 0;
+  hardware_interface_->FillBuffer(readout_buffer_ , &bytes_read);
 
   // We'll use the static factory function 
 
@@ -126,44 +65,38 @@ bool demo::ToySimulator::getNext_(artdaq::FragmentPtrs & frags) {
   // artdaq::Fragment constructor itself was not altered so as to
   // maintain backward compatibility.
 
-  std::size_t initial_payload_size = 0;
+  std::unique_ptr<artdaq::Fragment> fragptr(
+   					    artdaq::Fragment::FragmentBytes(bytes_read,  
+   									    ev_counter(), fragment_id(),
+   									    hardware_interface_->BoardType(), 
+   									    metadata_));
 
-  frags.emplace_back( artdaq::Fragment::FragmentBytes(initial_payload_size,  
-						      ev_counter(), fragment_id(),
-						      fragment_type_, metadata) );
+  memcpy(fragptr->dataBeginBytes(), readout_buffer_, bytes_read );
 
-  // Then any overlay-specific quantities next; will need the
-  // ToyFragmentWriter class's setter-functions for this
+  frags.emplace_back( std::move(fragptr ));
+  //  frags.emplace_back( artdaq::Fragment::FragmentBytes(bytes_read,
+  //						      ev_counter(), fragment_id(),
+  //						      hardware_interface_->BoardType(),
+  //						      metadata_));
 
-  ToyFragmentWriter newfrag(*frags.back());
-
-  newfrag.set_hdr_trigger_number(ev_counter());
-
-  newfrag.resize(nADCcounts_);
-
-  // And generate nADCcounts ADC values ranging from 0 to max with an
-  // equal probability over the full range (a specific and perhaps
-  // not-too-physical example of how one could generate simulated
-  // data)
-
-  std::generate_n(newfrag.dataBegin(), nADCcounts_,
-  		  [&]() {
-  		    return static_cast<ToyFragment::adc_t>
-  		      ((*uniform_distn_)( engine_ ));
-  		  }
-  		  );
 
   if(metricMan_ != nullptr) {
     metricMan_->sendMetric("Fragments Sent",ev_counter(), "Events", 3);
   }
-  // Check and make sure that no ADC values in this fragment are
-  // larger than the max allowed
 
-  newfrag.fastVerify( metadata.num_adc_bits );
+  // Use the overlay class to check and make sure that no ADC values
+  // in this fragment are larger than the max allowed
+
+  ToyFragment fragoverlay( *fragptr );
+  fragoverlay.fastVerify( metadata_.num_adc_bits );
 
   ev_counter_inc();
 
   return true;
+}
+
+void demo::ToySimulator::start() {
+  hardware_interface_->ConfigureInterface();
 }
 
 // The following macro is defined in artdaq's GeneratorMacros.hh header
