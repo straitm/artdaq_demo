@@ -73,22 +73,17 @@ bool demo::ToySimulator::getNext_(artdaq::FragmentPtrs & frags) {
 
   memcpy(fragptr->dataBeginBytes(), readout_buffer_, bytes_read );
 
-  frags.emplace_back( std::move(fragptr ));
-  //  frags.emplace_back( artdaq::Fragment::FragmentBytes(bytes_read,
-  //						      ev_counter(), fragment_id(),
-  //						      hardware_interface_->BoardType(),
-  //						      metadata_));
-
-
-  if(metricMan_ != nullptr) {
-    metricMan_->sendMetric("Fragments Sent",ev_counter(), "Events", 3);
-  }
-
   // Use the overlay class to check and make sure that no ADC values
   // in this fragment are larger than the max allowed
 
   ToyFragment fragoverlay( *fragptr );
   fragoverlay.fastVerify( metadata_.num_adc_bits );
+
+  frags.emplace_back( std::move(fragptr ));
+
+  if(metricMan_ != nullptr) {
+    metricMan_->sendMetric("Fragments Sent",ev_counter(), "Events", 3);
+  }
 
   ev_counter_inc();
 

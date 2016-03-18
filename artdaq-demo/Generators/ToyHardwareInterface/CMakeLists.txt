@@ -5,5 +5,4 @@ art_make(
         ${CETLIB}
 	artdaq-core_Data
 	artdaq-core-demo_Overlays
-#        ${Boost_SYSTEM_LIBRARY}
         )

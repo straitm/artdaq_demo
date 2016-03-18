@@ -1,5 +1,6 @@
 
 #include "artdaq-demo/Generators/ToyHardwareInterface/ToyHardwareInterface.hh"
+#include "artdaq-core-demo/Overlays/ToyFragment.hh"
 #include "artdaq-core-demo/Overlays/FragmentType.hh"
 
 #include "fhiclcpp/ParameterSet.h"
@@ -40,19 +41,28 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read) {
 
     usleep( throttle_usecs_ );
 
-    // ASSUMES NO HEADER YET
-    *bytes_read = nADCcounts_ * sizeof(data_t);
+    *bytes_read = sizeof(demo::ToyFragment::Header) + nADCcounts_ * sizeof(data_t);
       
-    // Make the fake data
+    // Make the fake data, starting with the header
 
-    // Header?
+    if ( *bytes_read % sizeof(demo::ToyFragment::Header::data_t) != 0) {
+      throw cet::exception("HardwareInterface") <<
+	"Not (yet) able to handle a fragment whose size isn't evenly divisible by the demo::ToyFragment::Header::data_t type size of " <<
+	sizeof(demo::ToyFragment::Header::data_t) << " bytes";
+    }
+
+    demo::ToyFragment::Header* header = reinterpret_cast<demo::ToyFragment::Header*>(buffer);
+
+    header->event_size = *bytes_read / sizeof(demo::ToyFragment::Header::data_t) ;
+    header->trigger_number = 99;
 
     // Generate nADCcounts ADC values ranging from 0 to max with an
     // equal probability over the full range (a specific and perhaps
     // not-too-physical example of how one could generate simulated
     // data)
 
-    std::generate_n(reinterpret_cast<data_t*>(buffer), nADCcounts_,
+    std::generate_n(reinterpret_cast<data_t*>( reinterpret_cast<demo::ToyFragment::Header*>(buffer) + 1 ), 
+		    nADCcounts_,
 		    [&]() {
 		      return static_cast<data_t>
 			((*uniform_distn_)( engine_ ));
@@ -66,7 +76,7 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read) {
 
 void ToyHardwareInterface::AllocateReadoutBuffer(char** buffer) {
   
-  *buffer = reinterpret_cast<char*>( new uint8_t[ nADCcounts_*sizeof(data_t) ] );
+  *buffer = reinterpret_cast<char*>( new uint8_t[ sizeof(demo::ToyFragment::Header) + nADCcounts_*sizeof(data_t) ] );
 }
 
 void ToyHardwareInterface::FreeReadoutBuffer(char* buffer) {
