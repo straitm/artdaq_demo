@@ -110,7 +110,7 @@ install_package artdaq-core v1_04_29 || exit 1
 if [ -n "${opt_HEAD-}" ];then
 install_package artdaq-core-demo develop || exit 1
 else
-install_package artdaq-core-demo v1_04_04 || exit 1
+install_package artdaq-core-demo v1_04_05 || exit 1
 fi
 
 if [ -n "${opt_HEAD-}" ];then
@@ -125,11 +125,7 @@ else
 install_package artdaq v1_12_15 eth || exit 1
 fi
 
-if [  -n "${opt_HEAD-}" ];then
-setup_qualifier=""
-else
-setup_qualifier="$equalifier eth"
-fi
+setup_qualifier="$equalifier $squalifier eth"
 
 if [ ! -e ./setupARTDAQDEMO -o "${opt_clean-}" == 1 ]; then
     cat >setupARTDAQDEMO <<-EOF

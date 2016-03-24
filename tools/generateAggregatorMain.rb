@@ -17,6 +17,7 @@ agConfig = String.new( "\
 services: {
   scheduler: {
     fileMode: NOMERGE
+    errorOnFailureToPut: false
   }
   NetMonTransportServiceInterface: {
     service_provider: NetMonTransportService

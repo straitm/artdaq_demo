@@ -268,7 +268,7 @@ if [ $installStatus -eq 0 ] && [ "x${opt_run_demo-}" != "x" ]; then
         -c 'manage2x2x2System.sh -m on init' \
         -c ':,sleep 5' \
         -c 'manage2x2x2System.sh -N 101 start' \
-        -c ':,sleep 10' \
+        -c ':,sleep 60' \
         -c 'manage2x2x2System.sh stop' \
         -c ':,sleep 5' \
         -c 'manage2x2x2System.sh shutdown' \

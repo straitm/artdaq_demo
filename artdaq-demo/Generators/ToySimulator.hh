@@ -5,8 +5,7 @@
 // studied by new users of artdaq as an example of how to create such
 // a generator in the "best practices" manner. Derived from artdaq's
 // CommandableFragmentGenerator class, it can be used in a full DAQ
-// simulation, generating all ADC counts with equal probability via
-// the std::uniform_int_distribution class
+// simulation, obtaining data from the ToyHardwareInterface class
 
 // ToySimulator is designed to simulate values coming in from one of
 // two types of digitizer boards, one called "TOY1" and the other
@@ -25,6 +24,8 @@
 #include "artdaq-core-demo/Overlays/ToyFragment.hh"
 #include "artdaq-core-demo/Overlays/FragmentType.hh"
 
+#include "ToyHardwareInterface/ToyHardwareInterface.hh"
+
 #include <random>
 #include <vector>
 #include <atomic>
@@ -34,6 +35,7 @@ namespace demo {
   class ToySimulator : public artdaq::CommandableFragmentGenerator {
   public:
     explicit ToySimulator(fhicl::ParameterSet const & ps);
+    ~ToySimulator();
 
   private:
 
@@ -43,25 +45,27 @@ namespace demo {
 
     bool getNext_(artdaq::FragmentPtrs & output) override;
 
-    // Explicitly declare that there is nothing special to be done
-    // by the start, stop, and stopNoMutex methods in this class
-    void start() override {}
-    void stop() override {}
+    // The start, stop and stopNoMutex methods are declared pure
+    // virtual in CommandableFragmentGenerator and therefore MUST be
+    // overridden; note that stopNoMutex() doesn't do anything here
+
+    void start() override;
+    void stop() override;
     void stopNoMutex() override {}
 
-    // FHiCL-configurable variables. Note that the C++ variable names
-    // are the FHiCL variable names with a "_" appended
+    std::unique_ptr<ToyHardwareInterface> hardware_interface_; 
 
-    std::size_t const nADCcounts_;     // ADC values per fragment per event
-    FragmentType const fragment_type_; // Type of fragment (see FragmentType.hh)
+    ToyFragment::Metadata metadata_;
 
-    std::size_t const throttle_usecs_;        // Sleep at start of each call to getNext_(), in us
-    std::size_t const throttle_usecs_check_;  // Period between checks for stop/pause during the sleep (must be less than, and an integer divisor of, throttle_usecs_)
+    // buffer_ points to the buffer which the hardware interface will
+    // fill. Notice that it's a raw pointer rather than a smart
+    // pointer as the API to ToyHardwareInterface was chosen to be a
+    // C++03-style API for greater realism
 
-    // Members needed to generate the simulated data
+    char* readout_buffer_;
 
-    std::mt19937 engine_;
-    std::unique_ptr<std::uniform_int_distribution<int>> uniform_distn_;
+    FragmentType fragment_type_;
+
   };
 }
 

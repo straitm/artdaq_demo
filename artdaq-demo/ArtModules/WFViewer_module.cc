@@ -256,7 +256,7 @@ void demo::WFViewer::analyze (art::Event const & e) {
 
     case FragmentType::TOY1: 
     case FragmentType::TOY2: 
-      for (auto val = toyPtr->dataBegin(); val != toyPtr->dataEnd(); ++val ) 
+      for (auto val = toyPtr->dataBeginADCs(); val != toyPtr->dataEndADCs(); ++val ) 
 	histograms_[ind]->Fill( *val );
       break;
   
@@ -300,14 +300,14 @@ void demo::WFViewer::analyze (art::Event const & e) {
       case FragmentType::V1720:  
       case FragmentType::V1724: 
 	{
-	  std::copy (v172xPtr->dataBegin (), v172xPtr->dataBegin() + total_adc_values, graphs_[ind]->GetY ());
+	  std::copy (v172xPtr->dataBegin(), v172xPtr->dataBegin() + total_adc_values, graphs_[ind]->GetY ());
 	}
 	break;
 
       case FragmentType::TOY1: 
       case FragmentType::TOY2: 
 	{
-	  std::copy (toyPtr->dataBegin (), toyPtr->dataBegin() + total_adc_values, graphs_[ind]->GetY ());
+	  std::copy (toyPtr->dataBeginADCs(), toyPtr->dataBeginADCs() + total_adc_values, graphs_[ind]->GetY ());
 	}
 	break;
   

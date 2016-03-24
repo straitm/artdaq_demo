@@ -11,3 +11,7 @@ nADCcounts: 40
 #  overwhelming downstream event processing.
 
 throttle_usecs: 100000
+
+# 0: uniform distribution, 1: normal distribution
+
+distribution_type: 1
