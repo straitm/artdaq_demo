@@ -34,28 +34,6 @@ simple_plugin(ToySimulator "generator"
   ${CETLIB}
   )
 
-simple_plugin(NormalSimulator "generator"
-  artdaq-core-demo_Overlays
-  artdaq_Application
-  artdaq_DAQdata
-  artdaq-core_Utilities
-  artdaq-core_Data
-  ${ART_UTILITIES}
-  ${FHICLCPP}
-  ${CETLIB}
-  )
-
-simple_plugin(PatternSimulator "generator"
-  artdaq-core-demo_Overlays
-  artdaq_Application
-  artdaq_DAQdata
-  artdaq-core_Utilities
-  artdaq-core_Data
-  ${ART_UTILITIES}
-  ${FHICLCPP} 
-  ${CETLIB} 
-  )
-
 simple_plugin(AsciiSimulator "generator"
   artdaq-core-demo_Overlays
   artdaq_Application
