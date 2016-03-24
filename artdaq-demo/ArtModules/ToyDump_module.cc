@@ -120,7 +120,7 @@ void demo::ToyDump::analyze(art::Event const & evt)
         if (dump_to_file_) {
           std::ofstream output ("out.bin", std::ios::out | std::ios::app | std::ios::binary );
           for (uint32_t i_adc = 0; i_adc < num_adcs_to_show_; ++i_adc) {
-            output.write((char*)(bb.dataBegin() + i_adc),sizeof(ToyFragment::adc_t));
+            output.write((char*)(bb.dataBeginADCs() + i_adc),sizeof(ToyFragment::adc_t));
           }
           output.close();
         }
