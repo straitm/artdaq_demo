@@ -37,11 +37,15 @@ demo::ToySimulator::ToySimulator(fhicl::ParameterSet const & ps)
   metadata_.board_serial_number = hardware_interface_->SerialNumber();
   metadata_.num_adc_bits = hardware_interface_->NumADCBits();
 
+  std::cout << "BOARD TYPE: " << hardware_interface_->BoardType() << std::endl;
+
   switch (hardware_interface_->BoardType()) {
-  case 1001:
+  case 1006:
     fragment_type_ = toFragmentType("TOY1");
-  case 1002:
+    break;
+  case 1007:
     fragment_type_ = toFragmentType("TOY2");
+    break;
   default:
     throw cet::exception("ToySimulator") << "Unable to determine board type supplied by hardware";
   }

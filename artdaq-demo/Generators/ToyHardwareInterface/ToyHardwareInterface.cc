@@ -21,8 +21,11 @@ ToyHardwareInterface::ToyHardwareInterface(fhicl::ParameterSet const & ps) :
   nADCcounts_(ps.get<size_t>("nADCcounts", 600000)), 
   fragment_type_(demo::toFragmentType(ps.get<std::string>("fragment_type"))), 
   throttle_usecs_(ps.get<size_t>("throttle_usecs", 100000)),
+  distribution_type_(static_cast<DistributionType>(ps.get<int>("distribution_type"))),
+  max_adc_(pow(2, NumADCBits() ) - 1),
   engine_(ps.get<int64_t>("random_seed", 314159)),
-  uniform_distn_(new std::uniform_int_distribution<data_t>(0, pow(2, NumADCBits() ) - 1 ))
+  uniform_distn_(new std::uniform_int_distribution<data_t>(0, max_adc_)),
+  gaussian_distn_(new std::normal_distribution<double>( 0.5*max_adc_, 0.1*max_adc_))
 {
 }
 
@@ -62,17 +65,39 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read) {
     header->event_size = *bytes_read / sizeof(demo::ToyFragment::Header::data_t) ;
     header->trigger_number = 99;
 
-    // Generate nADCcounts ADC values ranging from 0 to max with an
-    // equal probability over the full range (a specific and perhaps
-    // not-too-physical example of how one could generate simulated
-    // data)
+    // Generate nADCcounts ADC values ranging from 0 to max based on
+    // the desired distribution
+
+    std::function<data_t()> generator;
+
+    switch (distribution_type_) {
+    case DistributionType::uniform:
+      generator = [&]() {
+	return static_cast<data_t>
+	((*uniform_distn_)( engine_ ));
+      };
+      break;
+
+    case DistributionType::gaussian:
+      generator = [&]() {
+
+	data_t gen(0);
+	do {
+	  gen = static_cast<data_t>( std::round( (*gaussian_distn_)( engine_ ) ) );
+	} 
+	while(gen > max_adc_);                                                                    
+	return gen;
+      };
+      break;
+
+    default:
+      throw cet::exception("HardwareInterface") <<
+	"Unknown distribution type specified";
+    }
 
     std::generate_n(reinterpret_cast<data_t*>( reinterpret_cast<demo::ToyFragment::Header*>(buffer) + 1 ), 
 		    nADCcounts_,
-		    [&]() {
-		      return static_cast<data_t>
-			((*uniform_distn_)( engine_ ));
-		    }
+		    generator
 		    );
 
   } else {
@@ -95,7 +120,7 @@ void ToyHardwareInterface::FreeReadoutBuffer(char* buffer) {
 // which must be between 1 and 224, inclusive) so add an offset
 
 int ToyHardwareInterface::BoardType() const {
-  return fragment_type_ + 1000;
+  return static_cast<int>(fragment_type_) + 1000;
 }
 
 int ToyHardwareInterface::NumADCBits() const {

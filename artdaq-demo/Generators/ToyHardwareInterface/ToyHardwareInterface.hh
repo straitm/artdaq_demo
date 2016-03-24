@@ -41,18 +41,23 @@ public:
   int NumADCBits() const;
   int BoardType() const;
 
+  enum class DistributionType { uniform, gaussian };
+
 private:
 
   bool taking_data_;
   std::size_t nADCcounts_;
   demo::FragmentType fragment_type_;
   std::size_t throttle_usecs_;
+  DistributionType distribution_type_;
+  std::size_t max_adc_;
 
 // Members needed to generate the simulated data
 
   std::mt19937 engine_;
   std::unique_ptr<std::uniform_int_distribution<data_t>> uniform_distn_;
-
+  std::unique_ptr<std::normal_distribution<double>> gaussian_distn_;
+  
 
 };
 
