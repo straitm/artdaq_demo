@@ -30,19 +30,20 @@ public:
 
   ToyHardwareInterface(fhicl::ParameterSet const & ps);
 
-  void ConfigureInterface();
+  void StartDatataking();
+  void StopDatataking();
   void FillBuffer(char* buffer, size_t* bytes_read);
 
   void AllocateReadoutBuffer(char** buffer);
   void FreeReadoutBuffer(char* buffer);
 
-  uint16_t SerialNumber() const;
-  uint8_t NumADCBits() const;
-  uint8_t BoardType() const;
+  int SerialNumber() const;
+  int NumADCBits() const;
+  int BoardType() const;
 
 private:
 
-  bool interface_configured_;
+  bool taking_data_;
   std::size_t nADCcounts_;
   demo::FragmentType fragment_type_;
   std::size_t throttle_usecs_;

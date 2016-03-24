@@ -47,10 +47,10 @@ namespace demo {
 
     // The start, stop and stopNoMutex methods are declared pure
     // virtual in CommandableFragmentGenerator and therefore MUST be
-    // overridden; note that stop() and stopNoMutex() doesn't do anything
+    // overridden; note that stopNoMutex() doesn't do anything here
 
     void start() override;
-    void stop() override {}
+    void stop() override;
     void stopNoMutex() override {}
 
     std::unique_ptr<ToyHardwareInterface> hardware_interface_; 
@@ -63,6 +63,8 @@ namespace demo {
     // C++03-style API for greater realism
 
     char* readout_buffer_;
+
+    FragmentType fragment_type_;
 
   };
 }

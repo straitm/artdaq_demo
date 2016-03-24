@@ -17,7 +17,7 @@
 // based in C++11 capable of taking advantage of smart pointers, etc.
 
 ToyHardwareInterface::ToyHardwareInterface(fhicl::ParameterSet const & ps) :
-  interface_configured_(false),
+  taking_data_(false),
   nADCcounts_(ps.get<size_t>("nADCcounts", 600000)), 
   fragment_type_(demo::toFragmentType(ps.get<std::string>("fragment_type"))), 
   throttle_usecs_(ps.get<size_t>("throttle_usecs", 100000)),
@@ -28,16 +28,22 @@ ToyHardwareInterface::ToyHardwareInterface(fhicl::ParameterSet const & ps) :
 
 // JCF, Mar-18-2017
 
-// "ConfigureInterface" is meant to mimic the uploading of values to registers, etc. 
+// "StartDatataking" is meant to mimic actions one would take when
+// telling the hardware to start sending data - the uploading of
+// values to registers, etc.
 
-void ToyHardwareInterface::ConfigureInterface() {
-  interface_configured_ = true;
+void ToyHardwareInterface::StartDatataking() {
+  taking_data_ = true;
+}
+
+void ToyHardwareInterface::StopDatataking() {
+  taking_data_ = false;
 }
 
 
 void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read) {
 
-  if (interface_configured_) {
+  if (taking_data_) {
 
     usleep( throttle_usecs_ );
 
@@ -70,7 +76,8 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read) {
 		    );
 
   } else {
-    // what to do here? std::exit(1) ??
+    throw cet::exception("ToyHardwareInterface") <<
+      "Attempt to call FillBuffer when not sending data";
   }
 }
 
@@ -83,11 +90,15 @@ void ToyHardwareInterface::FreeReadoutBuffer(char* buffer) {
   delete [] buffer;
 }
 
-uint8_t ToyHardwareInterface::BoardType() const {
-  return fragment_type_;
+// Pretend that the "BoardType" is some vendor-defined integer which
+// differs from the fragment_type_ we want to use as developers (and
+// which must be between 1 and 224, inclusive) so add an offset
+
+int ToyHardwareInterface::BoardType() const {
+  return fragment_type_ + 1000;
 }
 
-uint8_t ToyHardwareInterface::NumADCBits() const {
+int ToyHardwareInterface::NumADCBits() const {
 
   switch (fragment_type_) {
   case demo::FragmentType::TOY1:
@@ -107,7 +118,7 @@ uint8_t ToyHardwareInterface::NumADCBits() const {
 
 }
 
-uint16_t ToyHardwareInterface::SerialNumber() const {
+int ToyHardwareInterface::SerialNumber() const {
   return 999;
 }
 
