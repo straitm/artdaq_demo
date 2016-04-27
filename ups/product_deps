@@ -14,7 +14,6 @@ defaultqual	e9:s21:eth
 incdir      product_dir include
 libdir      fq_dir      lib
 bindir      fq_dir      bin
-fcldir      -
 
 #
 product		 version	optional
