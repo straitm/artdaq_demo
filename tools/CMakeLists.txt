@@ -35,3 +35,5 @@ add_subdirectory(snippets)
 
 # Is this necessary?
 #install_source()
+install_fhicl(SUBDIRS fcl)
+
