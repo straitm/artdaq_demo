@@ -21,10 +21,24 @@ mkdir -p -m 0777 ${logroot}/boardreader
 mkdir -p -m 0777 ${logroot}/eventbuilder
 mkdir -p -m 0777 ${logroot}/aggregator
 
-if [[ -n $PRODUCTS ]]; then
-    . $PRODUCTS/setup
+# if [[ -n $PRODUCTS ]]; then
+
+    
+
+# #    . $PRODUCTS/setup
+# else
+#     echo "Unable to find $PRODUCTS/setup, exiting..." >&2
+#     exit 1
+# fi
+#
+
+proddir=$ARTDAQDEMO_REPO/products
+setupfile=$proddir/setup
+
+if [[ -e $setupfile ]]; then
+    . $setupfile
 else
-    echo "Unable to find $PRODUCTS/setup, exiting..." >&2
+    echo "Unable to find $setupfile; exiting" >&2
     exit 1
 fi
 
@@ -33,7 +47,7 @@ cmd="setup artdaq_mfextensions v1_0_6 -q e9:prof:s21"
 $cmd
 
 if [[ "$?" != "0" ]]; then
-    echo "Problem executing \"$cmd\", exiting..." >&2
+    echo "Problem executing \"$cmd\", is the package in $proddir?" >&2
     exit 2
 fi
 
