@@ -114,6 +114,11 @@ if [ $git_sts -ne 0 ];then
     exit 1
 fi
 
+if [[ ! -e /etc/ganglia/gmond.conf ]]; then
+    echo "Unable to find /etc/ganglia/gmond.conf; this version of the quick-start.sh script requires ganglia capability on your system" >&2 
+    exit 1
+fi
+
 branch=`git branch | sed -ne '/^\*/{s/^\* *//;p;q}'`
 echo the current branch is $branch
 # The initial clone will have branch = develop.
@@ -254,7 +259,8 @@ if [[ ! -n ${productsdir:-} && ( ! -d products || ! -d download || -n "${opt_for
     packagelist="$packagelist ganglia/v3_7_1/ganglia-3.7.1-${os}-x86_64.tar.bz2"
 
     for packagehtml in $packagelist ; do
-	wget http://scisoft.fnal.gov/scisoft/packages/$packagehtml # > /dev/null 2>&1
+	echo "Downloading http://scisoft.fnal.gov/scisoft/packages/${packagehtml}..."
+	wget http://scisoft.fnal.gov/scisoft/packages/$packagehtml > /dev/null 2>&1
 	
 	packagename=$( echo $packagehtml | awk 'BEGIN { FS="/" } { print $NF }' )
 
@@ -266,6 +272,7 @@ if [[ ! -n ${productsdir:-} && ( ! -d products || ! -d download || -n "${opt_for
 	downloaddir=$PWD
 	cd ../products
 	mv $downloaddir/$packagename .
+	echo "De-archiving $packagename ("$( stat -c %s $packagename)" bytes)..."
 	tar -xjf $packagename
 	cd $downloaddir
     done
