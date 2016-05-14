@@ -21,18 +21,7 @@ mkdir -p -m 0777 ${logroot}/boardreader
 mkdir -p -m 0777 ${logroot}/eventbuilder
 mkdir -p -m 0777 ${logroot}/aggregator
 
-# if [[ -n $PRODUCTS ]]; then
-
-    
-
-# #    . $PRODUCTS/setup
-# else
-#     echo "Unable to find $PRODUCTS/setup, exiting..." >&2
-#     exit 1
-# fi
-#
-
-proddir=$ARTDAQDEMO_REPO/products
+proddir=$ARTDAQDEMO_REPO/../products
 setupfile=$proddir/setup
 
 if [[ -e $setupfile ]]; then
