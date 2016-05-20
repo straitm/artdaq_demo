@@ -21,7 +21,9 @@ mkdir -p -m 0777 ${logroot}/eventbuilder
 mkdir -p -m 0777 ${logroot}/aggregator
 
 if [[ "x${ARTDAQ_MFEXTENSIONS_DIR-}" != "x" ]] && [[ "x${DISPLAY-}" != "x" ]]; then
-    msgviewer -c ${ARTDAQ_MFEXTENSIONS_FQ_DIR}/bin/msgviewer.fcl 2>&1 >${logroot}/msgviewer.log &
+    configPath=$ARTDAQ_MFEXTENSIONS_DIR/config/msgviewer.fcl
+    if [ -n "${ARTDAQ_MFEXTENSIONS_FQ_DIR}" ]; then configPath=${ARTDAQ_MFEXTENSIONS_FQ_DIR}/bin/msgviewer.fcl; fi
+    msgviewer -c $configPath 2>&1 >${logroot}/msgviewer.log &
     echo "udp: { type: \"UDP\" threshold: \"DEBUG\" host: \"127.0.0.1\" port: 30000 }" >${logroot}/MessageFacility.fcl
     export ARTDAQ_LOG_FHICL=${logroot}/MessageFacility.fcl
 fi
