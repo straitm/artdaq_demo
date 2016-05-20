@@ -1,0 +1,81 @@
+
+# JCF, May-20-2016
+
+# This art FHiCL code is designed to demonstrate the capabilities of
+# the new TransferInput source, written to allow art processes to
+# directly consume data broadcast from artdaq using an implementation
+# of TransferInterface (as of this writing, the only such
+# implementation is RTIDDSTransfer)
+
+######################################################################
+# The ART code
+######################################################################
+
+physics:
+{
+  analyzers:
+  {
+
+    app: {
+      module_type: RootApplication
+      force_new: true
+    }
+
+    wf: {
+      module_type: WFViewer
+      fragment_ids: [0, 1]
+      fragment_type_labels: [TOY1, TOY2]
+      prescale: 200
+
+      digital_sum_only: false
+    }
+
+    printBuildInfo: {
+     module_type: PrintBuildInfo
+
+     buildinfo_module_label: artdaqDemoBuildInfo
+     buildinfo_instance_label: myInstanceName
+    }
+
+    toyDump:
+    {
+      module_type: ToyDump
+      raw_data_label: daq
+      frag_type: TOY1
+      num_adcs_to_show: 0
+    }
+  }
+
+  producers:
+  {
+
+  }   
+
+  a1: [ printBuildInfo ]
+  a2: [ toyDump]
+  a3: [app, wf]
+  e1: [ out1 ]
+  end_paths: [ a1, a3 ]
+}
+
+outputs:
+{
+  out1:
+  {
+    module_type: FileDumperOutput
+    wantProductFriendlyClassName: true
+    onlyIfPresent: true
+  }
+
+
+}
+
+source:
+{
+module_type: TransferInput
+}
+
+process_name: TransferInput
+
+
+
