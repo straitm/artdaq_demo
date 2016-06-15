@@ -31,6 +31,12 @@ daq: {
       uniquify: true
     }
   }
+
+  monitoring_transfer: {
+    transferPluginType: shmem
+    max_fragment_size_words: %{size_words}
+    first_event_builder_rank: %{total_frs}
+  }
 }" )
 
   agConfig.gsub!(/\%\{size_words\}/, String(fragSizeWords))
