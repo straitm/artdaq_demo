@@ -25,7 +25,7 @@ services: {
     first_data_receiver_rank: %{ag_rank}
     mpi_buffer_count: %{rootmpiout_buffer_count}
     max_fragment_size_words: %{size_words}
-    data_receiver_count: 1 # %{ag_count}
+    data_receiver_count: %{ag_count}
     #broadcast_sends: true
   }
 
@@ -104,7 +104,11 @@ event_builder_code = generateEventBuilder( fragSizeWords, totalFRs, totalAGs, to
 ebConfig.gsub!(/\%\{event_builder_code\}/, event_builder_code)
 
 ebConfig.gsub!(/\%\{ag_rank\}/, String(totalFRs + totalEBs))
-ebConfig.gsub!(/\%\{ag_count\}/, String(totalAGs))
+if Integer(totalAGs) > 1
+  ebConfig.gsub!(/\%\{ag_count\}/, String(totalAGs - 1))
+else
+  ebConfig.gsub!(/\%\{ag_count\}/, String(totalAGs))
+end
 ebConfig.gsub!(/\%\{size_words\}/, String(fragSizeWords))
 ebConfig.gsub!(/\%\{rootmpiout_buffer_count\}/, String(totalAGs*4))
 
