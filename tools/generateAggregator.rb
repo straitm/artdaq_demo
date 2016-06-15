@@ -2,7 +2,7 @@
 def generateAggregator(totalFRs, totalEBs, bunchSize, fragSizeWords,
                        xmlrpcClientList, fileSizeThreshold, fileDuration,
                        fileEventCount, queueDepth, queueTimeout, onmonEventPrescale,
-                       aggHost, aggPort)
+                       aggHost, aggPort, agType)
 
 agConfig = String.new( "\
 daq: {
@@ -20,6 +20,7 @@ daq: {
     file_size_MB: %{file_size}
     file_duration: %{file_duration}
     file_event_count: %{file_event_count}
+    %{ag_type_param_name}: true
   }
 
   metrics: {
@@ -43,6 +44,11 @@ daq: {
   agConfig.gsub!(/\%\{file_size\}/, String(fileSizeThreshold))
   agConfig.gsub!(/\%\{file_duration\}/, String(fileDuration))
   agConfig.gsub!(/\%\{file_event_count\}/, String(fileEventCount))
+  if agType == "online_monitor"
+    agConfig.gsub!(/\%\{ag_type_param_name\}/, "is_online_monitor")
+  else
+    agConfig.gsub!(/\%\{ag_type_param_name\}/, "is_data_logger")
+  end
 
   return agConfig
 end
