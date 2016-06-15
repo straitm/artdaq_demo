@@ -130,7 +130,7 @@ process_name: DAQAG"
   currentTime = Time.now
   fileName = "artdaqdemo_"
   fileName += "r%06r_sr%02s_%to"
-  if totalAGs > 1
+  if totalAGs > 2
     fileName += "_"
     fileName += String(agIndex)
   end
