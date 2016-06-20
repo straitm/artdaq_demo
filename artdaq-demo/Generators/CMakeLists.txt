@@ -4,7 +4,7 @@ simple_plugin(V172xFileReader "generator"
   artdaq_DAQdata
   artdaq-core_Utilities
   artdaq-core_Data
-  ${ART_UTILITIES}
+  ${CANVAS}_Utilities
   ${FHICLCPP}
   ${CETLIB}
   )
@@ -15,7 +15,7 @@ simple_plugin(V172xSimulator "generator"
   artdaq_DAQdata
   artdaq-core_Utilities
   artdaq-core_Data
-  ${ART_UTILITIES}
+  ${CANVAS}_Utilities
   ${FHICLCPP}
   ${CETLIB}
   )
@@ -27,7 +27,7 @@ simple_plugin(ToySimulator "generator"
   artdaq_DAQdata
   artdaq-core_Utilities
   artdaq-core_Data
-  ${ART_UTILITIES}
+  ${CANVAS}_Utilities
   ${FHICLCPP}
   ${MF_MESSAGELOGGER}
   ${MF_UTILITIES}
@@ -50,7 +50,7 @@ simple_plugin(UDPReceiver "generator"
     artdaq_DAQdata
     artdaq-core_Utilities
     artdaq-core_Data
-  ${ART_UTILITIES}
+  ${CANVAS}_Utilities
     ${FHICLCPP}
   ${MF_MESSAGELOGGER}
   ${MF_UTILITIES}

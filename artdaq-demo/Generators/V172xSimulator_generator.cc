@@ -1,6 +1,11 @@
 #include "artdaq-demo/Generators/V172xSimulator.hh"
 
+#ifdef CANVAS
+#include "canvas/Utilities/Exception.h"
+#else
 #include "art/Utilities/Exception.h"
+#endif
+
 #include "artdaq/Application/GeneratorMacros.hh"
 #include "cetlib/exception.h"
 #include "artdaq-core-demo/Overlays/V172xFragment.hh"

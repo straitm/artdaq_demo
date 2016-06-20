@@ -2,7 +2,11 @@
 
 #include "artdaq-demo/Generators/V172xFileReader.hh"
 
+#ifdef CANVAS
+#include "canvas/Utilities/Exception.h"
+#else
 #include "art/Utilities/Exception.h"
+#endif
 
 #include "artdaq-core-demo/Overlays/V172xFragment.hh"
 #include "artdaq-core-demo/Overlays/V172xFragmentWriter.hh"
