@@ -114,6 +114,11 @@ if [ $git_sts -ne 0 ];then
     exit 1
 fi
 
+if [[ ! -e /etc/ganglia/gmond.conf ]]; then
+    echo "Unable to find /etc/ganglia/gmond.conf; this version of the quick-start.sh script requires ganglia capability on your system" >&2 
+    exit 1
+fi
+
 branch=`git branch | sed -ne '/^\*/{s/^\* *//;p;q}'`
 echo the current branch is $branch
 # The initial clone will have branch = develop.
@@ -241,19 +246,46 @@ if [[ ! -n ${productsdir:-} && ( ! -d products || ! -d download || -n "${opt_for
     fi
 #    $git_working_path/tools/downloadDeps.sh  ../products $defaultqual $build_type
 
-    (source ../products/setups;setup artdaq_mfextensions v1_0_4 -q$defaultqualForUPS && exit 0 || exit 1)
+
+    # JCF, May-13-2016
+
+    # A simple brute-force download of the packages which will be needed for this example
+
+    packagelist=""
+
+    packagelist="$packagelist artdaq_mfextensions/v1_0_6/artdaq_mfextensions-1.0.6-${os}-x86_64-${equalifier}-${squalifier}-prof.tar.bz2"
+    packagelist="$packagelist qt/v5_4_2a/qt-5.4.2a-${os}-x86_64-${equalifier}.tar.bz2"
+    packagelist="$packagelist artdaq_ganglia_plugin/v1_0_12/artdaq_ganglia_plugin-1.0.12-${os}-x86_64-${equalifier}-g371-${squalifier}-prof.tar.bz2"
+    packagelist="$packagelist ganglia/v3_7_1/ganglia-3.7.1-${os}-x86_64.tar.bz2"
+
+    for packagehtml in $packagelist ; do
+	echo "Downloading http://scisoft.fnal.gov/scisoft/packages/${packagehtml}..."
+	wget http://scisoft.fnal.gov/scisoft/packages/$packagehtml > /dev/null 2>&1
+	
+	packagename=$( echo $packagehtml | awk 'BEGIN { FS="/" } { print $NF }' )
+
+	if [[ ! -e $packagename ]]; then
+	    echo "Unable to download $packagename"
+	    exit 1
+	fi
+
+	downloaddir=$PWD
+	cd ../products
+	mv $downloaddir/$packagename .
+	echo "De-archiving $packagename ("$( stat -c %s $packagename)" bytes)..."
+	tar -xjf $packagename
+	cd $downloaddir
+    done
+    
+    (source ../products/setups;setup artdaq_mfextensions v1_0_6 -q$defaultqualForUPS && exit 0 || exit 1)
     if [ $? -ne 0 ]; then
-        echo "artdaq_mfextensions not found, installing..."
-        wget http://scisoft.fnal.gov/scisoft/packages/artdaq_mfextensions/v1_0_4/artdaq_mfextensions-1.0.4-${os}-x86_64-$defaultqualForScisoft-$build_type.tar.bz2
-        cd ../products
-        tar -xf ../download/artdaq_mfextensions*.tar.bz2
+        echo "Unexpected failure setting up artdaq_mfextensions" >&2
+	exit 1
     fi
-    (source ../products/setups;setup artdaq_ganglia_plugin v1_0_10 -q$defaultqualForUPS:g371 && exit 0 || exit 1)
+    (source ../products/setups;setup artdaq_ganglia_plugin v1_0_12 -q$defaultqualForUPS:g371 && exit 0 || exit 1)
     if [ $? -ne 0 ]; then
-        echo "artdaq_ganglia_plugin not found, installing..."
-        wget http://scisoft.fnal.gov/scisoft/packages/artdaq_ganglia_plugin/v1_0_10/artdaq_ganglia_plugin-1.0.10-${os}-x86_64-e${equalifier}-g371-s${squalifier}-$build_type.tar.bz2
-        cd ../products
-        tar -xf ../download/artdaq_ganglia_plugin*.tar.bz2
+        echo "Unexpected failure setting up artdaq_ganglia_plugin" >&2
+	exit 1
     fi
     # 10/21/15 ELF: artdaq_epics_plugin not on scisoft yet...
     #(source ../products/setups;setup artdaq_epics_plugin v1_0_2-q$defaultqualForUPS && exit 0 || exit 1)

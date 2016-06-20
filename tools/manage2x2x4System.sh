@@ -49,8 +49,10 @@ function launch() {
     --toy2 `hostname`,${ARTDAQDEMO_BR_PORT[1]},1,${14},${16} \
     --eb `hostname`,${ARTDAQDEMO_EB_PORT[0]},$ebComp \
     --eb `hostname`,${ARTDAQDEMO_EB_PORT[1]},$ebComp \
-    --ag `hostname`,${ARTDAQDEMO_AG_PORT[0]},1,$agComp,0 \
-    --ag `hostname`,${ARTDAQDEMO_AG_PORT[1]},1,$agComp \
+    --ag `hostname`,${ARTDAQDEMO_AG_PORT[0]},1,$agComp,1 \
+    --ag `hostname`,${ARTDAQDEMO_AG_PORT[1]},1,$agComp,1 \
+    --ag `hostname`,${ARTDAQDEMO_AG_PORT[2]},1,$agComp,1 \
+    --ag `hostname`,${ARTDAQDEMO_AG_PORT[3]},1,$agComp \
     --data-dir ${5} --online-monitoring ${4},${onmonFile},${onmonPath} \
     --write-data ${7} --run-event-count ${8} \
     --run-duration ${9} --file-size ${10} \
@@ -132,7 +134,7 @@ dataDir="/tmp"
 runNumber=""
 runEventCount=0
 runDuration=0
-fileSize=8000
+fileSize=0
 fsChoiceSpecified=0
 fileEventCount=0
 fileDuration=0

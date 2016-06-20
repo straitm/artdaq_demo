@@ -64,6 +64,14 @@ if (have_old_art)
 endif()
 unset(have_old_art)
 
+check_ups_version(art "$ENV{ART_VERSION}" v2_00_00 PRODUCT_OLDER_VAR no_canvas)
+if (no_canvas)
+  set(CANVAS "art")
+else (no_canvas)
+  set(CANVAS "canvas")
+  add_definitions(-DCANVAS)
+endif()
+
 # macros for art_dictionary and simple_plugin
 include(ArtDictionary)
 include(ArtMake)

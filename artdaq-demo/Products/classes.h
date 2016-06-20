@@ -1,4 +1,9 @@
+#ifdef CANVAS
+#include "canvas/Persistency/Common/Wrapper.h"
+#else
 #include "art/Persistency/Common/Wrapper.h"
+#endif
+
 #include "artdaq-demo/Products/CompressedV172x.hh"
 #include "artdaq-core/Data/Fragment.hh"
 #include "artdaq-demo/Products/Channel.hh"

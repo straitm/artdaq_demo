@@ -38,12 +38,14 @@ If the \"demo_root\" optional parameter is not supplied, the user will be
 prompted for this location.
 --run-demo    runs the demo
 --debug       perform a debug build
+--viewer      install and run the artdaq Message Viewer
 -f            force download
 --skip-check  skip the free diskspace check
 --HEAD        all git repo'd packages checked out from HEAD of develop branches
 --tag         check out a specific tag of artdaq-demo
 -e, -s        Use speific qualifiers when building ARTDAQ (both must be specified
               to have any effect).
+-v            Be more verbose
 "
 
 # Process script arguments and options
@@ -59,19 +61,20 @@ while [ -n "${1-}" ];do
         leq=`expr "x$op" : 'x-[^=]*\(=\)'` lev=`expr "x$op" : 'x-[^=]*=\(.*\)'`
         test -n "$leq"&&eval "set -- \"\$lev\" \"\$@\""&&op=`expr "x$op" : 'x\([^=]*\)'`
         case "$op" in
-        \?*|h*)     eval $op1chr; do_help=1;;
-        v*)         eval $op1chr; opt_v=`expr $opt_v + 1`;;
-        x*)         eval $op1chr; set -x;;
-        f*)         eval $op1chr; opt_force=1;;
-        t*|-tag)    eval $reqarg; tag=$1;    shift;;
-        s*)         eval $op1arg; squalifier=$1; shift;;
-        e*)         eval $op1arg; equalifier=$1; shift;;
-        -products-dir)    eval $reqarg; productsdir=$1;    shift;;
-        -skip-check)opt_skip_check=1;;
-        -run-demo)  opt_run_demo=--run-demo;;
-	-debug)     opt_debug=--debug;;
+            \?*|h*)     eval $op1chr; do_help=1;;
+            v*)         eval $op1chr; opt_v=`expr $opt_v + 1`;;
+            x*)         eval $op1chr; set -x;;
+            f*)         eval $op1chr; opt_force=1;;
+            t*|-tag)    eval $reqarg; tag=$1;    shift;;
+            s*)         eval $op1arg; squalifier=$1; shift;;
+            e*)         eval $op1arg; equalifier=$1; shift;;
+            -products-dir)    eval $reqarg; productsdir=$1;    shift;;
+            -skip-check)opt_skip_check=1;;
+            -run-demo)  opt_run_demo=--run-demo;;
+	    -debug)     opt_debug=--debug;;
+	    -viewer) opt_viewer=--viewer;;
 	    -HEAD)  opt_HEAD=--HEAD;;
-        *)          echo "Unknown option -$op"; do_help=1;;
+            *)          echo "Unknown option -$op"; do_help=1;;
         esac
     else
         aa=`echo "$1" | sed -e"s/'/'\"'\"'/g"` args="$args '$aa'"; shift
@@ -82,6 +85,10 @@ set -u   # complain about uninitialed shell variables - helps development
 
 test -n "${do_help-}" -o $# -ge 2 && echo "$USAGE" && exit
 test $# -eq 1 && root=$1
+
+if [ $opt_v -gt 0 ]; then
+  set -x
+fi
 
 #check that $0 is in a git repo
 tools_path=`dirname $0`
@@ -159,8 +166,11 @@ defaultqual=$(echo $defaultqual | sed -r 's/.*(e[0-9]).*/\1/')
 # ELF, 11/20/15
 # Even more fun - if the user specified a qualifier set, throw this all away...
 if [ -n "${equalifier-}" ] && [ -n "${squalifier-}" ]; then
-  defaultqual="e${equalifier}"
-  defaultqualWithS="s${squalifier}-e${equalifier}"
+    defaultqual="e${equalifier}"
+    defaultqualWithS="s${squalifier}-e${equalifier}"
+else
+    equalifier=`echo $defaultqualWithS|cut -d'-' -s -f2`
+    squalifier=`echo $defaultqualWithS|cut -d'-' -s -f1`
 fi
 
 vecho() { test $opt_v -gt 0 && echo "$@"; }
@@ -201,6 +211,9 @@ fi
 # and no downloading takes place
 
 if [[ ! -n ${productsdir:-} && ( ! -d products || ! -d download || -n "${opt_force-}" ) ]] ; then
+    # ELF 5/18/2016: We'll always want these directories to be there, even if they're forcing...
+    test -d products || mkdir products
+    test -d download || mkdir download
     if [[ ! -n "${opt_force-}" ]]; then
         echo "Are you sure you want to download and install the artdaq demo dependent products in `pwd`? [y/n]"
         read response
@@ -208,16 +221,14 @@ if [[ ! -n ${productsdir:-} && ( ! -d products || ! -d download || -n "${opt_for
             echo "Aborting..."
             exit
         fi
-        test -d products || mkdir products
-        test -d download || mkdir download
     else
         echo "Will force download despite existing directories"
     fi
 
-# ELF 8/17/2015
+    # ELF 8/17/2015
 
-# Latest artdaq (v1_12_12) once again has manifests in all the right places. Switching back to
-# bundle-based distribution.
+    # Latest artdaq (v1_12_12) once again has manifests in all the right places. Switching back to
+    # bundle-based distribution.
 
     cd download
     wget http://scisoft.fnal.gov/scisoft/bundles/tools/pullProducts
@@ -231,10 +242,9 @@ if [[ ! -n ${productsdir:-} && ( ! -d products || ! -d download || -n "${opt_for
     echo "Running ./pullProducts ../products ${os} artdaq-${version} $defaultqualWithS $build_type"
     ./pullProducts ../products ${os} artdaq-${version} $defaultqualWithS $build_type
     if [ $? -ne 0 ]; then
-      echo "Error in pullProducts. Please go to http://scisoft.fnal.gov/scisoft/bundles/artdaq/${version}/manifest and make sure that a manifest for the specified qualifiers ($defaultqualWithS) exists."
-      exit 1
+	echo "Error in pullProducts. Please go to http://scisoft.fnal.gov/scisoft/bundles/artdaq/${version}/manifest and make sure that a manifest for the specified qualifiers ($defaultqualWithS) exists."
+	exit 1
     fi
-#    $git_working_path/tools/downloadDeps.sh  ../products $defaultqual $build_type
     cd ..
 
 elif [[ -n ${productsdir:-} ]] ; then 
@@ -254,8 +264,54 @@ $git_working_path/tools/installArtDaqDemo.sh ${productsdir:-products} $git_worki
 
 installStatus=$?
 
+upsflavor=`ups flavor`
+qt_installed=`ups list -aK+ qt v5_4_2a -q$equalifier -f$upsflavor|grep -c "qt"`
+amfver=`curl http://scisoft.fnal.gov/scisoft/packages/artdaq_mfextensions/ 2>/dev/null|grep artdaq_mfextensions|grep "id=\"v"|tail -1|sed 's/.* id="\(v.*\)".*/\1/'`
+mfe_installed=`ups list -aK+ artdaq_mfextensions $amfver -q$equalifier:$squalifier:$build_type -f$upsflavor|grep -c "artdaq_mfextensions"`
+if [ $installStatus -eq 0 ] &&  [ "x${opt_viewer-}" != "x" ] && [ $qt_installed -eq 0 -o $mfe_installed -eq 0 ]; then
+    echo "Installing artdaq_mfextensions"
+    # JCF, May-13-2016
+
+    # A simple brute-force download of the packages which will be needed for this example
+
+    cd download
+    if [ -n ${os-} ]; then
+	echo "Cloning cetpkgsupport to determine current OS"
+	git clone http://cdcvs.fnal.gov/projects/cetpkgsupport
+	os=`./cetpkgsupport/bin/get-directory-name os`
+    fi
+
+    packagelist=""
+    amfdotver=`echo $amfver|sed 's/_/\./g'|sed 's/v//'`
+    packagelist="$packagelist artdaq_mfextensions/$amfver/artdaq_mfextensions-$amfdotver-${os}-x86_64-${equalifier}-${squalifier}-$build_type.tar.bz2"
+    packagelist="$packagelist qt/v5_4_2a/qt-5.4.2a-${os}-x86_64-${equalifier}.tar.bz2"
+
+    for packagehtml in $packagelist ; do
+	echo "Downloading http://scisoft.fnal.gov/scisoft/packages/${packagehtml}..."
+	wget http://scisoft.fnal.gov/scisoft/packages/$packagehtml > /dev/null 2>&1
+	
+	packagename=$( echo $packagehtml | awk 'BEGIN { FS="/" } { print $NF }' )
+
+	if [[ ! -e $packagename ]]; then
+	    echo "Unable to download $packagename"
+	    exit 1
+	fi
+
+	downloaddir=$PWD
+	cd ../products
+	echo "De-archiving $packagename ("$( stat -c %s $downloaddir/$packagename)" bytes)..."
+	tar -xjf $downloaddir/$packagename
+	cd $downloaddir
+    done
+    cd ..
+fi
+
+if [ "x${opt_viewer-}" != "x" ]; then
+    echo "setup artdaq_mfextensions $amfver -q$equalifier:$squalifier:$build_type" >>./setupARTDAQDEMO
+fi
+
 if [ $installStatus -eq 0 ] && [ "x${opt_run_demo-}" != "x" ]; then
-	echo doing the demo
+    echo doing the demo
 
     $git_working_path/tools/xt_cmd.sh $root --geom '132x33 -sl 2500' \
         -c '. ./setupARTDAQDEMO' \
