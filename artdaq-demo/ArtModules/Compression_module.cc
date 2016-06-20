@@ -5,8 +5,15 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
+
+#ifdef CANVAS
+#include "canvas/Persistency/Provenance/BranchType.h"
+#include "canvas/Persistency/Provenance/EventID.h"
+#else
 #include "art/Persistency/Provenance/BranchType.h"
 #include "art/Persistency/Provenance/EventID.h"
+#endif
+
 #include "artdaq-demo/Compression/Encoder.hh"
 #include "artdaq-demo/Compression/Properties.hh"
 #include "artdaq-demo/Compression/StatsKeeper.hh"
@@ -16,6 +23,7 @@
 #include "artdaq-core/Data/Fragment.hh"
 #include "artdaq-core/Data/Fragments.hh"
 #include "artdaq-core/Utilities/SimpleLookupPolicy.h"
+
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

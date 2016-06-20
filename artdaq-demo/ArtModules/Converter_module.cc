@@ -11,12 +11,21 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
+
+#ifdef CANVAS
+#include "canvas/Utilities/Exception.h"
+#include "canvas/Utilities/InputTag.h"
+#else
 #include "art/Utilities/Exception.h"
 #include "art/Utilities/InputTag.h"
+#endif
+
+#include "artdaq-demo/Products/Channel.hh"
 #include "artdaq-demo/ArtModules/converter_algs.hh"
+
 #include "artdaq-core-demo/Overlays/FragmentType.hh"
 #include "artdaq-core-demo/Overlays/V172xFragment.hh"
-#include "artdaq-demo/Products/Channel.hh"
+
 #include "artdaq-core/Data/Fragment.hh"
 #include "artdaq-core/Data/Fragments.hh"
 

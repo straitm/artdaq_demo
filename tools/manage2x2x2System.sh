@@ -49,7 +49,7 @@ function launch() {
     --toy2 `hostname`,${ARTDAQDEMO_BR_PORT[1]},1,${14},${16} \
     --eb `hostname`,${ARTDAQDEMO_EB_PORT[0]},$ebComp \
     --eb `hostname`,${ARTDAQDEMO_EB_PORT[1]},$ebComp \
-    --ag `hostname`,${ARTDAQDEMO_AG_PORT[0]},1,$agComp,1 \
+    --ag `hostname`,${ARTDAQDEMO_AG_PORT[0]},1,$agComp,0 \
     --ag `hostname`,${ARTDAQDEMO_AG_PORT[1]},1,$agComp \
     --data-dir ${5} --online-monitoring ${4},${onmonFile},${onmonPath} \
     --write-data ${7} --run-event-count ${8} \

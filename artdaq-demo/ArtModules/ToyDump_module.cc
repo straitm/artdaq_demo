@@ -10,7 +10,12 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 
+#ifdef CANVAS
+#include "canvas/Utilities/Exception.h"
+#else
 #include "art/Utilities/Exception.h"
+#endif
+
 #include "artdaq-core-demo/Overlays/ToyFragment.hh"
 #include "artdaq-core/Data/Fragments.hh"
 
