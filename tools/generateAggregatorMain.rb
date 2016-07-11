@@ -57,6 +57,13 @@ outputs: {
 physics: {
   analyzers: {
 %{phys_anal_onmon_cfg}
+
+   checkintegrity: {
+     module_type: CheckIntegrity
+     raw_data_label: daq
+     frag_type: TOY1
+   }
+
   }
 
   producers: {

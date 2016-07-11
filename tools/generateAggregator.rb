@@ -33,7 +33,20 @@ daq: {
   }
 
   monitoring_transfer: {
-    transferPluginType: shmem
+
+    transferPluginType: multicast
+    
+    multicast_address: \"224.0.0.1\"
+    multicast_port: 30001   
+
+    local_address: \"10.226.9.16\"  \# mu2edaq01
+    \#  local_address: \"10.226.9.19\"  \# mu2edaq05
+
+    receive_buffer_size: 100000000
+
+    subfragment_size: 6000
+    subfragments_per_send: 10
+
     max_fragment_size_words: %{size_words}
     first_event_builder_rank: %{total_frs}
   }
