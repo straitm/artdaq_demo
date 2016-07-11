@@ -72,7 +72,14 @@ outputs:
 
 source:
 {
-module_type: TransferInput
+
+  module_type: TransferInput
+
+  #include "multicast.fcl"
+
+  max_fragment_size_words: 2097152
+  first_event_builder_rank: 0
+
 }
 
 process_name: TransferInput
