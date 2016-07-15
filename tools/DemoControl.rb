@@ -237,14 +237,13 @@ class CommandLineParser
       opts.separator ""
       opts.separator "Specific options:"
 
-      @options.serialize = true
       opts.on("-C", "--config-file [file name]",
               "ARTDAQ-configuration XML Configuration file") do |configFile|
         puts "Configuration File is " + configFile
         doc = REXML::Document.new(File.new(configFile)).root
-        puts "This configuration brought to you by " + doc.elements["author"].text
       
-        portNumber = ENV['ARTDAQ_BASE_PORT'].to_i
+        portNumber = ENV['ARTDAQDEMO_PMT_PORT'].to_i
+        puts "This configuration brought to you by " + doc.elements["author"].text + "portNumber=" + portNumber
  
         if doc.elements["dataLogger/enabled"].text == "true"
           @options.writeData = "1"

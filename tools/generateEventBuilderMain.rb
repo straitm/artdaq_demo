@@ -25,7 +25,7 @@ services: {
     first_data_receiver_rank: %{ag_rank}
     mpi_buffer_count: %{rootmpiout_buffer_count}
     max_fragment_size_words: %{size_words}
-    data_receiver_count: 1 # %{ag_count}
+    data_receiver_count: %{ag_count}
     #broadcast_sends: true
   }
 
@@ -37,14 +37,14 @@ services: {
 outputs: {
   %{rootmpi_output}rootMPIOutput: {
   %{rootmpi_output}  module_type: RootMPIOutput
-  %{rootmpi_output}  SelectEvents: { SelectEvents: [ pmod2,pmod3 ] }
+  %{rootmpi_output}  #SelectEvents: { SelectEvents: [ pmod2,pmod3 ] }
   %{rootmpi_output}  %{drop_uncompressed}outputCommands: [ \"keep *\", \"drop artdaq::Fragments_daq_V1720_*\", \"drop artdaq::Fragments_daq_V1724_*\" ]
   %{rootmpi_output}}
   %{root_output}normalOutput: {
   %{root_output}  module_type: RootOutput
   %{root_output}  fileName: \"%{output_file}\"
   %{root_output}  compressionLevel: 0
-  %{root_output}  SelectEvents: { SelectEvents: [ pmod2,pmod3 ] }
+  %{root_output}  #SelectEvents: { SelectEvents: [ pmod2,pmod3 ] }
   %{root_output}  %{drop_uncompressed}outputCommands: [ \"keep *\", \"drop artdaq::Fragments_daq_V1720_*\", \"drop artdaq::Fragments_daq_V1724_*\" ]
   %{root_output}}
 }
@@ -104,7 +104,11 @@ event_builder_code = generateEventBuilder( fragSizeWords, totalFRs, totalAGs, to
 ebConfig.gsub!(/\%\{event_builder_code\}/, event_builder_code)
 
 ebConfig.gsub!(/\%\{ag_rank\}/, String(totalFRs + totalEBs))
-ebConfig.gsub!(/\%\{ag_count\}/, String(totalAGs))
+if Integer(totalAGs) > 1
+  ebConfig.gsub!(/\%\{ag_count\}/, String(totalAGs - 1))
+else
+  ebConfig.gsub!(/\%\{ag_count\}/, String(totalAGs))
+end
 ebConfig.gsub!(/\%\{size_words\}/, String(fragSizeWords))
 ebConfig.gsub!(/\%\{rootmpiout_buffer_count\}/, String(totalAGs*4))
 

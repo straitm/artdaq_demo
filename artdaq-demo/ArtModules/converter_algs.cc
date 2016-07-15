@@ -1,5 +1,9 @@
 #include "artdaq-demo/ArtModules/converter_algs.hh"
+#ifdef CANVAS
+#include "canvas/Utilities/Exception.h"
+#else
 #include "art/Utilities/Exception.h"
+#endif
 
 double darkart::scaling_factor(artdaq::Fragment::type_t board_type __attribute__((unused)))
 {

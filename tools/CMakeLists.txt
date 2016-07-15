@@ -2,6 +2,7 @@ cet_script(setupDemoEnvironment.sh DemoControl.rb
 startSystem.sh manageSystem.sh
 start2x2System.sh manage2x2System.sh 
 start2x2x2System.sh manage2x2x2System.sh
+start2x2x4System.sh manage2x2x4System.sh
 CreateNewFragmentGenerator.rb  generateEventBuilderMain.rb
 generateWFViewer.rb generateEventBuilder.rb demo_utilities.rb 
 generateToy.rb generateUDP.rb

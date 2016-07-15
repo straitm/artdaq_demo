@@ -110,21 +110,23 @@ process_name: DAQAG"
 
   queueDepth, queueTimeout = -999, -999
 
-  if agIndex == 0
+  if agIndex < (totalAGs - 1)
     if totalAGs > 1
       onmonEnable = 0
     end
     queueDepth = 20
     queueTimeout = 5
+    agType = "data_logger"
   else
     diskWritingEnable = 0
     queueDepth = 2
     queueTimeout = 1
+    agType = "online_monitor"
   end
 
-  aggregator_code = generateAggregator( totalFRs, totalEBs, bunchSize, fragSizeWords,
-                                        xmlrpcClientList, fileSizeThreshold, fileDuration,
-                                        fileEventCount, queueDepth, queueTimeout, onmonEventPrescale, aggHost, aggPort )
+  aggregator_code = generateAggregator( totalFRs, totalEBs, bunchSize, fragSizeWords, xmlrpcClientList,
+                                        fileSizeThreshold, fileDuration, fileEventCount, queueDepth, queueTimeout,
+                                        onmonEventPrescale, aggHost, aggPort, agType )
   agConfig.gsub!(/\%\{aggregator_code\}/, aggregator_code)
 
   puts "Initial aggregator " + String(agIndex) + " disk writing setting = " +
@@ -135,6 +137,10 @@ process_name: DAQAG"
   currentTime = Time.now
   fileName = "artdaqdemo_"
   fileName += "r%06r_sr%02s_%to"
+  if totalAGs > 2
+    fileName += "_"
+    fileName += String(agIndex)
+  end
   fileName += ".root"
   outputFile = File.join(dataDir, fileName)
 
