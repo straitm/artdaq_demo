@@ -10,10 +10,12 @@ THIS_NODE=`hostname -s`
 #  4) path to the configuration
 #  5) the logfile name
 function launch() {
-  echo "Running: DemoControl.rb -s -c $1 --run-number $2 --onmon-file $3 --config-file $4 2>&1 | tee -a $5"
+  echo "Running: DemoControl.rb -s -c $1 --run-number $2 --onmon-file $3 --config-file $4 ${opt_v:+--serialize} ${opt_m:+--online-monitoring $opt_m} 2>&1 | tee -a $5"
   DemoControl.rb -s -c $1 \
     --run-number $2 --onmon-file $3 \
-    --config-file $4 2>&1 | tee -a ${5}
+    --config-file $4 \
+    ${opt_v:+--serialize} ${opt_m:+--online-monitoring $opt_m} \
+    2>&1 | tee -a ${5}
 }
 
 scriptName=`basename $0`
@@ -27,6 +29,7 @@ Where command is one of:
 General options:
   -h, --help: prints this usage message
   -C: Configuration file to pass to DemoControl (required)
+  -v: be more verbose (e.g. dump .fcl (fhicl) config files used during init)
 Configuration options (init commands):
   -M <onmon dir>: Where to store onmon output file (if enabled in config)
 Begin-run options (start command):
@@ -67,28 +70,18 @@ runNumber=""
 OPTIND=1
 onmonFile="/dev/null"
 configName=""
-while getopts "hN:M:C:-:" opt; do
+while getopts "hvN:M:C:m:-:" opt; do
     if [ "$opt" = "-" ]; then
         opt=$OPTARG
     fi
     case $opt in
-        h | help)
-            usage
-            exit 1
-            ;;
-        C)
-            configName=${OPTARG}
-            ;;
-        N)
-            runNumber=${OPTARG}
-            ;;
-        M)
-            onmonFile=${OPTARG}
-            ;;
-        *)
-            usage
-            exit 1
-            ;;
+        h|help)  usage; exit 1                    ;;
+        C)       configName=${OPTARG}             ;;
+        N)       runNumber=${OPTARG}              ;;
+        M)       onmonFile=${OPTARG}              ;;
+        v)       opt_v=1                          ;;
+        m)       test $OPTARG = on && OPTARG=1;opt_m=${opt_m:+$opt_m,}${OPTARG} ;;
+        *)       usage; exit 1                    ;;
     esac
 done
 shift $(($OPTIND - 1))

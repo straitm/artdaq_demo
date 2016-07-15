@@ -1,3 +1,4 @@
+#! /bin/sh
 # this script is intended to be sourced
 
 ###########################################
@@ -65,7 +66,7 @@ fi
 ### set the necessary env vars ###
 ##################################
 # port numbers
-let ARTDAQDEMO_PMT_PORT=${basePort}
+export ARTDAQDEMO_PMT_PORT=${basePort}
 for idx in {0..19}
 do
     let ARTDAQDEMO_BR_PORT[idx]=${basePort}+5+idx

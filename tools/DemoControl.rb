@@ -243,7 +243,7 @@ class CommandLineParser
         doc = REXML::Document.new(File.new(configFile)).root
       
         portNumber = ENV['ARTDAQDEMO_PMT_PORT'].to_i
-        puts "This configuration brought to you by " + doc.elements["author"].text + "portNumber=" + portNumber
+        puts "This configuration brought to you by " + doc.elements["author"].text + "; portNumber=" + portNumber.to_s
  
         if doc.elements["dataLogger/enabled"].text == "true"
           @options.writeData = "1"
