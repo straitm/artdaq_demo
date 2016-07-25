@@ -67,7 +67,7 @@ if (defined?(ONMON_EVENT_PRESCALE)).nil? || (ONMON_EVENT_PRESCALE).nil?
 end
 # ditto, the online monitoring modules that are run
 if (defined?(ONMON_MODULES)).nil? || (ONMON_MODULES).nil?
-  ONMON_MODULES = "[ app, wf, checkintegrity ]"
+  ONMON_MODULES = "[ app, wf]"
 end
 
 # John F., 2/5/14
@@ -256,9 +256,9 @@ class CommandLineParser
           @options.onmonFileEnabled = 0
         end
         if(doc.elements["onlineMonitor/viewerEnabled"].text == "true")
-          @options.onmon_modules = "[ app, wf, checkintegrity ]"
+          @options.onmon_modules = "[ app, wf]"
         else
-          @options.onmon_modules = "[wf, checkintegrity]"
+          @options.onmon_modules = "[wf]"
         end
         
 

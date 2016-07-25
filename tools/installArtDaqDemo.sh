@@ -119,10 +119,17 @@ else
     install_package artdaq-utilities v1_00_07 || exit 1
 fi
 
+# JCF, Jul-25-2016
+
+# artdaq commit 3a62fc5fedc9eb63e271fdafc5721f29139fd567 is the result
+# of my merge of the monitoring branch into the develop branch (+ a
+# couple of cosmetic tweaks). Should be replaced next time we cut an
+# official artdaq-demo release.
+
 if [ -n "${opt_HEAD-}" ];then
 install_package artdaq develop eth || exit 1
 else
-install_package artdaq monitoring eth || exit 1
+install_package artdaq 3a62fc5fedc9eb63e271fdafc5721f29139fd567 eth || exit 1
 fi
 
 setup_qualifier="$equalifier $squalifier eth"
