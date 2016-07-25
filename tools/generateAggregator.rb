@@ -17,6 +17,7 @@ daq: {
     event_queue_wait_time: %{queue_timeout}
     onmon_event_prescale: %{onmon_event_prescale}
     xmlrpc_client_list: \"%{xmlrpc_client_list}\"
+    inrun_recv_timeout_usec: 1000000
     file_size_MB: %{file_size}
     file_duration: %{file_duration}
     file_event_count: %{file_event_count}
@@ -30,6 +31,25 @@ daq: {
       fileName: \"/tmp/aggregator/agg_%UID%_metrics.log\"
       uniquify: true
     }
+  }
+
+  monitoring_transfer: {
+
+    transferPluginType: multicast
+    
+    multicast_address: \"224.0.0.1\"
+    multicast_port: 30001   
+
+    local_address: \"10.226.9.16\"  \# mu2edaq01
+    \#  local_address: \"10.226.9.19\"  \# mu2edaq05
+
+    receive_buffer_size: 100000000
+
+    subfragment_size: 6000
+    subfragments_per_send: 10
+
+    max_fragment_size_words: %{size_words}
+    first_event_builder_rank: %{total_frs}
   }
 }" )
 

@@ -41,8 +41,6 @@ demo::ToySimulator::ToySimulator(fhicl::ParameterSet const & ps)
   metadata_.board_serial_number = hardware_interface_->SerialNumber();
   metadata_.num_adc_bits = hardware_interface_->NumADCBits();
 
-  std::cout << "BOARD TYPE: " << hardware_interface_->BoardType() << std::endl;
-
   switch (hardware_interface_->BoardType()) {
   case 1006:
     fragment_type_ = toFragmentType("TOY1");
