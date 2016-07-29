@@ -16,8 +16,7 @@ def generateToy(startingFragmentId, boardId,
     fragment_id: %{starting_fragment_id}
     board_id: %{board_id}
     random_seed: %{random_seed}
-    sleep_on_stop_us: 500000 " \
-                          + read_fcl("ToySimulator.fcl") )
+    sleep_on_stop_us: 500000 " )
   
   toyConfig.gsub!(/\%\{starting_fragment_id\}/, String(startingFragmentId))
   toyConfig.gsub!(/\%\{board_id\}/, String(boardId))
@@ -36,6 +35,8 @@ def generateToy(startingFragmentId, boardId,
   if ! throttleUsecs.nil?
     toyConfig.gsub!(/.*throttle_usecs.*\:.*/, "throttle_usecs: %d" % [throttleUsecs])
   end
+
+  toyConfig = toyConfig + read_fcl("ToySimulator.fcl")
 
   return toyConfig
 
