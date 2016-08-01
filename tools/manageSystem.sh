@@ -10,10 +10,12 @@ THIS_NODE=`hostname -s`
 #  4) path to the configuration
 #  5) the logfile name
 function launch() {
-  echo "Running: DemoControl.rb -s -c $1 --run-number $2 --onmon-file $3 --config-file $4 2>&1 | tee -a $5"
+  echo "Running: DemoControl.rb -s -c $1 --run-number $2 --onmon-file $3 --config-file $4 ${opt_v:+--serialize} ${opt_m:+--online-monitoring $opt_m} 2>&1 | tee -a $5"
   DemoControl.rb -s -c $1 \
     --run-number $2 --onmon-file $3 \
-    --config-file $4 2>&1 | tee -a ${5}
+    --config-file $4 \
+    ${opt_v:+--serialize} ${opt_m:+--online-monitoring $opt_m} \
+    2>&1 | tee -a ${5}
 }
 
 scriptName=`basename $0`
@@ -27,6 +29,7 @@ Where command is one of:
 General options:
   -h, --help: prints this usage message
   -C: Configuration file to pass to DemoControl (required)
+  -v: be more verbose (e.g. dump .fcl (fhicl) config files used during init)
 Configuration options (init commands):
   -M <onmon dir>: Where to store onmon output file (if enabled in config)
 Begin-run options (start command):
@@ -67,28 +70,18 @@ runNumber=""
 OPTIND=1
 onmonFile="/dev/null"
 configName=""
-while getopts "hN:M:C:-:" opt; do
+while getopts "hvN:M:C:m:-:" opt; do
     if [ "$opt" = "-" ]; then
         opt=$OPTARG
     fi
     case $opt in
-        h | help)
-            usage
-            exit 1
-            ;;
-        C)
-            configName=${OPTARG}
-            ;;
-        N)
-            runNumber=${OPTARG}
-            ;;
-        M)
-            onmonFile=${OPTARG}
-            ;;
-        *)
-            usage
-            exit 1
-            ;;
+        h|help)  usage; exit 1                    ;;
+        C)       configName=${OPTARG}             ;;
+        N)       runNumber=${OPTARG}              ;;
+        M)       onmonFile=${OPTARG}              ;;
+        v)       opt_v=1                          ;;
+        m)       test $OPTARG = on && OPTARG=1;opt_m=${opt_m:+$opt_m,}${OPTARG} ;;
+        *)       usage; exit 1                    ;;
     esac
 done
 shift $(($OPTIND - 1))
@@ -100,6 +93,9 @@ if [ $# -lt 1 ]; then
 fi
 command=$1
 shift
+
+source `which setupDemoEnvironment.sh` ""
+
 
 # verify that the command is one that we expect
 if [[ "$command" != "start-system" ]] && \
@@ -151,7 +147,7 @@ echo "${originalCommand}" > $logFile
 echo ">>> ${originalCommand} (Disk writing is ${diskWriting})"
 
 # calculate the shmkey that should be checked
-let shmKey=1078394880+${ARTDAQ_BASE_PORT}
+let shmKey=1078394880+${ARTDAQDEMO_PMT_PORT}
 shmKeyString=`printf "0x%x" ${shmKey}`
 
 # invoke the requested command
@@ -161,59 +157,59 @@ if [[ "$command" == "shutdown" ]]; then
     # next send a shutdown command to move the processes to their ground state
     launch "shutdown"  $runNumber $onmonFile $configName $logFile
     # stop the MPI program
-    xmlrpc ${THIS_NODE}:${ARTDAQ_BASE_PORT}/RPC2 pmt.stopSystem
+    xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.stopSystem
     # clean up any stale shared memory segment
     ssh ${AGGREGATOR_NODE} "ipcs | grep ${shmKeyString} | awk '{print \$2}' | xargs ipcrm -m 2>/dev/null"
 elif [[ "$command" == "start-system" ]]; then
     ssh ${AGGREGATOR_NODE} "ipcs | grep ${shmKeyString} | awk '{print \$2}' | xargs ipcrm -m 2>/dev/null"
-    xmlrpc ${THIS_NODE}:${ARTDAQ_BASE_PORT}/RPC2 pmt.startSystem
+    xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.startSystem
 elif [[ "$command" == "restart" ]]; then
     # first send a stop command to end the run (in case it is needed)
     launch "stop"  $runNumber $onmonFile $configName $logFile
    # next send a shutdown command to move the processes to their ground state
     launch "shutdown"  $runNumber $onmonFile $configName $logFile
     # stop the MPI program
-    xmlrpc ${THIS_NODE}:${ARTDAQ_BASE_PORT}/RPC2 pmt.stopSystem
+    xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.stopSystem
     # clean up any stale shared memory segment
     ssh ${AGGREGATOR_NODE} "ipcs | grep ${shmKeyString} | awk '{print \$2}' | xargs ipcrm -m 2>/dev/null"
     # start the MPI program
-    xmlrpc ${THIS_NODE}:${ARTDAQ_BASE_PORT}/RPC2 pmt.startSystem
+    xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.startSystem
 elif [[ "$command" == "reinit" ]]; then
     # first send a stop command to end the run (in case it is needed)
     launch "stop"  $runNumber $onmonFile $configName $logFile
     # next send a shutdown command to move the processes to their ground state
     launch "shutdown"  $runNumber $onmonFile $configName $logFile
     # stop the MPI program
-    xmlrpc ${THIS_NODE}:${ARTDAQ_BASE_PORT}/RPC2 pmt.stopSystem
+    xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.stopSystem
     # clean up any stale shared memory segment
     ssh ${AGGREGATOR_NODE} "ipcs | grep ${shmKeyString} | awk '{print \$2}' | xargs ipcrm -m 2>/dev/null"
     # start the MPI program
-    xmlrpc ${THIS_NODE}:${ARTDAQ_BASE_PORT}/RPC2 pmt.startSystem
+    xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.startSystem
     # send the init command to re-initialize the system
     sleep 5
     launch "init"  $runNumber $onmonFile $configName $logFile
 elif [[ "$command" == "exit" ]]; then
     launch "shutdown"  $runNumber $onmonFile $configName $logFile
-    xmlrpc ${THIS_NODE}:${ARTDAQ_BASE_PORT}/RPC2 pmt.stopSystem
-    xmlrpc ${THIS_NODE}:${ARTDAQ_BASE_PORT}/RPC2 pmt.exit
+    xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.stopSystem
+    xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.exit
     ssh ${AGGREGATOR_NODE} "ipcs | grep ${shmKeyString} | awk '{print \$2}' | xargs ipcrm -m 2>/dev/null"
 
 elif [[ "$command" == "fast-shutdown" ]]; then
-    xmlrpc ${THIS_NODE}:${ARTDAQ_BASE_PORT}/RPC2 pmt.stopSystem
+    xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.stopSystem
     ssh ${AGGREGATOR_NODE} "ipcs | grep ${shmKeyString} | awk '{print \$2}' | xargs ipcrm -m 2>/dev/null"
 elif [[ "$command" == "fast-restart" ]]; then
-    xmlrpc ${THIS_NODE}:${ARTDAQ_BASE_PORT}/RPC2 pmt.stopSystem
+    xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.stopSystem
     ssh ${AGGREGATOR_NODE} "ipcs | grep ${shmKeyString} | awk '{print \$2}' | xargs ipcrm -m 2>/dev/null"
-    xmlrpc ${THIS_NODE}:${ARTDAQ_BASE_PORT}/RPC2 pmt.startSystem
+    xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.startSystem
 elif [[ "$command" == "fast-reinit" ]]; then
-    xmlrpc ${THIS_NODE}:${ARTDAQ_BASE_PORT}/RPC2 pmt.stopSystem
+    xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.stopSystem
     ssh ${AGGREGATOR_NODE} "ipcs | grep ${shmKeyString} | awk '{print \$2}' | xargs ipcrm -m 2>/dev/null"
-    xmlrpc ${THIS_NODE}:${ARTDAQ_BASE_PORT}/RPC2 pmt.startSystem
+    xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.startSystem
     sleep 5
     launch "init"  $runNumber $onmonFile $configName $logFile
 elif [[ "$command" == "fast-exit" ]]; then
-    xmlrpc ${THIS_NODE}:${ARTDAQ_BASE_PORT}/RPC2 pmt.stopSystem
-    xmlrpc ${THIS_NODE}:${ARTDAQ_BASE_PORT}/RPC2 pmt.exit
+    xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.stopSystem
+    xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.exit
     ssh ${AGGREGATOR_NODE} "ipcs | grep ${shmKeyString} | awk '{print \$2}' | xargs ipcrm -m 2>/dev/null"
 
 else

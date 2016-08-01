@@ -26,8 +26,9 @@ function makeLogDirs() {
 
 }
 
+source `which setupDemoEnvironment.sh`
+
 if [ "x$configFile" == "x" ]; then
-  source `which setupDemoEnvironment.sh`
   
   # create the configuration file for PMT
   tempFile="/tmp/pmtConfig.$$"

@@ -68,6 +68,7 @@ Where command is one of:
   fast-shutdown, fast-restart, fast-reinit, or fast-exit
 General options:
   -h, --help: prints this usage message
+  -v : be more verbose (i.e write out .fcl (fhicl) cfg files used during init)
 Configuration options (init commands):
   -m <on|off>: specifies whether to run online monitoring [default=off]
   -D : disables the writing of data to disk

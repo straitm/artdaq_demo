@@ -67,7 +67,7 @@ if (defined?(ONMON_EVENT_PRESCALE)).nil? || (ONMON_EVENT_PRESCALE).nil?
 end
 # ditto, the online monitoring modules that are run
 if (defined?(ONMON_MODULES)).nil? || (ONMON_MODULES).nil?
-  ONMON_MODULES = "[ app, wf ]"
+  ONMON_MODULES = "[ app, wf]"
 end
 
 # John F., 2/5/14
@@ -237,14 +237,13 @@ class CommandLineParser
       opts.separator ""
       opts.separator "Specific options:"
 
-      @options.serialize = true
       opts.on("-C", "--config-file [file name]",
               "ARTDAQ-configuration XML Configuration file") do |configFile|
         puts "Configuration File is " + configFile
         doc = REXML::Document.new(File.new(configFile)).root
-        puts "This configuration brought to you by " + doc.elements["author"].text
       
-        portNumber = ENV['ARTDAQ_BASE_PORT'].to_i
+        portNumber = ENV['ARTDAQDEMO_PMT_PORT'].to_i
+        puts "This configuration brought to you by " + doc.elements["author"].text + "; portNumber=" + portNumber.to_s
  
         if doc.elements["dataLogger/enabled"].text == "true"
           @options.writeData = "1"
@@ -257,7 +256,7 @@ class CommandLineParser
           @options.onmonFileEnabled = 0
         end
         if(doc.elements["onlineMonitor/viewerEnabled"].text == "true")
-          @options.onmon_modules = "[ app, wf ]"
+          @options.onmon_modules = "[ app, wf]"
         else
           @options.onmon_modules = "[wf]"
         end

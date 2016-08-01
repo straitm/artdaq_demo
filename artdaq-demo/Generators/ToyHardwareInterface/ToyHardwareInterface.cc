@@ -90,6 +90,16 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read) {
       };
       break;
 
+    case DistributionType::monotonic:
+      {
+	data_t increasing_integer = 0;
+	generator = [&]() {
+	  increasing_integer++;
+	  return increasing_integer > max_adc_ ? 999 : increasing_integer;
+	};
+      }
+      break;
+
     default:
       throw cet::exception("HardwareInterface") <<
 	"Unknown distribution type specified";
