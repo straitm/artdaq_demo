@@ -155,9 +155,9 @@ setup gitflow
 
 export MRB_PROJECT=artdaq_demo
 cd $Base
-mrb newDev -f -v $demo_version -q eth:${equalifier}:${squalifier}:${build_type}
+mrb newDev -f -v $demo_version -q ${equalifier}:${squalifier}:${build_type}
 set +u
-source $Base/localProducts_artdaq_demo_${demo_version}_eth_${equalifier}_${squalifier}_${build_type}/setup
+source $Base/localProducts_artdaq_demo_${demo_version}_${equalifier}_${squalifier}_${build_type}/setup
 set -u
 
 cd $MRB_SOURCE
@@ -183,7 +183,7 @@ cd $Base
 
 	source $Base/products/setup
         setup mrb
-        source $Base/localProducts_artdaq_demo_${demo_version}_eth_${equalifier}_${squalifier}_${build_type}/setup
+        source $Base/localProducts_artdaq_demo_${demo_version}_${equalifier}_${squalifier}_${build_type}/setup
         source mrbSetEnv
 
 	#export ARTDAQDEMO_BASE_PORT=52200
