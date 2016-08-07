@@ -20,7 +20,7 @@
 #include "fhiclcpp/fwd.h"
 
 #include <random>
-
+#include <chrono>
 
 class ToyHardwareInterface {
 
@@ -46,11 +46,16 @@ public:
 private:
 
   bool taking_data_;
+
   std::size_t nADCcounts_;
+  std::size_t maxADCcounts_;
+  std::size_t change_after_N_seconds_;
+  int nADCcounts_after_N_seconds_; 
   demo::FragmentType fragment_type_;
+  std::size_t maxADCvalue_;
   std::size_t throttle_usecs_;
   DistributionType distribution_type_;
-  std::size_t max_adc_;
+  
 
 // Members needed to generate the simulated data
 
@@ -58,7 +63,7 @@ private:
   std::unique_ptr<std::uniform_int_distribution<data_t>> uniform_distn_;
   std::unique_ptr<std::normal_distribution<double>> gaussian_distn_;
   
-
+  decltype(std::chrono::high_resolution_clock::now()) start_time_;
 };
 
 

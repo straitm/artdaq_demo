@@ -8,6 +8,7 @@
 
 #include <random>
 #include <unistd.h>
+#include <iostream>
 
 // JCF, Mar-17-2016
 
@@ -18,15 +19,38 @@
 
 ToyHardwareInterface::ToyHardwareInterface(fhicl::ParameterSet const & ps) :
   taking_data_(false),
-  nADCcounts_(ps.get<size_t>("nADCcounts", 600000)), 
+  nADCcounts_(ps.get<size_t>("nADCcounts", 40)), 
+  maxADCcounts_(ps.get<size_t>("maxADCcounts", 50000000)),
+  change_after_N_seconds_(ps.get<size_t>("change_after_N_seconds", 
+					 std::numeric_limits<size_t>::max())),
+  nADCcounts_after_N_seconds_(ps.get<int>("nADCcounts_after_N_seconds",
+					     nADCcounts_)),
   fragment_type_(demo::toFragmentType(ps.get<std::string>("fragment_type"))), 
+  maxADCvalue_(pow(2, NumADCBits() ) - 1), // MUST be after "fragment_type"
   throttle_usecs_(ps.get<size_t>("throttle_usecs", 100000)),
   distribution_type_(static_cast<DistributionType>(ps.get<int>("distribution_type"))),
-  max_adc_(pow(2, NumADCBits() ) - 1),
   engine_(ps.get<int64_t>("random_seed", 314159)),
-  uniform_distn_(new std::uniform_int_distribution<data_t>(0, max_adc_)),
-  gaussian_distn_(new std::normal_distribution<double>( 0.5*max_adc_, 0.1*max_adc_))
+  uniform_distn_(new std::uniform_int_distribution<data_t>(0, maxADCvalue_)),
+  gaussian_distn_(new std::normal_distribution<double>( 0.5*maxADCvalue_, 0.1*maxADCvalue_)),
+  start_time_(std::numeric_limits<decltype(std::chrono::high_resolution_clock::now())>::max())
 {
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-compare"
+
+  if (nADCcounts_ > maxADCcounts_ ||
+      nADCcounts_after_N_seconds_ > maxADCcounts_) {
+    throw cet::exception("HardwareInterface") << "Either (or both) of \"nADCcounts\" and \"nADCcounts_after_N_seconds\"" <<
+      " is larger than the \"maxADCcounts\" setting (currently at " << maxADCcounts_ << ")";
+  }
+
+  if (nADCcounts_after_N_seconds_ != nADCcounts_ && 
+      change_after_N_seconds_ == std::numeric_limits<size_t>::max()) {
+    throw cet::exception("HardwareInterface") << "If \"nADCcounts_after_N_seconds\""
+					      << " is set, then \"change_after_N_seconds\" should be set as well";
+#pragma GCC diagnostic pop
+      
+  }
 }
 
 // JCF, Mar-18-2017
@@ -37,10 +61,12 @@ ToyHardwareInterface::ToyHardwareInterface(fhicl::ParameterSet const & ps) :
 
 void ToyHardwareInterface::StartDatataking() {
   taking_data_ = true;
+  start_time_ = std::chrono::high_resolution_clock::now();
 }
 
 void ToyHardwareInterface::StopDatataking() {
   taking_data_ = false;
+  start_time_ = std::numeric_limits<decltype(std::chrono::high_resolution_clock::now())>::max();
 }
 
 
@@ -50,15 +76,32 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read) {
 
     usleep( throttle_usecs_ );
 
-    *bytes_read = sizeof(demo::ToyFragment::Header) + nADCcounts_ * sizeof(data_t);
+    auto elapsed_secs_since_datataking_start = 
+      std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now()
+						       - start_time_).count();
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-compare"
+    if (elapsed_secs_since_datataking_start < change_after_N_seconds_) {
+#pragma GCC diagnostic pop
+
+      *bytes_read = sizeof(demo::ToyFragment::Header) + nADCcounts_ * sizeof(data_t);
+    } else {
+      if (nADCcounts_after_N_seconds_ >= 0) {
+	*bytes_read = sizeof(demo::ToyFragment::Header) + nADCcounts_after_N_seconds_ * sizeof(data_t);
+      } else {
+	// Pretend the hardware hangs
+	while (true) {
+	}
+      }
+    }
       
     // Make the fake data, starting with the header
 
-    if ( *bytes_read % sizeof(demo::ToyFragment::Header::data_t) != 0) {
-      throw cet::exception("HardwareInterface") <<
-	"Not (yet) able to handle a fragment whose size isn't evenly divisible by the demo::ToyFragment::Header::data_t type size of " <<
-	sizeof(demo::ToyFragment::Header::data_t) << " bytes";
-    }
+    // Can't handle a fragment whose size isn't evenly divisible by
+    // the demo::ToyFragment::Header::data_t type size in bytes
+
+    assert( *bytes_read % sizeof(demo::ToyFragment::Header::data_t) != 0 );
 
     demo::ToyFragment::Header* header = reinterpret_cast<demo::ToyFragment::Header*>(buffer);
 
@@ -85,7 +128,7 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read) {
 	do {
 	  gen = static_cast<data_t>( std::round( (*gaussian_distn_)( engine_ ) ) );
 	} 
-	while(gen > max_adc_);                                                                    
+	while(gen > maxADCvalue_);                                                                    
 	return gen;
       };
       break;
@@ -95,7 +138,7 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read) {
 	data_t increasing_integer = 0;
 	generator = [&]() {
 	  increasing_integer++;
-	  return increasing_integer > max_adc_ ? 999 : increasing_integer;
+	  return increasing_integer > maxADCvalue_ ? 999 : increasing_integer;
 	};
       }
       break;
@@ -118,7 +161,7 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read) {
 
 void ToyHardwareInterface::AllocateReadoutBuffer(char** buffer) {
   
-  *buffer = reinterpret_cast<char*>( new uint8_t[ sizeof(demo::ToyFragment::Header) + nADCcounts_*sizeof(data_t) ] );
+  *buffer = reinterpret_cast<char*>( new uint8_t[ sizeof(demo::ToyFragment::Header) + maxADCcounts_*sizeof(data_t) ] );
 }
 
 void ToyHardwareInterface::FreeReadoutBuffer(char* buffer) {
