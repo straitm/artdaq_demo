@@ -20,7 +20,7 @@
 #include <sys/poll.h>
 
 demo::UDPReceiver::UDPReceiver(fhicl::ParameterSet const & ps)
-  : TriggeredFragmentGenerator(ps)
+  : CommandableFragmentGenerator(ps)
   , dataport_(ps.get<int>("port",6343))
   , ip_(ps.get<std::string>("ip","127.0.0.1"))
   , expectedPacketNumber_(0)
@@ -57,7 +57,7 @@ demo::UDPReceiver::UDPReceiver(fhicl::ParameterSet const & ps)
 }
 
 
-bool demo::UDPReceiver::getNextFragment_(artdaq::FragmentPtrs & frags) {
+bool demo::UDPReceiver::getNext_(artdaq::FragmentPtrs & frags) {
   if (should_stop()) {
     return false;
   }
@@ -223,7 +223,7 @@ bool demo::UDPReceiver::getNextFragment_(artdaq::FragmentPtrs & frags) {
   return true;
 }
 
-void demo::UDPReceiver::start_()
+void demo::UDPReceiver::start()
 {
   send(CommandType::Start_Burst);
 }
@@ -238,7 +238,7 @@ void demo::UDPReceiver::pause()
   send(CommandType::Stop_Burst);
 }
 
-void demo::UDPReceiver::resume_()
+void demo::UDPReceiver::resume()
 {
   send(CommandType::Start_Burst);
 }
@@ -254,4 +254,4 @@ void demo::UDPReceiver::send(CommandType command)
 }
 
 // The following macro is defined in artdaq's GeneratorMacros.hh header
-DEFINE_ARTDAQ_TRIGGERED_GENERATOR(demo::UDPReceiver) 
+DEFINE_ARTDAQ_COMMANDABLE_GENERATOR(demo::UDPReceiver) 
