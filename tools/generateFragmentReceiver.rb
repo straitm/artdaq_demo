@@ -21,7 +21,9 @@ def generateFragmentReceiver(startingFragmentId, boardId,
     configDoc = generator + ".fcl"
   end
 
-  fgConfig = String.new( read_fcl("CommandableFragmentGenerator.fcl") + "\
+  fgConfig = String.new( 
+    read_fcl("CommandableFragmentGenerator.fcl") +\
+    "\
     generator: %{generator}
     fragment_type: %{fragment_type}
     fragment_id: %{starting_fragment_id}

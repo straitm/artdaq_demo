@@ -506,8 +506,8 @@ class CommandLineParser
         toy2Config.board_id = Integer(toy2[2])
         toy2Config.kind = "TOY2"
         toy2Config.fragType = "TOY2"
-        if toy1.length == 4
-           toy1Config.configDoc = toy2[3]
+        if toy2.length == 4
+           toy2Config.configDoc = toy2[3]
         end
         toy2Config.index = (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).length
         toy2Config.board_reader_index = addToBoardReaderList(toy2Config.host, toy2Config.port,
@@ -659,7 +659,6 @@ class CommandLineParser
     br.commandHasBeenSent = false
     br.hasBeenIncludedInXMLRPCList = false
     br.kind = "multi-board"
-    br.eventSize = eventSize
     brIndex = @options.boardReaders.length
     @options.boardReaders << br
     return brIndex
@@ -834,6 +833,7 @@ class SystemControl
           handle.write(cfg)
           handle.close()
         end
+        # puts "Calling daq.init with configuration %s" % [cfg]
         result = xmlrpcClient.call("daq.init", cfg)
         currentTime = DateTime.now.strftime("%Y/%m/%d %H:%M:%S")
         puts "%s: %s FragmentReceiver on %s:%d result: %s" %
