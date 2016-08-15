@@ -2,6 +2,12 @@
 
 source `which setupDemoEnvironment.sh` ""
 
+if [ -z "${ARTDAQDEMO_REPO:-}" ]; then
+  echo "Please set ARTDAQDEMO_REPO to the artdaq-demo directory (containing tools/ and examples/)"
+  exit 1
+fi
+export FHICL_FILE_PATH=$ARTDAQDEMO_REPO/examples/triggeredReceiver:$FHICL_FILE_PATH
+
 AGGREGATOR_NODE=`hostname`
 THIS_NODE=`hostname -s`
 
@@ -35,7 +41,9 @@ function launch() {
   fi
 
   DemoControl.rb ${enableSerial} -s -c $1 \
-    --udp `hostname`,${ARTDAQDEMO_BR_PORT[0]},0 \
+    --toy1 `hostname`,${ARTDAQDEMO_BR_PORT[0]},0,"DAQToySimulator.fcl" \
+    --toy1 `hostname`,${ARTDAQDEMO_BR_PORT[1]},1,"DCSToySimulator.fcl" \
+    --toy2 `hostname`,${ARTDAQDEMO_BR_PORT[2]},2,"CRVToySimulator.fcl" \
     --eb `hostname`,${ARTDAQDEMO_EB_PORT[0]},$ebComp \
     --eb `hostname`,${ARTDAQDEMO_EB_PORT[1]},$ebComp \
     --ag `hostname`,${ARTDAQDEMO_AG_PORT[0]},1,$agComp \

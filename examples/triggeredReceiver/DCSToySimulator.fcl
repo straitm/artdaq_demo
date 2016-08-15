@@ -1,4 +1,11 @@
 
+# Trigger configuration
+triggers_enabled: true # Whether to set up the socket for listening for trigger messages
+trigger_mode: "Single" # Possible values are: Ignored, Single, Buffer, Window
+
+# Threading
+separate_data_thread: true # MUST be true for triggers to be applied! If triggering is not desired, but a separate readout thread is, set this to true, triggers_enabled to false and trigger_mode to ignored.
+
 # "nADCcounts" is the number of ADC values produced per fragment per
 #  event by the ToySimulator module
 
@@ -10,14 +17,8 @@ nADCcounts: 2000
 #  is generated. Useful for preventing upstream event generation from
 #  overwhelming downstream event processing.
 
-throttle_usecs: 100000
+throttle_usecs: 1000000 # 1 Hz
 
 # 0: uniform distribution, 1: normal distribution, 2: monotonic distribution
 
 distribution_type: 2
-
-# timestamp for TOY fragments is ev_counter() * scale factor
-# For synchronizing multiple ToySimulators with different rates,
-# This should be 1 for the "fastest" and then fastest_rate / rate for the others.
-# This field is an integer, so plan accordingly (1.5x => 10 for fastest, 15 for slower, etc.)
-timestamp_scale_factor: 1

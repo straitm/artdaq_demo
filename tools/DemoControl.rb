@@ -451,7 +451,7 @@ class CommandLineParser
       end
 
       opts.on("--ascii [host,port,board_id,<config_file>]", Array, 
-              "Add a TOY1 fragment receiver that runs on the specified host, port, ",
+              "Add a ASCII fragment receiver that runs on the specified host, port, ",
               "and board ID. Reads configuration parameters from config_file ",
               "in FHICL_FILE_PATH.") do |ascii|
         if ascii.length < 3
