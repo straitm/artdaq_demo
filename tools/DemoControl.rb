@@ -226,6 +226,9 @@ class CommandLineParser
     @options.fileDurationSeconds = 0
     @options.eventsInFile = 0
     @options.onmonFileEnabled = 0
+    @options.gangliaMetric = 0
+    @options.msgFacilityMetric = 0
+    @options.graphiteMetric = 0
 
     @optParser = OptionParser.new do |opts|
       opts.banner = "Usage: DemoControl.rb [options]"
@@ -557,6 +560,18 @@ class CommandLineParser
         @options.onmonFile = onmonFile
       end
 
+      opts.on("--enable-ganglia-metric [level = 3]", "Enable the Ganglia metric output plugin") do |level|
+        @options.gangliaMetric = level || 3
+      end
+
+      opts.on("--enable-message-facility-metric [level = 3]", "Enable the MessageFacility metric output plugin") do |level|
+        @options.msgFacilityMetric = level || 3
+      end
+
+      opts.on("--enable-graphite-metric [level = 3]", "Enable the Graphite metric output plugin") do |level|
+        @options.graphiteMetric = level || 3
+      end
+
       opts.on("-w", "--write-data [enable flag (0 or 1)]", 
               "Whether to write data to disk.") do |writeData|
         @options.writeData = writeData
@@ -793,7 +808,8 @@ class SystemControl
             # split between the BoardReaders or mainly concentrated in a single BoardReader, so
             # we do the safest thing and make all of the BoardReader MPI buffers the maximum size.
             cfg = generateBoardReaderMain(totalEBs, totalFRs, fullEventBuffSizeWords,
-                                          generatorCode, br.host, br.port)
+                                          generatorCode, br.host, br.port
+                                          , @options.gangliaMetric, @options.msgFacilityMetric, @options.graphiteMetric)
 
             br.cfgList[listIndex] = cfg
             break
@@ -849,6 +865,7 @@ class SystemControl
                                                  @options.writeData, fullEventBuffSizeWords,
                                                  totalBoards, 
                                                  fclWFViewer, ebOptions.host, ebOptions.port
+                                                 , @options.gangliaMetric, @options.msgFacilityMetric, @options.graphiteMetric
                                                  )
 
         puts "  writing %s..." % fileName
@@ -883,7 +900,8 @@ class SystemControl
                                              @options.fileDurationSeconds,
                                              @options.eventsInFile, fclWFViewer, ONMON_EVENT_PRESCALE,
                                              @options.onmon_modules, @options.onmonFileEnabled, @options.onmonFile,
-                                             agOptions.host, agOptions.port)
+                                             agOptions.host, agOptions.port,
+                                             @options.gangliaMetric, @options.msgFacilityMetric, @options.graphiteMetric)
 
       puts "  writing %s..." % fileName
       handle = File.open(fileName, "w")
