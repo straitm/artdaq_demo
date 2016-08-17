@@ -38,8 +38,14 @@ ToyHardwareInterface::ToyHardwareInterface(fhicl::ParameterSet const & ps) :
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-compare"
 
+  // JCF, Aug-14-2016 
+
+  // The logic of checking that nADCcounts_after_N_seconds_ >= 0,
+  // below, is because signed vs. unsigned comparison won't do what
+  // you want it to do if nADCcounts_after_N_seconds_ is negative
+
   if (nADCcounts_ > maxADCcounts_ ||
-      nADCcounts_after_N_seconds_ > maxADCcounts_) {
+      (nADCcounts_after_N_seconds_ >= 0 && nADCcounts_after_N_seconds_ > maxADCcounts_)) {
     throw cet::exception("HardwareInterface") << "Either (or both) of \"nADCcounts\" and \"nADCcounts_after_N_seconds\"" <<
       " is larger than the \"maxADCcounts\" setting (currently at " << maxADCcounts_ << ")";
   }
