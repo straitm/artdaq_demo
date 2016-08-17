@@ -98,21 +98,21 @@ daq: {
 
   if Integer(withGanglia) > 0
     brConfig.gsub!(/\%\{ganglia_metric\}/, "")
-    brConfig.gsub!(/\%\{ganglia_level\}/, Integer(withGanglia))
+    agConfig.gsub!(/\%\{ganglia_level\}/, Integer(withGanglia))
   else
-    brConfig.gsub!(/\%\{ganglia_metric\}/, "#")
+    agConfig.gsub!(/\%\{ganglia_metric\}/, "#")
   end
   if Integer(withMsgFacility) > 0
-    brConfig.gsub!(/\%\{mf_metric\}/, "")
-    brConfig.gsub!(/\%\{mf_level\}/, Integer(withMsgFacility))
+    agConfig.gsub!(/\%\{mf_metric\}/, "")
+    agConfig.gsub!(/\%\{mf_level\}/, Integer(withMsgFacility))
   else
-    brConfig.gsub!(/\%\{mf_metric\}/, "#")
+    agConfig.gsub!(/\%\{mf_metric\}/, "#")
   end
   if Integer(withGraphite) > 0
-    brConfig.gsub!(/\%\{graphite_metric\}/, "")
-    brConfig.gsub!(/\%\{graphite_level\}/, Integer(withGraphite))
+    agConfig.gsub!(/\%\{graphite_metric\}/, "")
+    agConfig.gsub!(/\%\{graphite_level\}/, Integer(withGraphite))
   else
-    brConfig.gsub!(/\%\{graphite_metric\}/, "#")
+    agConfig.gsub!(/\%\{graphite_metric\}/, "#")
   end
 
   return agConfig

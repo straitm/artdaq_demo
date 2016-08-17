@@ -295,7 +295,7 @@ class CommandLineParser
                 puts "DEBUG: Host and Port Setup"
                 brConfig.fragType = element.elements["type"].text
                 brConfig.name = element.elements["name"].text
-                brConfig.configDoc = element.elements["configFile"].text
+                brConfig.configFile = element.elements["configFile"].text
                 puts "DEBUG: Before getting index"
                 brConfig.index = (@options.v1720s + @options.toys + @options.asciis + @options.pbrs).length
                 brConfig.kind = "pbr"
@@ -314,7 +314,7 @@ class CommandLineParser
                 }
                 brConfig.typeConfig = typeConfig
                 brConfig.board_reader_index = addToBoardReaderList(brConfig.host, brConfig.port, brConfig.fragType,
-                                                                   brConfig.index, brConfig.configDoc, true)
+                                                                   brConfig.index, brConfig.configFile, true)
                 puts "DEBUG: BR Config Complete"
                 @options.pbrs << brConfig
               end
@@ -405,7 +405,7 @@ class CommandLineParser
         @options.aggregators << agConfig
       end
     
-      opts.on("--v1720 [host,port,board_id,<config_file>]", Array, 
+      opts.on("--v1720 [host,port,board_id,config_file]", Array, 
               "Add a V1720 fragment receiver that runs on the specified host and port, ",
               "and has the specified board ID. Read config_file in FHICL_FILE_PATH for additional configuration.") do |v1720|
         if v1720.length < 3
@@ -419,15 +419,15 @@ class CommandLineParser
         v1720Config.kind = "V1720"
         v1720Config.fragType = "V1720"
         if v1720.length > 3
-          v1720Config.configDoc = v1720[3]
+          v1720Config.configFile = v1720[3]
         end
         v1720Config.index = (@options.v1720s + @options.toys + @options.asciis + @options.pbrs + @options.udps).length
         v1720Config.board_reader_index = addToBoardReaderList(v1720Config.host, v1720Config.port,
-                                                              v1720Config.kind, v1720Config.index)
+                                                              v1720Config.kind, v1720Config.index, v1720Config.configFile)
         @options.v1720s << v1720Config
       end
 
-      opts.on("--v1724 [host,port,board_id,<config_file>]", Array, 
+      opts.on("--v1724 [host,port,board_id,config_file]", Array, 
               "Add a V1724 fragment receiver that runs on the specified host, port, ",
               "and board ID. Read config_file in FHICL_FILE_PATH for additional configuration.") do |v1724|
         if v1724.length < 3
@@ -441,16 +441,16 @@ class CommandLineParser
         v1724Config.kind = "V1724"
         v1724Config.fragType = "V1724"
         if v1724.length > 3
-          v1724Config.configDoc = v1724[3]
+          v1724Config.configFile = v1724[3]
         end
         v1724Config.index = (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).length
         v1724Config.board_reader_index = addToBoardReaderList(v1724Config.host, v1724Config.port,
-                                                              v1724Config.kind, v1724Config.index)
+                                                              v1724Config.kind, v1724Config.index, v1724Config.configFile)
         # NOTE that we're simply adding this to the 1720 list...
         @options.v1720s << v1724Config
       end
 
-      opts.on("--ascii [host,port,board_id,<config_file>]", Array, 
+      opts.on("--ascii [host,port,board_id,config_file]", Array, 
               "Add a ASCII fragment receiver that runs on the specified host, port, ",
               "and board ID. Reads configuration parameters from config_file ",
               "in FHICL_FILE_PATH.") do |ascii|
@@ -464,16 +464,16 @@ class CommandLineParser
         asciiConfig.board_id = Integer(ascii[2])
         asciiConfig.kind = "ASCII"
         asciiConfig.fragType = "ASCII"
-        if ascii.length == 4
-          asciiConfig.configDoc = ascii[3]
+        if ascii.length > 3
+          asciiConfig.configFile = ascii[3]
         end
         asciiConfig.index = (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).length
         asciiConfig.board_reader_index = addToBoardReaderList(asciiConfig.host, asciiConfig.port,
-                                                              asciiConfig.kind, asciiConfig.index)
+                                                              asciiConfig.kind, asciiConfig.index, asciiConfig.configFile)
         @options.asciis << asciiConfig
       end
 
-      opts.on("--toy1 [host,port,board_id,<config_file>]", Array, 
+      opts.on("--toy1 [host,port,board_id,config_file]", Array, 
               "Add a TOY1 fragment receiver that runs on the specified host, port, ",
               "and board ID. Reads additional parameters from config_file in FHICL_FILE_PATH.") do |toy1|
         if toy1.length < 3
@@ -486,17 +486,17 @@ class CommandLineParser
         toy1Config.board_id = Integer(toy1[2])
         toy1Config.kind = "TOY1"
         toy1Config.fragType = "TOY1"
-        if toy1.length == 4
-           toy1Config.configDoc = toy1[3]
+        if toy1.length > 3
+           toy1Config.configFile = toy1[3]
         end
         toy1Config.index = (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).length
         toy1Config.board_reader_index = addToBoardReaderList(toy1Config.host, toy1Config.port,
-                                                              toy1Config.kind, toy1Config.index)
+                                                              toy1Config.kind, toy1Config.index, toy1Config.configFile)
         @options.toys << toy1Config
       end
 
 
-      opts.on("--toy2 [host,port,board_id,<config_file>]", Array, 
+      opts.on("--toy2 [host,port,board_id,config_file]", Array, 
               "Add a TOY2 fragment receiver that runs on the specified host, port, ",
               "and board ID. Reads additional parameters from config_file in FHICL_FILE_PATH") do |toy2|
         if toy2.length < 3
@@ -509,17 +509,17 @@ class CommandLineParser
         toy2Config.board_id = Integer(toy2[2])
         toy2Config.kind = "TOY2"
         toy2Config.fragType = "TOY2"
-        if toy2.length == 4
-           toy2Config.configDoc = toy2[3]
+        if toy2.length > 3
+           toy2Config.configFile = toy2[3]
         end
         toy2Config.index = (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).length
         toy2Config.board_reader_index = addToBoardReaderList(toy2Config.host, toy2Config.port,
-                                                              toy2Config.kind, toy2Config.index)
+                                                              toy2Config.kind, toy2Config.index, toy2Config.configFile)
 
         @options.toys << toy2Config
       end
 
-      opts.on("--udp [host,port,board_id,<config_file>]", Array, 
+      opts.on("--udp [host,port,board_id,config_file]", Array, 
               "Add a UDP fragment receiver that runs on the specified host, port, ",
               "and board ID. Reads additional parameters from config_file in FHICL_FILE_PATH") do |udp|
         if udp.length < 3
@@ -531,12 +531,12 @@ class CommandLineParser
         udpConfig.port = Integer(udp[1])
         udpConfig.board_id = Integer(udp[2])
         udpConfig.kind = "UDP"
-        if udp.length == 4
-          udpConfig.configDoc = udp[3]
+        if udp.length > 3
+          udpConfig.configFile = udp[3]
         end
         udpConfig.index = (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).length
         udpConfig.board_reader_index = addToBoardReaderList(udpConfig.host, udpConfig.port,
-                                                              udpConfig.kind, udpConfig.index)
+                                                              udpConfig.kind, udpConfig.index, udpConfig.configFile)
 
         @options.udps << udpConfig
       end
@@ -550,8 +550,10 @@ class CommandLineParser
               "Whether to run the online monitoring modules,", 
               "also whether and whither to send file output from the online monitoring" ) do |runOnmon|
         @options.runOnmon = Integer(runOnmon[0])
-        @options.onmonFileEnabled = Integer(runOnmon[1])
-        @options.onmonFile = runOnmon[2]
+        if runOnmon.length > 1
+          @options.onmonFileEnabled = Integer(runOnmon[1])
+          @options.onmonFile = runOnmon[2]
+        end
       end
 
       opts.on("--onmon-file [file_path]",
@@ -641,7 +643,7 @@ class CommandLineParser
     return nil
   end
 
-  def addToBoardReaderList(host, port, kind, boardIndex, isPBR = nil)
+  def addToBoardReaderList(host, port, kind, boardIndex, configFile = nil, isPBR = nil)
     # check for an existing boardReader with the same host and port
     brIndex = 0
     @options.boardReaders.each do |br|
@@ -663,6 +665,7 @@ class CommandLineParser
     br = OpenStruct.new
     br.host = host
     br.port = port
+    br.configFile = configFile
     if isPBR != nil
       br.kindList = ["pbr"]
     else
@@ -710,14 +713,14 @@ class CommandLineParser
           puts "    BoardReader, port %d, rank %d, board_id %d, generator %s" %
             [ item.port, item.index, item.board_id, item.fragType ]
         when "V1720", "V1724", "TOY1", "TOY2", "ASCII"
-          puts "    FragmentGenerator, Simulated %s, port %d, rank %d, board_id %d" % 
+          puts "    FragmentGenerator, Simulated %s, port %d, rank %d, board_id %d, config_file %s" % 
             [item.kind.upcase,
              item.port,
              item.index,
-             item.board_id]
+             item.board_id,item.configFile]
         when "UDP"
-          puts "    FragmentReceiver, UDPReceiver, port %d, rank %d, board_id %d" %
-             [ item.port, item.index, item.board_id ]
+          puts "    FragmentReceiver, UDPReceiver, port %d, rank %d, board_id %d, config_file %s" %
+             [ item.port, item.index, item.board_id, item.configFile ]
         end
       end
       puts ""
@@ -797,19 +800,19 @@ class SystemControl
           if kind == boardreaderOptions.kind && br.boardIndexList[listIndex] == boardreaderOptions.index
             if kind == "pbr"
               generatorCode = generateFragmentReceiver(boardreaderOptions.index, boardreaderOptions.board_id,
-                                                       boardreaderOptions.fragType, br.configDoc)
+                                                       boardreaderOptions.fragType, boardreaderOptions.configFile)
               generatorCode += boardreaderOptions.typeConfig
             else
               generatorCode = generateFragmentReceiver(boardreaderOptions.index, boardreaderOptions.board_id,
-                                                       kind, br.configDoc)
+                                                       kind, boardreaderOptions.configFile)
             end
 
             # 16-Feb-2016, KAB: Here in the Demo, we don't know whether the data is equally
             # split between the BoardReaders or mainly concentrated in a single BoardReader, so
             # we do the safest thing and make all of the BoardReader MPI buffers the maximum size.
             cfg = generateBoardReaderMain(totalEBs, totalFRs, fullEventBuffSizeWords,
-                                          generatorCode, br.host, br.port
-                                          , @options.gangliaMetric, @options.msgFacilityMetric, @options.graphiteMetric)
+                                          generatorCode, br.host, br.port,
+                                          @options.gangliaMetric, @options.msgFacilityMetric, @options.graphiteMetric)
 
             br.cfgList[listIndex] = cfg
             break
@@ -864,8 +867,8 @@ class SystemControl
                                                  @options.dataDir, @options.runOnmon,
                                                  @options.writeData, fullEventBuffSizeWords,
                                                  totalBoards, 
-                                                 fclWFViewer, ebOptions.host, ebOptions.port
-                                                 , @options.gangliaMetric, @options.msgFacilityMetric, @options.graphiteMetric
+                                                 fclWFViewer, ebOptions.host, ebOptions.port,
+                                                 @options.gangliaMetric, @options.msgFacilityMetric, @options.graphiteMetric
                                                  )
 
         puts "  writing %s..." % fileName

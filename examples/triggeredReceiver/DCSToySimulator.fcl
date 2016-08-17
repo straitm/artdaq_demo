@@ -22,3 +22,9 @@ throttle_usecs: 1000000 # 1 Hz
 # 0: uniform distribution, 1: normal distribution, 2: monotonic distribution
 
 distribution_type: 2
+
+# The ToySimulator keeps a Fragment timestamp "clock" that is incremented by timestamp_scale_factor for each fragment generated.
+# For synchronizing multiple ToySimulators with different rates,
+# This should be 1 for the "fastest" and then fastest_rate / rate for the others.
+# This field is an integer, so plan accordingly (1.5x => 10 for fastest, 15 for slower, etc.)
+timestamp_scale_factor: 1

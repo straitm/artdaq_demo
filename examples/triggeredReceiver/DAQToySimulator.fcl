@@ -20,4 +20,4 @@ distribution_type: 1
 # For synchronizing multiple ToySimulators with different rates,
 # This should be 1 for the "fastest" and then fastest_rate / rate for the others.
 # This field is an integer, so plan accordingly (1.5x => 10 for fastest, 15 for slower, etc.)
-timestamp_scale_factor: 4
+timestamp_scale_factor: 5
