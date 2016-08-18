@@ -363,11 +363,11 @@ class CommandLineParser
         end
       end
 
-      opts.on("--eb [host,port,compression_level]", Array,
+      opts.on("--eb [host,port,compression_level,send_triggers]", Array,
               "Add an event builder that runs on the",
               "specified host and port and optionally",
               "compresses ADC data.") do |eb|
-        if eb.length != 3
+        if eb.length < 3
           puts "You must specifiy a host, port, and compression level."
           exit
         end
@@ -376,6 +376,10 @@ class CommandLineParser
         ebConfig.port = Integer(eb[1])
         ebConfig.compression_level = Integer(eb[2])
         ebConfig.kind = "eb"
+        ebConfig.sendTriggers = 0
+if eb.length == 4
+  ebConfig.sendTriggers = Integer(eb[3])
+end
         ebConfig.index = @options.eventBuilders.length
         @options.eventBuilders << ebConfig
       end
@@ -867,7 +871,7 @@ class SystemControl
                                                  @options.dataDir, @options.runOnmon,
                                                  @options.writeData, fullEventBuffSizeWords,
                                                  totalBoards, 
-                                                 fclWFViewer, ebOptions.host, ebOptions.port,
+                                                 fclWFViewer, ebOptions.host, ebOptions.port, ebOptions.sendTriggers,
                                                  @options.gangliaMetric, @options.msgFacilityMetric, @options.graphiteMetric
                                                  )
 

@@ -1,6 +1,6 @@
 
 def generateEventBuilder( fragSizeWords, totalFRs, totalAGs, totalFragments, verbose, ebHost, 
-                          ebPort, withGanglia = 0, withMsgFacility = 0, withGraphite = 0)
+                          ebPort, sendTriggers = 0, withGanglia = 0, withMsgFacility = 0, withGraphite = 0)
 
 ebConfig = String.new( "\
 daq: {
@@ -13,6 +13,7 @@ daq: {
     use_art: true
     print_event_store_stats: true
     verbose: %{verbose}
+    send_triggers: %{triggers_enabled}
   }
   metrics: {
     evbFile: {
@@ -70,6 +71,11 @@ daq: {
     ebConfig.gsub!(/\%\{graphite_level\}/, Integer(withGraphite))
   else
     ebConfig.gsub!(/\%\{graphite_metric\}/, "#")
+  end
+  if Integer(sendTriggers) > 0
+    ebConfig.gsub!(/\%\{triggers_enabled\}/, "true")
+  else
+    ebConfig.gsub!(/\%\{triggers_enabled\}/, "false")
   end
 
   return ebConfig

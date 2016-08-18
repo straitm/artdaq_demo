@@ -44,8 +44,8 @@ function launch() {
     --toy1 `hostname`,${ARTDAQDEMO_BR_PORT[0]},0,"DAQToySimulator.fcl" \
     --toy1 `hostname`,${ARTDAQDEMO_BR_PORT[1]},1,"DCSToySimulator.fcl" \
     --toy2 `hostname`,${ARTDAQDEMO_BR_PORT[2]},2,"CRVToySimulator.fcl" \
-    --eb `hostname`,${ARTDAQDEMO_EB_PORT[0]},$ebComp \
-    --eb `hostname`,${ARTDAQDEMO_EB_PORT[1]},$ebComp \
+    --eb `hostname`,${ARTDAQDEMO_EB_PORT[0]},$ebComp,1 \
+    --eb `hostname`,${ARTDAQDEMO_EB_PORT[1]},$ebComp,1 \
     --ag `hostname`,${ARTDAQDEMO_AG_PORT[0]},1,$agComp \
     --ag `hostname`,${ARTDAQDEMO_AG_PORT[1]},1,$agComp \
     --data-dir ${5} --online-monitoring $4 \
