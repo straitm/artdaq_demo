@@ -106,8 +106,8 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read) {
 
     // Can't handle a fragment whose size isn't evenly divisible by
     // the demo::ToyFragment::Header::data_t type size in bytes
-
-    assert( *bytes_read % sizeof(demo::ToyFragment::Header::data_t) != 0 );
+	//std::cout << "Bytes to read: " << *bytes_read << ", sizeof(data_t): " << sizeof(demo::ToyFragment::Header::data_t) << std::endl;
+    assert( *bytes_read % sizeof(demo::ToyFragment::Header::data_t) == 0 );
 
     demo::ToyFragment::Header* header = reinterpret_cast<demo::ToyFragment::Header*>(buffer);
 

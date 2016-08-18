@@ -39,20 +39,23 @@ scheme allows ARTDAQ to implement Level-2 triggering.
 
 =====================================================================
 
-metrics:
-
-Demonstrates all of the metric-collection methods available in
-ARTDAQ. Will download and install the artdaq_ganglia_plugin and
-artdaq_epics_plugin.
-
-=====================================================================
-
 mfextensions:
 
 Demonstrates the artdaq-mfextensions package and the ARTDAQ Message
 Viewer GUI. This utility can be used to view, sort, and filter the
 MessageFacility messages produced by all of the applications and
 modules within the ARTDAQ system.
+
+=====================================================================
+
+triggeredReceiver:
+
+Demonstrates the capabilities of the TriggeredFragmentGenerator 
+class. This example consists of a "DAQ" BoardReader reading out at a 
+high rate, a "DCS" TriggerdBoardReader which reads out very slowly,
+but sends data for each event the "DAQ" BoardReader generates, and
+a "CRV" TriggeredBoardReader which samples uncorrelated data based
+on the Fragment timestamps.
 
 =====================================================================
 

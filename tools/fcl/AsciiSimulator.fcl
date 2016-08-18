@@ -3,3 +3,5 @@
 #  overwhelming downstream event processing.
 
 throttle_usecs: 10000000
+string1: "You want to grep for \"grep\" in the output file!"
+string2: "That grep should return both of these lines, but only this line will match \"coconut\"."
