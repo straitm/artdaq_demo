@@ -32,9 +32,34 @@ daq: {
     }
   }
 
-  monitoring_transfer: {
+  transfer_to_dispatcher: {
 
     transferPluginType: shmem
+
+    max_fragment_size_words: %{size_words}
+    first_event_builder_rank: %{total_frs}
+    
+    \# Variables below this in the monitoring_transfer table are only relevant
+    \# if transferPluginType, above, is set to multicast. You'll need to 
+    \# figure out what the local_address to use for your system is
+
+    multicast_address: \"224.0.0.1\"
+    multicast_port: 30001   
+
+    local_address: \"10.226.9.16\"  \# mu2edaq01
+\#      local_address: \"10.226.9.19\"  \# mu2edaq05
+
+    receive_buffer_size: 100000000
+
+    subfragment_size: 6000
+    subfragments_per_send: 10
+
+  }
+
+  transfer_to_monitors: {
+
+    transferPluginType: multicast
+    shm_key: 0x40470001
 
     max_fragment_size_words: %{size_words}
     first_event_builder_rank: %{total_frs}
@@ -55,6 +80,7 @@ daq: {
     subfragments_per_send: 10
 
   }
+
 }" )
 
   agConfig.gsub!(/\%\{size_words\}/, String(fragSizeWords))
@@ -69,7 +95,8 @@ daq: {
   agConfig.gsub!(/\%\{file_duration\}/, String(fileDuration))
   agConfig.gsub!(/\%\{file_event_count\}/, String(fileEventCount))
   if agType == "online_monitor"
-    agConfig.gsub!(/\%\{ag_type_param_name\}/, "is_online_monitor")
+    #agConfig.gsub!(/\%\{ag_type_param_name\}/, "is_online_monitor")
+    agConfig.gsub!(/\%\{ag_type_param_name\}/, "is_dispatcher")
   else
     agConfig.gsub!(/\%\{ag_type_param_name\}/, "is_data_logger")
   end
