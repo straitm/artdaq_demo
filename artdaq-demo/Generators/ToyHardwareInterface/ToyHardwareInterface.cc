@@ -149,15 +149,20 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read) {
       }
       break;
 
+    case DistributionType::uninitialized:
+      break;
+
     default:
       throw cet::exception("HardwareInterface") <<
 	"Unknown distribution type specified";
     }
 
-    std::generate_n(reinterpret_cast<data_t*>( reinterpret_cast<demo::ToyFragment::Header*>(buffer) + 1 ), 
-		    nADCcounts_,
-		    generator
-		    );
+    if (distribution_type_ != DistributionType::uninitialized) {
+      std::generate_n(reinterpret_cast<data_t*>( reinterpret_cast<demo::ToyFragment::Header*>(buffer) + 1 ), 
+		      nADCcounts_,
+		      generator
+		      );
+    }
 
   } else {
     throw cet::exception("ToyHardwareInterface") <<
