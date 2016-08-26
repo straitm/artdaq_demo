@@ -186,6 +186,8 @@ cd $Base
         source $Base/localProducts_artdaq_demo_${demo_version}_${equalifier}_${squalifier}_${build_type}/setup
         source mrbSetEnv
 
+    export ARTDAQDEMO_REPO=$ARTDAQ_DEMO_DIR
+    export ARTDAQDEMO_BUILD=$MRB_BUILDDIR/artdaq_demo
 	#export ARTDAQDEMO_BASE_PORT=52200
 	export DAQ_INDATA_PATH=$ARTDAQ_DEMO_DIR/test/Generators:$ARTDAQ_DEMO_DIR/inputData
 
