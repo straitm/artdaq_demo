@@ -23,12 +23,7 @@ require File.join( File.dirname(__FILE__), 'demo_utilities' )
 # arguments, will generate FHiCL code usable by the artdaq processes
 # (BoardReaderMain, EventBuilderMain, AggregatorMain)
 
-require File.join( File.dirname(__FILE__), 'generateToy' )
-require File.join( File.dirname(__FILE__), 'generatePattern' )
-require File.join( File.dirname(__FILE__), 'generateNormal' )
-require File.join( File.dirname(__FILE__), 'generateV1720' )
-require File.join( File.dirname(__FILE__), 'generateAscii' )
-require File.join( File.dirname(__FILE__), 'generateUDP' )
+require File.join( File.dirname(__FILE__), 'generateFragmentReceiver' )
 require File.join( File.dirname(__FILE__), 'generateWFViewer' )
 
 require File.join( File.dirname(__FILE__), 'generateBoardReaderMain' )
@@ -67,7 +62,7 @@ if (defined?(ONMON_EVENT_PRESCALE)).nil? || (ONMON_EVENT_PRESCALE).nil?
 end
 # ditto, the online monitoring modules that are run
 if (defined?(ONMON_MODULES)).nil? || (ONMON_MODULES).nil?
-  ONMON_MODULES = "[ app, wf ]"
+  ONMON_MODULES = "[ app, wf]"
 end
 
 # John F., 2/5/14
@@ -231,20 +226,22 @@ class CommandLineParser
     @options.fileDurationSeconds = 0
     @options.eventsInFile = 0
     @options.onmonFileEnabled = 0
+    @options.gangliaMetric = 0
+    @options.msgFacilityMetric = 0
+    @options.graphiteMetric = 0
 
     @optParser = OptionParser.new do |opts|
       opts.banner = "Usage: DemoControl.rb [options]"
       opts.separator ""
       opts.separator "Specific options:"
 
-      @options.serialize = true
       opts.on("-C", "--config-file [file name]",
               "ARTDAQ-configuration XML Configuration file") do |configFile|
         puts "Configuration File is " + configFile
         doc = REXML::Document.new(File.new(configFile)).root
-        puts "This configuration brought to you by " + doc.elements["author"].text
       
-        portNumber = ENV['ARTDAQ_BASE_PORT'].to_i
+        portNumber = ENV['ARTDAQDEMO_PMT_PORT'].to_i
+        puts "This configuration brought to you by " + doc.elements["author"].text + "; portNumber=" + portNumber.to_s
  
         if doc.elements["dataLogger/enabled"].text == "true"
           @options.writeData = "1"
@@ -257,7 +254,7 @@ class CommandLineParser
           @options.onmonFileEnabled = 0
         end
         if(doc.elements["onlineMonitor/viewerEnabled"].text == "true")
-          @options.onmon_modules = "[ app, wf ]"
+          @options.onmon_modules = "[ app, wf]"
         else
           @options.onmon_modules = "[wf]"
         end
@@ -298,7 +295,7 @@ class CommandLineParser
                 puts "DEBUG: Host and Port Setup"
                 brConfig.fragType = element.elements["type"].text
                 brConfig.name = element.elements["name"].text
-                brConfig.eventSize = nil
+                brConfig.configFile = element.elements["configFile"].text
                 puts "DEBUG: Before getting index"
                 brConfig.index = (@options.v1720s + @options.toys + @options.asciis + @options.pbrs).length
                 brConfig.kind = "pbr"
@@ -317,7 +314,7 @@ class CommandLineParser
                 }
                 brConfig.typeConfig = typeConfig
                 brConfig.board_reader_index = addToBoardReaderList(brConfig.host, brConfig.port, brConfig.fragType,
-                                                                   brConfig.index, brConfig.eventSize, true)
+                                                                   brConfig.index, brConfig.configFile, true)
                 puts "DEBUG: BR Config Complete"
                 @options.pbrs << brConfig
               end
@@ -366,11 +363,11 @@ class CommandLineParser
         end
       end
 
-      opts.on("--eb [host,port,compression_level]", Array,
+      opts.on("--eb [host,port,compression_level,send_triggers]", Array,
               "Add an event builder that runs on the",
               "specified host and port and optionally",
               "compresses ADC data.") do |eb|
-        if eb.length != 3
+        if eb.length < 3
           puts "You must specifiy a host, port, and compression level."
           exit
         end
@@ -379,6 +376,10 @@ class CommandLineParser
         ebConfig.port = Integer(eb[1])
         ebConfig.compression_level = Integer(eb[2])
         ebConfig.kind = "eb"
+        ebConfig.sendTriggers = 0
+if eb.length == 4
+  ebConfig.sendTriggers = Integer(eb[3])
+end
         ebConfig.index = @options.eventBuilders.length
         @options.eventBuilders << ebConfig
       end
@@ -408,10 +409,10 @@ class CommandLineParser
         @options.aggregators << agConfig
       end
     
-      opts.on("--v1720 [host,port,board_id]", Array, 
+      opts.on("--v1720 [host,port,board_id,config_file]", Array, 
               "Add a V1720 fragment receiver that runs on the specified host and port, ",
-              "and has the specified board ID.") do |v1720|
-        if v1720.length != 3
+              "and has the specified board ID. Read config_file in FHICL_FILE_PATH for additional configuration.") do |v1720|
+        if v1720.length < 3
           puts "You must specifiy a host, port, and board ID."
           exit
         end
@@ -421,16 +422,19 @@ class CommandLineParser
         v1720Config.board_id = Integer(v1720[2])
         v1720Config.kind = "V1720"
         v1720Config.fragType = "V1720"
+        if v1720.length > 3
+          v1720Config.configFile = v1720[3]
+        end
         v1720Config.index = (@options.v1720s + @options.toys + @options.asciis + @options.pbrs + @options.udps).length
         v1720Config.board_reader_index = addToBoardReaderList(v1720Config.host, v1720Config.port,
-                                                              v1720Config.kind, v1720Config.index)
+                                                              v1720Config.kind, v1720Config.index, v1720Config.configFile)
         @options.v1720s << v1720Config
       end
 
-      opts.on("--v1724 [host,port,board_id]", Array, 
+      opts.on("--v1724 [host,port,board_id,config_file]", Array, 
               "Add a V1724 fragment receiver that runs on the specified host, port, ",
-              "and board ID.") do |v1724|
-        if v1724.length != 3
+              "and board ID. Read config_file in FHICL_FILE_PATH for additional configuration.") do |v1724|
+        if v1724.length < 3
           puts "You must specifiy a host, port, and board ID."
           exit
         end
@@ -440,16 +444,20 @@ class CommandLineParser
         v1724Config.board_id = Integer(v1724[2])
         v1724Config.kind = "V1724"
         v1724Config.fragType = "V1724"
+        if v1724.length > 3
+          v1724Config.configFile = v1724[3]
+        end
         v1724Config.index = (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).length
         v1724Config.board_reader_index = addToBoardReaderList(v1724Config.host, v1724Config.port,
-                                                              v1724Config.kind, v1724Config.index)
+                                                              v1724Config.kind, v1724Config.index, v1724Config.configFile)
         # NOTE that we're simply adding this to the 1720 list...
         @options.v1720s << v1724Config
       end
 
-      opts.on("--ascii [host,port,board_id,<string1>,<string2>]", Array, 
-              "Add a TOY1 fragment receiver that runs on the specified host, port, ",
-              "and board ID. Generates alternating string1 and string2's.") do |ascii|
+      opts.on("--ascii [host,port,board_id,config_file]", Array, 
+              "Add a ASCII fragment receiver that runs on the specified host, port, ",
+              "and board ID. Reads configuration parameters from config_file ",
+              "in FHICL_FILE_PATH.") do |ascii|
         if ascii.length < 3
           puts "You must specifiy a host, port, and board ID."
           exit
@@ -460,20 +468,18 @@ class CommandLineParser
         asciiConfig.board_id = Integer(ascii[2])
         asciiConfig.kind = "ASCII"
         asciiConfig.fragType = "ASCII"
-        if ascii.length == 5
-          asciiConfig.string1 = ascii[3]
-          asciiConfig.string2 = ascii[4]
+        if ascii.length > 3
+          asciiConfig.configFile = ascii[3]
         end
         asciiConfig.index = (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).length
         asciiConfig.board_reader_index = addToBoardReaderList(asciiConfig.host, asciiConfig.port,
-                                                              asciiConfig.kind, asciiConfig.index)
+                                                              asciiConfig.kind, asciiConfig.index, asciiConfig.configFile)
         @options.asciis << asciiConfig
       end
 
-      opts.on("--toy1 [host,port,board_id,<eventSize>,<generator_id>]", Array, 
+      opts.on("--toy1 [host,port,board_id,config_file]", Array, 
               "Add a TOY1 fragment receiver that runs on the specified host, port, ",
-              "and board ID. Generates events of size eventSize bytes. ", 
-              "Generator ID must be one of: Uniform, Normal, or Pattern") do |toy1|
+              "and board ID. Reads additional parameters from config_file in FHICL_FILE_PATH.") do |toy1|
         if toy1.length < 3
           puts "You must specifiy a host, port, and board ID."
           exit
@@ -484,25 +490,19 @@ class CommandLineParser
         toy1Config.board_id = Integer(toy1[2])
         toy1Config.kind = "TOY1"
         toy1Config.fragType = "TOY1"
-        toy1Config.generator_id = "Uniform"
-        if toy1.length == 5
-          toy1Config.generator_id = toy1[4]
-        end
-        toy1Config.eventSize = nil
-        if toy1.length > 3 && toy1[3] != "na"
-          toy1Config.eventSize = Integer(toy1[3])
+        if toy1.length > 3
+           toy1Config.configFile = toy1[3]
         end
         toy1Config.index = (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).length
         toy1Config.board_reader_index = addToBoardReaderList(toy1Config.host, toy1Config.port,
-                                                              toy1Config.kind, toy1Config.index, toy1Config.eventSize)
+                                                              toy1Config.kind, toy1Config.index, toy1Config.configFile)
         @options.toys << toy1Config
       end
 
 
-      opts.on("--toy2 [host,port,board_id,<eventSize>,<generator_id>]", Array, 
+      opts.on("--toy2 [host,port,board_id,config_file]", Array, 
               "Add a TOY2 fragment receiver that runs on the specified host, port, ",
-              "and board ID. Generates events of size eventSize bytes. ",
-              "Generator ID must be one of: Uniform, Normal, or Pattern") do |toy2|
+              "and board ID. Reads additional parameters from config_file in FHICL_FILE_PATH") do |toy2|
         if toy2.length < 3
           puts "You must specifiy a host, port, and board ID."
           exit
@@ -513,25 +513,20 @@ class CommandLineParser
         toy2Config.board_id = Integer(toy2[2])
         toy2Config.kind = "TOY2"
         toy2Config.fragType = "TOY2"
-        toy2Config.generator_id = "Uniform"
-        if toy2.length == 5
-          toy2Config.generator_id = toy2[4]
-        end
-        toy2Config.eventSize = nil
-        if toy2.length > 3 && toy2[3] != "na"
-          toy2Config.eventSize = Integer(toy2[3])
+        if toy2.length > 3
+           toy2Config.configFile = toy2[3]
         end
         toy2Config.index = (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).length
         toy2Config.board_reader_index = addToBoardReaderList(toy2Config.host, toy2Config.port,
-                                                              toy2Config.kind, toy2Config.index, toy2Config.eventSize)
+                                                              toy2Config.kind, toy2Config.index, toy2Config.configFile)
 
         @options.toys << toy2Config
       end
 
-      opts.on("--udp [host,port,board_id,udp_host,udp_port]", Array, 
+      opts.on("--udp [host,port,board_id,config_file]", Array, 
               "Add a UDP fragment receiver that runs on the specified host, port, ",
-              "and board ID. It will connect to a data source at udp_host:udp_port.") do |udp|
-        if udp.length < 5
+              "and board ID. Reads additional parameters from config_file in FHICL_FILE_PATH") do |udp|
+        if udp.length < 3
           puts "You must specifiy a host, port, and board ID."
           exit
         end
@@ -540,11 +535,12 @@ class CommandLineParser
         udpConfig.port = Integer(udp[1])
         udpConfig.board_id = Integer(udp[2])
         udpConfig.kind = "UDP"
-        udpConfig.udp_host = udp[3]
-        udpConfig.udp_port = Integer(udp[4])
+        if udp.length > 3
+          udpConfig.configFile = udp[3]
+        end
         udpConfig.index = (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).length
         udpConfig.board_reader_index = addToBoardReaderList(udpConfig.host, udpConfig.port,
-                                                              udpConfig.kind, udpConfig.index)
+                                                              udpConfig.kind, udpConfig.index, udpConfig.configFile)
 
         @options.udps << udpConfig
       end
@@ -558,14 +554,28 @@ class CommandLineParser
               "Whether to run the online monitoring modules,", 
               "also whether and whither to send file output from the online monitoring" ) do |runOnmon|
         @options.runOnmon = Integer(runOnmon[0])
-        @options.onmonFileEnabled = Integer(runOnmon[1])
-        @options.onmonFile = runOnmon[2]
+        if runOnmon.length > 1
+          @options.onmonFileEnabled = Integer(runOnmon[1])
+          @options.onmonFile = runOnmon[2]
+        end
       end
 
       opts.on("--onmon-file [file_path]",
               "File name for onmon output") do |onmonFile|
         @options.onmonFileEnabled = 1
         @options.onmonFile = onmonFile
+      end
+
+      opts.on("--enable-ganglia-metric [level = 3]", "Enable the Ganglia metric output plugin") do |level|
+        @options.gangliaMetric = level || 3
+      end
+
+      opts.on("--enable-message-facility-metric [level = 3]", "Enable the MessageFacility metric output plugin") do |level|
+        @options.msgFacilityMetric = level || 3
+      end
+
+      opts.on("--enable-graphite-metric [level = 3]", "Enable the Graphite metric output plugin") do |level|
+        @options.graphiteMetric = level || 3
       end
 
       opts.on("-w", "--write-data [enable flag (0 or 1)]", 
@@ -637,7 +647,7 @@ class CommandLineParser
     return nil
   end
 
-  def addToBoardReaderList(host, port, kind, boardIndex, eventSize = nil, isPBR = nil)
+  def addToBoardReaderList(host, port, kind, boardIndex, configFile = nil, isPBR = nil)
     # check for an existing boardReader with the same host and port
     brIndex = 0
     @options.boardReaders.each do |br|
@@ -659,6 +669,7 @@ class CommandLineParser
     br = OpenStruct.new
     br.host = host
     br.port = port
+    br.configFile = configFile
     if isPBR != nil
       br.kindList = ["pbr"]
     else
@@ -670,7 +681,6 @@ class CommandLineParser
     br.commandHasBeenSent = false
     br.hasBeenIncludedInXMLRPCList = false
     br.kind = "multi-board"
-    br.eventSize = eventSize
     brIndex = @options.boardReaders.length
     @options.boardReaders << br
     return brIndex
@@ -707,14 +717,14 @@ class CommandLineParser
           puts "    BoardReader, port %d, rank %d, board_id %d, generator %s" %
             [ item.port, item.index, item.board_id, item.fragType ]
         when "V1720", "V1724", "TOY1", "TOY2", "ASCII"
-          puts "    FragmentReceiver, Simulated %s, port %d, rank %d, board_id %d" % 
+          puts "    FragmentGenerator, Simulated %s, port %d, rank %d, board_id %d, config_file %s" % 
             [item.kind.upcase,
              item.port,
              item.index,
-             item.board_id]
+             item.board_id,item.configFile]
         when "UDP"
-          puts "    FragmentGenerator, UDPReceiver, port %d, rank %d, board_id %d" %
-             [ item.port, item.index, item.board_id ]
+          puts "    FragmentReceiver, UDPReceiver, port %d, rank %d, board_id %d, config_file %s" %
+             [ item.port, item.index, item.board_id, item.configFile ]
         end
       end
       puts ""
@@ -741,7 +751,8 @@ class SystemControl
     @configGen = configGen
   end
 
-  def init()
+  def generate(forceRegen = false)
+
     ebIndex = 0
     agIndex = 0
     totalv1720s = 0
@@ -773,9 +784,6 @@ class SystemControl
     totalAGs = @options.aggregators.length
     fullEventBuffSizeWords = 2097152
 
-    #if Integer(totalv1720s) > 0
-    #  fullEventBuffSizeWords = 8192 * @options.v1720s[0].gate_width
-    #end
     xmlrpcClients = @configGen.generateXmlRpcClientList(@options)
 
     # 02-Dec-2013, KAB - loop over the front-end boards and build the configurations
@@ -788,94 +796,191 @@ class SystemControl
 
     (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).each { |boardreaderOptions|
       br = @options.boardReaders[boardreaderOptions.board_reader_index]
-      listIndex = 0
-      br.kindList.each do |kind|
-        if kind == boardreaderOptions.kind && br.boardIndexList[listIndex] == boardreaderOptions.index
-          if kind == "V1720" || kind == "V1724"
-            generatorCode = generateV1720(boardreaderOptions.index,
-                                          boardreaderOptions.board_id, kind)
-          elsif kind == "pbr"
-            if boardreaderOptions.fragType == "V172X"
-              generatorCode = generateV1720(boardreaderOptions.index, boardreaderOptions.board_id, "V1720")
-            elsif boardreaderOptions.fragType == "ASCII"
-              generatorCode = generateAscii(boardreaderOptions.index, boardreaderOptions.board_id, "ASCII", 100000)
-            elsif boardreaderOptions.fragType == "TOY1" || boardreaderOptions.fragType == "TOY2"
-              case boardreaderOptions.generator_id
-              when "Uniform"
-                  generatorCode = generateToy(boardreaderOptions.index,
-                                          boardreaderOptions.board_id, boardreaderOptions.fragType, 100000, nil, br.eventSize)
-              when "Normal"
-                  generatorCode = generateNormal(boardreaderOptions.index,
-                                          boardreaderOptions.board_id, boardreaderOptions.fragType, 100000, nil, br.eventSize)
-              when "Pattern"
-                  generatorCode = generatePattern(boardreaderOptions.index,
-                                        boardreaderOptions.board_id,  boardreaderOptions.fragType, 100000, nil, br.eventSize)
-              else
-                 puts "Invalid generator_id!"
-                 exit
-              end
-       
-            end
-            generatorCode += boardreaderOptions.typeConfig
-
-          elsif kind == "ASCII"
-            generatorCode = generateAscii(boardreaderOptions.index, 
-                                         boardreaderOptions.board_id, kind, 100000)
-          elsif kind == "UDP"
-            generatorCode = generateUDP(boardreaderOptions.index, boardreaderOptions.board_id,
-                                        boardreaderOptions.udp_port, boardreaderOptions.udp_host )
-          elsif kind == "TOY1" || kind == "TOY2"
-        
-            # The third argument refers to the pause, in us, before
-            # generating pseudodata in ToySimulator::getNext_()
-            
-            case boardreaderOptions.generator_id
-            when "Uniform"
-                generatorCode = generateToy(boardreaderOptions.index,
-                                        boardreaderOptions.board_id, kind, 100000, nil, br.eventSize)
-            when "Normal"
-                generatorCode = generateNormal(boardreaderOptions.index,
-                                        boardreaderOptions.board_id, kind, 100000, nil, br.eventSize)
-            when "Pattern"
-                generatorCode = generatePattern(boardreaderOptions.index,
-                                        boardreaderOptions.board_id, kind, 100000, nil, br.eventSize)
+      fileName = "BoardReader_%s_%s_%d.fcl" % [boardreaderOptions.kind,boardreaderOptions.host, boardreaderOptions.port]
+      if forceRegen || !File.file?(fileName)
+        puts "Generating %s" % [fileName]
+        listIndex = 0
+        br.kindList.each do |kind|
+          if kind == boardreaderOptions.kind && br.boardIndexList[listIndex] == boardreaderOptions.index
+            if kind == "pbr"
+              generatorCode = generateFragmentReceiver(boardreaderOptions.index, boardreaderOptions.board_id,
+                                                       boardreaderOptions.fragType, boardreaderOptions.configFile)
+              generatorCode += boardreaderOptions.typeConfig
             else
-               puts "Invalid generator_id!"
-               exit
+              generatorCode = generateFragmentReceiver(boardreaderOptions.index, boardreaderOptions.board_id,
+                                                       kind, boardreaderOptions.configFile)
             end
+
+            # 16-Feb-2016, KAB: Here in the Demo, we don't know whether the data is equally
+            # split between the BoardReaders or mainly concentrated in a single BoardReader, so
+            # we do the safest thing and make all of the BoardReader MPI buffers the maximum size.
+            cfg = generateBoardReaderMain(totalEBs, totalFRs, fullEventBuffSizeWords,
+                                          generatorCode, br.host, br.port,
+                                          @options.gangliaMetric, @options.msgFacilityMetric, @options.graphiteMetric)
+
+            br.cfgList[listIndex] = cfg
+            break
           end
-
-          # 16-Feb-2016, KAB: Here in the Demo, we don't know whether the data is equally
-          # split between the BoardReaders or mainly concentrated in a single BoardReader, so
-          # we do the safest thing and make all of the BoardReader MPI buffers the maximum size.
-          cfg = generateBoardReaderMain(totalEBs, totalFRs, fullEventBuffSizeWords,
-                                        generatorCode, br.host, br.port)
-
-          br.cfgList[listIndex] = cfg
-          break
+          listIndex += 1
         end
-        listIndex += 1
+
+
+      if br.boardCount > 1
+        if br.fileHasBeenGenerated
+          next
+        else
+          br.fileHasBeenGenerated = true
+          br.cfg = @configGen.generateComposite(totalEBs, totalFRs, br.cfgList)
+        end
+      else
+        br.cfg = br.cfgList[0]
+      end
+
+        puts "  writing %s..." % fileName
+        handle = File.open(fileName, "w")
+        handle.write(br.cfg)
+        handle.close()
+      else
+        if br.boardCount > 1
+          if br.fileHasBeenRead
+            next
+          else
+            br.fileHasBeenRead = true
+          end
+        end
+        br.cfg = File.read(fileName)
       end
     }
 
 
+    # 27-Jun-2013, KAB - send INIT to EBs and AG last
+    @options.eventBuilders.each { |ebOptions|
 
+      fileName = "EventBuilder_%s_%d.fcl" % [ebOptions.host, ebOptions.port]
+      if forceRegen || !File.file?(fileName)
+        puts "Generating %s" % [fileName]
+        fclWFViewer = generateWFViewer( (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).map { |board| board.board_id },
+                                        (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).map { |board| board.fragType }
+                                        )
+
+        puts "HAVE %d v1720s and %d v1724s" % [ totalv1720s, totalv1724s ]
+
+        ebOptions.cfg = generateEventBuilderMain(ebIndex, totalFRs, totalEBs, totalAGs,
+                                                 ebOptions.compression_level,
+                                                 totalv1720s, totalv1724s,
+                                                 @options.dataDir, @options.runOnmon,
+                                                 @options.writeData, fullEventBuffSizeWords,
+                                                 totalBoards, 
+                                                 fclWFViewer, ebOptions.host, ebOptions.port, ebOptions.sendTriggers,
+                                                 @options.gangliaMetric, @options.msgFacilityMetric, @options.graphiteMetric
+                                                 )
+
+        puts "  writing %s..." % fileName
+        handle = File.open(fileName, "w")
+        handle.write(ebOptions.cfg)
+        handle.close()
+      ebIndex += 1
+  else
+      ebOptions.cfg = File.read(fileName)
+    end
+  }
+
+  
+  @options.aggregators.each { |agOptions|
+    fileName = "Aggregator_%s_%d.fcl" % [agOptions.host, agOptions.port]
+    if forceRegen || !File.file?(fileName)
+      puts "Generating %s" % [fileName]
+      fclWFViewer = generateWFViewer( (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).map { |board| board.board_id },
+                                      (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).map { |board| board.fragType }
+                                      )
+
+      if @options.onmon_modules = "" || @options.onmon_modules = nil
+        @options.onmon_modules = ONMON_MODULES 
+      end
+      agOptions.cfg = generateAggregatorMain(@options.dataDir, @options.runNumber,
+                                             totalFRs, totalEBs, agOptions.bunch_size,
+                                             agOptions.compression_level,
+                                             totalv1720s, totalv1724s,
+                                             @options.runOnmon, @options.writeData, agOptions.demoPrescale,
+                                             agIndex, totalAGs, fullEventBuffSizeWords,
+                                             xmlrpcClients, @options.fileSizeThreshold,
+                                             @options.fileDurationSeconds,
+                                             @options.eventsInFile, fclWFViewer, ONMON_EVENT_PRESCALE,
+                                             @options.onmon_modules, @options.onmonFileEnabled, @options.onmonFile,
+                                             agOptions.host, agOptions.port,
+                                             @options.gangliaMetric, @options.msgFacilityMetric, @options.graphiteMetric)
+
+      puts "  writing %s..." % fileName
+      handle = File.open(fileName, "w")
+      handle.write(agOptions.cfg)
+      handle.close()
+      STDOUT.flush
+
+    agIndex += 1
+  else
+      agOptions.cfg = File.read(fileName)
+  end
+}
+
+    STDOUT.flush
+
+  end
+
+  def init()
+
+    ebIndex = 0
+    agIndex = 0
+    totalv1720s = 0
+    totalv1724s = 0
+    totaltoy1s = 0
+    totaltoy2s = 0
+    totalasciis = @options.asciis.length
+    totalpbrs = @options.pbrs.length
+    totaludps = @options.udps.length
+    @options.v1720s.each do |proc|
+      case proc.kind
+      when "V1720"
+        totalv1720s += 1
+      when "V1724"
+        totalv1724s += 1
+      end
+    end
+    @options.toys.each do |proc|
+      case proc.kind
+      when "TOY1"
+        totaltoy1s += 1
+      when "TOY2"
+        totaltoy2s += 1
+      end
+    end
+    totalBoards = @options.v1720s.length + @options.toys.length + @options.asciis.length + @options.udps.length + @options.pbrs.length
+    totalFRs = @options.boardReaders.length
+    totalEBs = @options.eventBuilders.length
+    totalAGs = @options.aggregators.length
+
+
+    #if files don't exist, generate
+    generate()
+
+    #if Integer(totalv1720s) > 0
+    #  fullEventBuffSizeWords = 8192 * @options.v1720s[0].gate_width
+    #end
 
     threads = []
 
     (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).each { |proc|
       br = @options.boardReaders[proc.board_reader_index]
+
       if br.boardCount > 1
         if br.commandHasBeenSent
           next
         else
           br.commandHasBeenSent = true
           proc = br
-          cfg = @configGen.generateComposite(totalEBs, totalFRs, br.cfgList)
         end
-      else
-        cfg = br.cfgList[0]
       end
+
+        cfg = br.cfg
 
       currentTime = DateTime.now.strftime("%Y/%m/%d %H:%M:%S")
       puts "%s: Sending the INIT command to %s:%d." %
@@ -883,13 +988,8 @@ class SystemControl
       threads << Thread.new() do
         xmlrpcClient = XMLRPC::Client.new(proc.host, "/RPC2",
                                           proc.port)
-        if @options.serialize
-          fileName = "BoardReader_%s_%s_%d.fcl" % [proc.kind,proc.host, proc.port]
-          puts "  writing %s..." % fileName
-          handle = File.open(fileName, "w")
-          handle.write(cfg)
-          handle.close()
-        end
+ 
+        # puts "Calling daq.init with configuration %s" % [cfg]
         result = xmlrpcClient.call("daq.init", cfg)
         currentTime = DateTime.now.strftime("%Y/%m/%d %H:%M:%S")
         puts "%s: %s FragmentReceiver on %s:%d result: %s" %
@@ -913,28 +1013,8 @@ class SystemControl
         xmlrpcClient = XMLRPC::Client.new(ebOptions.host, "/RPC2", 
                                           ebOptions.port)
 
-        fclWFViewer = generateWFViewer( (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).map { |board| board.board_id },
-                                        (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).map { |board| board.fragType }
-                                       )
-
-        puts "HAVE %d v1720s and %d v1724s" % [ totalv1720s, totalv1724s ]
-
-        cfg = generateEventBuilderMain(ebIndexThread, totalFRs, totalEBs, totalAGs,
-                                   ebOptions.compression_level,
-                                   totalv1720s, totalv1724s,
-                                   @options.dataDir, @options.runOnmon,
-                                   @options.writeData, fullEventBuffSizeWords,
-                                   totalBoards, 
-                                   fclWFViewer, ebOptions.host, ebOptions.port
-                                   )
-
-        if @options.serialize
-          fileName = "EventBuilder_%s_%d.fcl" % [ebOptions.host, ebOptions.port]
-          puts "  writing %s..." % fileName
-          handle = File.open(fileName, "w")
-          handle.write(cfg)
-          handle.close()
-        end
+        cfg = ebOptions.cfg
+        # puts "Calling daq.init with configuration %s" % [cfg]
         result = xmlrpcClient.call("daq.init", cfg)
         currentTime = DateTime.now.strftime("%Y/%m/%d %H:%M:%S")
         puts "%s: EventBuilder on %s:%d result: %s" %
@@ -944,7 +1024,8 @@ class SystemControl
       ebIndex += 1
     }
 
-    @options.aggregators.each { |agOptions|
+    
+@options.aggregators.each { |agOptions|
       currentTime = DateTime.now.strftime("%Y/%m/%d %H:%M:%S")
       puts "%s: Sending the INIT command to %s:%d" %
         [currentTime, agOptions.host, agOptions.port, agIndex]
@@ -952,32 +1033,8 @@ class SystemControl
         xmlrpcClient = XMLRPC::Client.new(agOptions.host, "/RPC2", 
                                           agOptions.port)
 
-        fclWFViewer = generateWFViewer( (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).map { |board| board.board_id },
-                                        (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).map { |board| board.fragType }
-                                        )
-
-        if @options.onmon_modules = "" || @options.onmon_modules = nil
-          @options.onmon_modules = ONMON_MODULES 
-        end
-        cfg = generateAggregatorMain(@options.dataDir, @options.runNumber,
-                                 totalFRs, totalEBs, agOptions.bunch_size,
-                                 agOptions.compression_level,
-                                 totalv1720s, totalv1724s,
-                                 @options.runOnmon, @options.writeData, agOptions.demoPrescale,
-                                 agIndexThread, totalAGs, fullEventBuffSizeWords,
-                                 xmlrpcClients, @options.fileSizeThreshold,
-                                 @options.fileDurationSeconds,
-                                 @options.eventsInFile, fclWFViewer, ONMON_EVENT_PRESCALE,
-                                 @options.onmon_modules, @options.onmonFileEnabled, @options.onmonFile,
-                                 agOptions.host, agOptions.port)
-
-        if @options.serialize
-          fileName = "Aggregator_%s_%d.fcl" % [agOptions.host, agOptions.port]
-          puts "  writing %s..." % fileName
-          handle = File.open(fileName, "w")
-          handle.write(cfg)
-          handle.close()
-        end
+        cfg = agOptions.cfg
+        # puts "Calling daq.init with configuration %s" % [cfg]
         result = xmlrpcClient.call("daq.init", cfg)
         currentTime = DateTime.now.strftime("%Y/%m/%d %H:%M:%S")
         puts "%s: Aggregator on %s:%d result: %s" %
@@ -1307,6 +1364,8 @@ if __FILE__ == $0
 
   if options.command == "init"
     sysCtrl.init()
+elsif options.command == "generate"
+    sysCtrl.generate()
   elsif options.command == "start"
     sysCtrl.start(options.runNumber)
   elsif options.command == "stop"

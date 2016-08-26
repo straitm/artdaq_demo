@@ -33,6 +33,8 @@ demo::ToySimulator::ToySimulator(fhicl::ParameterSet const & ps)
   :
   CommandableFragmentGenerator(ps),
   hardware_interface_( new ToyHardwareInterface(ps) ),
+  timestamp_(0),
+  timestampScale_(ps.get<int>("timestamp_scale_factor", 1)),
   readout_buffer_(nullptr),
   fragment_type_(static_cast<decltype(fragment_type_)>( artdaq::Fragment::InvalidFragmentType ))
 {
@@ -40,8 +42,6 @@ demo::ToySimulator::ToySimulator(fhicl::ParameterSet const & ps)
 
   metadata_.board_serial_number = hardware_interface_->SerialNumber();
   metadata_.num_adc_bits = hardware_interface_->NumADCBits();
-
-  std::cout << "BOARD TYPE: " << hardware_interface_->BoardType() << std::endl;
 
   switch (hardware_interface_->BoardType()) {
   case 1006:
@@ -91,7 +91,7 @@ bool demo::ToySimulator::getNext_(artdaq::FragmentPtrs & frags) {
    					    artdaq::Fragment::FragmentBytes(bytes_read,  
    									    ev_counter(), fragment_id(),
    									    fragment_type_, 
-   									    metadata_));
+										metadata_, timestamp_));
 
   memcpy(fragptr->dataBeginBytes(), readout_buffer_, bytes_read );
 
@@ -102,6 +102,7 @@ bool demo::ToySimulator::getNext_(artdaq::FragmentPtrs & frags) {
   }
 
   ev_counter_inc();
+  timestamp_ += timestampScale_;
 
   return true;
 }

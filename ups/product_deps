@@ -1,7 +1,7 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent artdaq_demo	v2_08_00
-defaultqual	e9:s21:eth
+parent artdaq_demo	v2_08_02
+defaultqual	e10:s35:eth
 
 # These optional lines define the installed directories where
 # headers, libraries, and executables will be found
@@ -17,9 +17,9 @@ bindir      fq_dir      bin
 
 #
 product		 version	optional
-artdaq           v1_13_00
-artdaq_core_demo v1_05_01
-cetbuildtools    v5_04_01        -       only_for_build
+artdaq           v1_13_01
+artdaq_core_demo v1_05_02
+cetbuildtools    v5_04_03        -       only_for_build
 end_product_list
 
 # e6 - with gcc 4.9.1 and -std=c++1y
@@ -29,6 +29,18 @@ end_product_list
 # -nq- here means there is no qualifier
 # a "-" here means the dependent product is not required by the parent and will not be setup
 qualifier	   artdaq	 	 artdaq_core_demo
+e10:s41:prof   e10:s41:prof  	 e10:s41:prof
+e10:s41:debug  e10:s41:debug 	 e10:s41:debug
+e10:s35:prof   e10:s35:prof  	 e10:s35:prof
+e10:s35:debug  e10:s35:debug 	 e10:s35:debug
+e10:s34:prof   e10:s34:prof  	 e10:s34:prof
+e10:s34:debug  e10:s34:debug 	 e10:s34:debug
+e9:s21:prof    e9:s21:eth:prof  	 e9:s21:prof
+e9:s21:debug   e9:s21:eth:debug 	 e9:s21:debug
+e10:s41:eth:prof   e10:s41:eth:prof  	 e10:s41:prof
+e10:s41:eth:debug  e10:s41:eth:debug 	 e10:s41:debug
+e10:s41:ib:prof    e10:s41:ib:prof   	 e10:s41:prof
+e10:s41:ib:debug   e10:s41:ib:debug  	 e10:s41:debug
 e10:s35:eth:prof   e10:s35:eth:prof  	 e10:s35:prof
 e10:s35:eth:debug  e10:s35:eth:debug 	 e10:s35:debug
 e10:s35:ib:prof    e10:s35:ib:prof   	 e10:s35:prof

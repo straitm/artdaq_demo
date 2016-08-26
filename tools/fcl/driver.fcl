@@ -2,8 +2,13 @@
 #  about the FHiCL language, please look at
 #  cdcvs.fnal.gov/redmine/documents/327 , the "FHiCL Quick Start Guide"
 
-events_to_generate: 1
+events_to_generate: 10
 run_number: 101
+transition_timeout: 30
+
+services: {
+    TimeTracker: {}
+}
 
 fragment_receiver: {
 
@@ -12,6 +17,8 @@ fragment_receiver: {
    generator: ToySimulator 
    fragment_type: TOY2        # Make sure downstream modules know about this fragment_type!
    nADCcounts: 100
+   distribution_type: 1
+   throttle_usecs: 10000
    random_seed: 6514
 
    # Parameters configuring the fragment generator's parent class

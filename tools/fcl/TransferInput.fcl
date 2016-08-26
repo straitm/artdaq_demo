@@ -1,0 +1,104 @@
+
+# JCF, May-20-2016
+
+# This art FHiCL code is designed to demonstrate the capabilities of
+# the new TransferInput source, written to allow art processes to
+# directly consume data broadcast from artdaq using an implementation
+# of TransferInterface (as of this writing, the only such
+# implementation is RTIDDSTransfer)
+
+######################################################################
+# The ART code
+######################################################################
+
+physics:
+{
+  analyzers:
+  {
+
+    app: {
+      module_type: RootApplication
+      force_new: true
+    }
+
+    wf: {
+      module_type: WFViewer
+      fragment_ids: [0, 1]
+      fragment_type_labels: [TOY1, TOY2]
+      prescale: 200
+
+      digital_sum_only: false
+    }
+
+   checkintegrity: {
+     module_type: CheckIntegrity
+     raw_data_label: daq
+     frag_type: TOY1
+   }
+
+    printBuildInfo: {
+     module_type: PrintBuildInfo
+
+     buildinfo_module_label: artdaqDemoBuildInfo
+     buildinfo_instance_label: myInstanceName
+    }
+
+    toyDump:
+    {
+      module_type: ToyDump
+      raw_data_label: daq
+      frag_type: TOY1
+      num_adcs_to_show: 0
+    }
+  }
+
+  producers:
+  {
+
+  }   
+
+  a1: [ printBuildInfo ]
+  a2: [ toyDump]
+  a3: [app, wf]
+  a4: [checkintegrity]
+  e1: [ out1 ]
+  end_paths: [ a1, a3, a4 ]
+}
+
+outputs:
+{
+  out1:
+  {
+    module_type: FileDumperOutput
+    wantProductFriendlyClassName: true
+    onlyIfPresent: true
+  }
+
+
+}
+
+source:
+{
+
+  module_type: TransferInput
+
+  transferPluginType: multicast
+
+  multicast_address: "224.0.0.1"
+  multicast_port: 30001
+
+  local_address: "10.226.9.16"  # mu2edaq01
+
+  receive_buffer_size: 100000000
+
+  subfragment_size: 6000
+  subfragments_per_send: 10
+
+  max_fragment_size_words: 2097152
+  first_event_builder_rank: 0
+}
+
+process_name: TransferInput
+
+
+

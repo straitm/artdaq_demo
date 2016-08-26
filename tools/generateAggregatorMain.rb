@@ -11,7 +11,7 @@ def generateAggregatorMain(dataDir, runNumber, totalFRs, totalEBs, bunchSize,
                            xmlrpcClientList, fileSizeThreshold, fileDuration,
                            fileEventCount, fclWFViewer, onmonEventPrescale, 
                            onmon_modules, onmonFileEnable, onmonFileName,
-                           aggHost, aggPort)
+                           aggHost, aggPort, withGanglia, withMsgFacility, withGraphite)
 
 agConfig = String.new( "\
 services: {
@@ -57,6 +57,13 @@ outputs: {
 physics: {
   analyzers: {
 %{phys_anal_onmon_cfg}
+
+   checkintegrity: {
+     module_type: CheckIntegrity
+     raw_data_label: daq
+     frag_type: TOY1
+   }
+
   }
 
   producers: {
@@ -119,7 +126,7 @@ process_name: DAQAG"
 
   aggregator_code = generateAggregator( totalFRs, totalEBs, bunchSize, fragSizeWords, xmlrpcClientList,
                                         fileSizeThreshold, fileDuration, fileEventCount, queueDepth, queueTimeout,
-                                        onmonEventPrescale, aggHost, aggPort, agType )
+                                        onmonEventPrescale, aggHost, aggPort, agType, withGanglia, withMsgFacility, withGraphite )
   agConfig.gsub!(/\%\{aggregator_code\}/, aggregator_code)
 
   puts "Initial aggregator " + String(agIndex) + " disk writing setting = " +

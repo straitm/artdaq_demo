@@ -32,5 +32,7 @@ simple_plugin(CompressionChecker "module" ${ARTDAQ_DAQDATA} ${ARTDAQ-CORE_DATA})
 simple_plugin(RootApplication "module")
 simple_plugin(WFViewer "module" artdaq-core-demo_Overlays ${ROOT_GPAD} ${ROOT_HIST} ${ROOT_GUI} ${ROOT_RIO})
 
-# # Subdirectories.
-# add_subdirectory(DQM)
+simple_plugin(CheckIntegrity "module"
+              ${MF_MESSAGELOGGER}				
+	      ${MF_UTILITIES}
+)

@@ -3,11 +3,12 @@ startSystem.sh manageSystem.sh
 start2x2System.sh manage2x2System.sh 
 start2x2x2System.sh manage2x2x2System.sh
 start2x2x4System.sh manage2x2x4System.sh
-CreateNewFragmentGenerator.rb  generateEventBuilderMain.rb
-generateWFViewer.rb generateEventBuilder.rb demo_utilities.rb 
-generateToy.rb generateUDP.rb
-generatePattern.rb generateNormal.rb generateAscii.rb generateAggregator.rb 
-generateAggregatorMain.rb generateV1720.rb generateCompression.rb generateBoardReaderMain.rb RunDriver.rb
+CreateNewFragmentGenerator.rb  
+generateEventBuilderMain.rb generateEventBuilder.rb
+generateWFViewer.rb demo_utilities.rb
+generateFragmentReceiver.rb
+generateAggregatorMain.rb generateAggregator.rb
+generateCompression.rb generateBoardReaderMain.rb RunDriver.rb
 makeConfigs.rb
 multi_udp_send_artdaq.py)
 

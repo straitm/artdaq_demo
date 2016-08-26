@@ -119,10 +119,20 @@ else
     install_package artdaq-utilities v1_00_07 || exit 1
 fi
 
+# JCF, Aug-8-2016
+
+# artdaq commit 19ad73b5b4e13423174b0dcab9a33876a09b9971 includes,
+# among other things, the result of my merge of the monitoring branch
+# into the develop branch, as well as my upgrade to artdaqDriver,
+# enabling it to issue the start and stop transitions to generators
+# which derive from CommandableFragmentGenerator. Next time we cut an
+# official artdaq-demo release, we should replace this with an
+# official artdaq release.
+
 if [ -n "${opt_HEAD-}" ];then
 install_package artdaq develop eth || exit 1
 else
-install_package artdaq v1_13_00 eth || exit 1
+install_package artdaq 19ad73b5b4e13423174b0dcab9a33876a09b9971 eth || exit 1
 fi
 
 setup_qualifier="$equalifier $squalifier eth"
