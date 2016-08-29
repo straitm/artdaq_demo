@@ -1,0 +1,8 @@
+triggeredReceiver Example:
+
+Demonstrates the capabilities of the TriggeredFragmentGenerator 
+class. This example consists of a "DAQ" BoardReader reading out at a 
+high rate, a "DCS" TriggerdBoardReader which reads out very slowly,
+but sends data for each event the "DAQ" BoardReader generates, and
+a "CRV" TriggeredBoardReader which samples uncorrelated data based
+on the Fragment timestamps.

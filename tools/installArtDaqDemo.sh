@@ -105,18 +105,18 @@ function install_package {
 # else
 # install_package artdaq-core v1_04_20 e7 s15 || exit 1
 # fi
-install_package artdaq-core v1_05_00 || exit 1
+install_package artdaq-core v1_05_06 || exit 1
 
 if [ -n "${opt_HEAD-}" ];then
 install_package artdaq-core-demo develop || exit 1
 else
-install_package artdaq-core-demo v1_05_01 || exit 1
+install_package artdaq-core-demo v1_05_02 || exit 1
 fi
 
 if [ -n "${opt_HEAD-}" ];then
     install_package artdaq-utilities develop || exit 1
 else
-    install_package artdaq-utilities v1_00_07 || exit 1
+    install_package artdaq-utilities v1_00_08 || exit 1
 fi
 
 if [ -n "${opt_HEAD-}" ];then

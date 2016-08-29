@@ -6,6 +6,10 @@ events_to_generate: 10
 run_number: 101
 transition_timeout: 30
 
+services: {
+    TimeTracker: {}
+}
+
 fragment_receiver: {
 
    # Parameters defining and configuring the fragment generator to be used

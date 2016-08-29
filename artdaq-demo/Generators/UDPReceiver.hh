@@ -15,7 +15,7 @@
 // -Append a "_" to every private member function and variable
 #include "fhiclcpp/fwd.h"
 #include "artdaq-core/Data/Fragments.hh" 
-#include "artdaq/Application/TriggeredFragmentGenerator.hh"
+#include "artdaq/Application/CommandableFragmentGenerator.hh"
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -60,7 +60,7 @@ struct CommandPacket {
   typedef std::array<uint8_t, 1500> packetBuffer_t;
   typedef std::list<packetBuffer_t> packetBuffer_list_t;
 
-  class UDPReceiver : public artdaq::TriggeredFragmentGenerator {
+  class UDPReceiver : public artdaq::CommandableFragmentGenerator {
   public:
     explicit UDPReceiver(fhicl::ParameterSet const & ps);
 
@@ -70,13 +70,13 @@ struct CommandPacket {
     // functionality; it's a mandatory override of the pure virtual
     // getNext_ function declared in CommandableFragmentGenerator
 
-    bool getNextFragment_(artdaq::FragmentPtrs & output) override;
+    bool getNext_(artdaq::FragmentPtrs & output) override;
 
-    void start_() override;
+    void start() override;
     void stop() override;
     void stopNoMutex() override {}  // nothing special needs to be done in this method
     void pause() override;
-    void resume_() override;
+    void resume() override;
    
     DataType getDataType(uint8_t byte) { return static_cast<DataType>((byte & 0xF0) >> 4); }
     ReturnCode getReturnCode(uint8_t byte) { return static_cast<ReturnCode>(byte & 0xF); }

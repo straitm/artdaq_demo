@@ -10,7 +10,7 @@
 
 require File.join( File.dirname(__FILE__), 'demo_utilities' )
 
-def generateWFViewer(fragmentIDList, fragmentTypeList, prescale = nil, digital_sum_only = nil)
+def generateWFViewer(fragmentIDList, fragmentTypeList, prescale = nil, digital_sum_only = nil, configDoc = "WFViewer.fcl")
 
   wfViewerConfig = String.new( "\
     app: {
@@ -21,7 +21,7 @@ def generateWFViewer(fragmentIDList, fragmentTypeList, prescale = nil, digital_s
       module_type: WFViewer
       fragment_ids: %{fragment_ids}
       fragment_type_labels: %{fragment_type_labels} " \
-      + read_fcl("WFViewer.fcl") \
+      + read_fcl(configDoc) \
       + "    }" )
 
 
