@@ -73,7 +73,7 @@ Configuration options (init commands):
   -m <on|off>: specifies whether to run online monitoring [default=off]
   -D : disables the writing of data to disk
   -s <file size>: specifies the size threshold for closing data files (in MB)
-      [default is 8000 MB (~7.8 GB); zero means that there is no file size limit]
+      [default is zero, which means that there is no file size limit]
   --file-events <count>: specifies the desired number of events in each file
       [default=0, which means no event count limit for files]
   --file-duration <duration>: specifies the desired duration of each file (minutes)

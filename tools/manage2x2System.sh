@@ -45,7 +45,7 @@ function launch() {
 
 # 30-Dec-2013, KAB - cut out from usage text below...
 #  -s <file size>: specifies the size threshold for closing data files (in MB)
-#      [default is 8000 MB (~7.8 GB); zero means that there is no file size limit]
+#      [default is zero, which means that there is no file size limit]
 #  --file-events <count>: specifies the desired number of events in each file
 #      [default=0, which means no event count limit for files]
 #  --file-duration <duration>: specifies the desired duration of each file (minutes)
@@ -108,7 +108,7 @@ onmonEnable=off
 diskWriting=1
 dataDir="/tmp"
 runNumber=""
-fileSize=8000
+fileSize=0
 fsChoiceSpecified=0
 fileEventCount=0
 fileDuration=0

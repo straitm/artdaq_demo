@@ -71,7 +71,7 @@ Configuration options (init commands):
   -m <on|off>: specifies whether to run online monitoring [default=off]
   -D : disables the writing of data to disk
   -s <file size>: specifies the size threshold for closing data files (in MB)
-      [default is 8000 MB (~7.8 GB); zero means that there is no file size limit]
+      [default is zero, which means that there is no file size limit]
   --file-events <count>: specifies the desired number of events in each file
       [default=0, which means no event count limit for files]
   --file-duration <duration>: specifies the desired duration of each file (minutes)
@@ -126,11 +126,11 @@ compressionLevel=1
 onmonEnable=off
 onmonDir=""
 diskWriting=1
-dataDir="/tmp"
+dataDir="/home/biery/tmp"
 runNumber=""
 runEventCount=0
 runDuration=0
-fileSize=8000
+fileSize=0
 fsChoiceSpecified=0
 fileEventCount=0
 fileDuration=0
