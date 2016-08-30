@@ -21,15 +21,18 @@ USAGE="\
    usage: `basename $0` [options] [demo_root]
 examples: `basename $0` .
           `basename $0` --run-demo
-          `basename $0` --HEAD --debug
+          `basename $0` --debug
+          `basename $0` --tag v2_08_01
 If the \"demo_root\" optional parameter is not supplied, the user will be
 prompted for this location.
 --run-demo    runs the demo
 --debug       perform a debug build
 --viewer      install and run the artdaq Message Viewer
+--tag         Install a specific tag of artdaq_demo
 -e, -s        Use specific qualifiers when building ARTDAQ (only e9:s31, e9:s21, e7:s15 supported)
 -v            Be more verbose
 -x            set -x this script
+-w            Check out repositories read/write
 "
 
 # Process script arguments and options
@@ -38,7 +41,7 @@ eval "set -- $env_opts \"\$@\""
 op1chr='rest=`expr "$op" : "[^-]\(.*\)"`   && set -- "-$rest" "$@"'
 op1arg='rest=`expr "$op" : "[^-]\(.*\)"`   && set --  "$rest" "$@"'
 reqarg="$op1arg;"'test -z "${1+1}" &&echo opt -$op requires arg. &&echo "$USAGE" &&exit'
-args= do_help= opt_v=0
+args= do_help= opt_v=0; opt_w=0
 while [ -n "${1-}" ];do
     if expr "x${1-}" : 'x-' >/dev/null;then
         op=`expr "x$1" : 'x-\(.*\)'`; shift   # done with $1
@@ -50,8 +53,10 @@ while [ -n "${1-}" ];do
             x*)         eval $op1chr; set -x;;
             s*)         eval $op1arg; squalifier=$1; shift;;
             e*)         eval $op1arg; equalifier=$1; shift;;
+			w*)         eval $op1chr; opt_w=`expr $opt_w + 1`;;
             -run-demo)  opt_run_demo=--run-demo;;
 	    -debug)     opt_debug=--debug;;
+			-tag)       eval $reqarg; tag=$1; shift;;
 	    -viewer)    opt_viewer=--viewer;;
             *)          echo "Unknown option -$op"; do_help=1;;
         esac
@@ -118,9 +123,11 @@ git clone http://cdcvs.fnal.gov/projects/cetpkgsupport
 os=`./cetpkgsupport/bin/get-directory-name os`
 
 # Get all the information we'll need to decide which exact flavor of the software to install
-wget https://cdcvs.fnal.gov/redmine/projects/artdaq-demo/repository/revisions/develop/raw/ups/product_deps
+if [ -z "${tag:-}" ]; then tag=develop;fi
+wget https://cdcvs.fnal.gov/redmine/projects/artdaq-demo/repository/revisions/$tag/raw/ups/product_deps
 demo_version=`grep "parent artdaq_demo" $Base/download/product_deps|awk '{print $3}'`
 artdaq_version=`grep "^artdaq " $Base/download/product_deps | awk '{print $2}'`
+coredemo_version=`grep "^artdaq_core_demo " $Base/download/product_deps | awk '{print $2}'`
 defaultQuals=`grep "defaultqual" $Base/download/product_deps|awk '{print $2}'`
 defaultE=`echo $defaultQuals|cut -f1 -d:`
 defaultS=`echo $defaultQuals|cut -f2 -d:`
@@ -161,11 +168,31 @@ source $Base/localProducts_artdaq_demo_${demo_version}_${equalifier}_${squalifie
 set -u
 
 cd $MRB_SOURCE
+if [[ "$tag" == "develop" ]]; then
+if [ $opt_w -gt 0 ];then
+mrb gitCheckout -d artdaq_core ssh://p-artdaq@cdcvs.fnal.gov/cvs/projects/artdaq-core
+mrb gitCheckout -d artdaq_utilities ssh://p-artdaq-utilities@cdcvs.fnal.gov/cvs/projects/artdaq-utilities
+mrb gitCheckout ssh://p-artdaq@cdcvs.fnal.gov/cvs/projects/artdaq
+mrb gitCheckout -d artdaq_core_demo ssh://p-artdaq-core-demo@cdcvs.fnal.gov/cvs/projects/artdaq-core-demo
+mrb gitCheckout -d artdaq_demo ssh://p-artdaq-demo@cdcvs.fnal.gov/cvs/projects/artdaq-demo
+else
 mrb gitCheckout -d artdaq_core http://cdcvs.fnal.gov/projects/artdaq-core
 mrb gitCheckout -d artdaq_utilities http://cdcvs.fnal.gov/projects/artdaq-utilities
 mrb gitCheckout http://cdcvs.fnal.gov/projects/artdaq
 mrb gitCheckout -d artdaq_core_demo http://cdcvs.fnal.gov/projects/artdaq-core-demo
 mrb gitCheckout -d artdaq_demo http://cdcvs.fnal.gov/projects/artdaq-demo
+fi
+else
+if [ $opt_w -gt 0 ];then
+mrb gitCheckout -t ${artdaq_version} ssh://p-artdaq@cdcvs.fnal.gov/cvs/projects/artdaq
+mrb gitCheckout -t ${coredemo_version} -d artdaq_core_demo ssh://p-artdaq-core-demo@cdcvs.fnal.gov/cvs/projects/artdaq-core-demo
+mrb gitCheckout -t ${demo_version} -d artdaq_demo ssh://p-artdaq-demo@cdcvs.fnal.gov/cvs/projects/artdaq-demo
+else
+mrb gitCheckout -t ${artdaq_version} http://cdcvs.fnal.gov/projects/artdaq
+mrb gitCheckout -t ${coredemo_version} -d artdaq_core_demo http://cdcvs.fnal.gov/projects/artdaq-core-demo
+mrb gitCheckout -t ${demo_version} -d artdaq_demo http://cdcvs.fnal.gov/projects/artdaq-demo
+fi
+fi
 
 if [[ "x${opt_viewer-}" != "x" ]]; then
     os=`$Base/download/cetpkgsupport/bin/get-directory-name os`
