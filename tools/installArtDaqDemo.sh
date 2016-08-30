@@ -122,7 +122,7 @@ fi
 if [ -n "${opt_HEAD-}" ];then
 install_package artdaq develop eth || exit 1
 else
-install_package artdaq dispatcher eth || exit 1
+install_package artdaq feature/dispatcher eth || exit 1
 fi
 
 setup_qualifier="$equalifier $squalifier eth"
