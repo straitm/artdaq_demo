@@ -82,6 +82,9 @@ source:
 
   module_type: TransferInput
 
+  dispatcherHost: localhost
+  dispatcherPort: 5266
+
   transferPluginType: multicast
 
   multicast_address: "224.0.0.1"
