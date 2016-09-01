@@ -82,23 +82,39 @@ source:
 
   module_type: TransferInput
 
+  # The timeout shouldn't be much smaller than the period between events, otherwise 
+  # there's a spew of timeout messages
+
+  timeoutInUsecs: 1000000  
+
   dispatcherHost: localhost
   dispatcherPort: 5266
 
-  transferPluginType: multicast
+  transfer_plugin: {
 
-  multicast_address: "224.0.0.1"
-  multicast_port: 30001
+    transferPluginType: modulo
+    modulus: 2
 
-  local_address: "10.226.9.16"  # mu2edaq01
+    physical_transfer_plugin: {
 
-  receive_buffer_size: 100000000
+      transferPluginType: shmem
+    
+      shm_key: 0x40471452
 
-  subfragment_size: 6000
-  subfragments_per_send: 10
+      multicast_address: "224.0.0.1"
+      multicast_port: 30001
 
-  max_fragment_size_words: 2097152
-  first_event_builder_rank: 0
+      local_address: "10.226.9.16"  # mu2edaq01
+
+      receive_buffer_size: 100000000
+
+      subfragment_size: 6000
+      subfragments_per_send: 10
+
+      max_fragment_size_words: 2097152
+      first_event_builder_rank: 0
+    }
+  }
 }
 
 process_name: TransferInput
