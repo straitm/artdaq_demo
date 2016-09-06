@@ -56,7 +56,7 @@ daq: {
 
   transfer_to_dispatcher: {
 
-    transferPluginType: shmem
+    transferPluginType: Shmem
 
     max_fragment_size_words: %{size_words}
     first_event_builder_rank: %{total_frs}

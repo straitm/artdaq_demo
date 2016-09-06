@@ -97,7 +97,7 @@ source:
 
     physical_transfer_plugin: {
 
-      transferPluginType: shmem
+      transferPluginType: Shmem
     
       shm_key: 0x40471452
 
