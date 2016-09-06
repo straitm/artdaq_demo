@@ -92,8 +92,8 @@ source:
 
   transfer_plugin: {
 
-    transferPluginType: modulo
-    modulus: 2
+    transferPluginType: NthEvent
+    nth: 2
 
     physical_transfer_plugin: {
 

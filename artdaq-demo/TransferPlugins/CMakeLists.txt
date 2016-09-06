@@ -1,8 +1,7 @@
 
 include_directories($ENV{MPICH_INC} )
 
-simple_plugin(modulo "transfer"
-#  artdaq_TransferPlugins_shmem_transfer
+simple_plugin(NthEvent "transfer"
   artdaq_TransferPlugins
   artdaq-core_Utilities
   artdaq_DAQrate
