@@ -28,11 +28,13 @@ ToyHardwareInterface::ToyHardwareInterface(fhicl::ParameterSet const & ps) :
   fragment_type_(demo::toFragmentType(ps.get<std::string>("fragment_type"))), 
   maxADCvalue_(pow(2, NumADCBits() ) - 1), // MUST be after "fragment_type"
   throttle_usecs_(ps.get<size_t>("throttle_usecs", 100000)),
+  usecs_between_sends_(ps.get<size_t>("usecs_between_sends", 0)),
   distribution_type_(static_cast<DistributionType>(ps.get<int>("distribution_type"))),
   engine_(ps.get<int64_t>("random_seed", 314159)),
   uniform_distn_(new std::uniform_int_distribution<data_t>(0, maxADCvalue_)),
   gaussian_distn_(new std::normal_distribution<double>( 0.5*maxADCvalue_, 0.1*maxADCvalue_)),
-  start_time_(std::numeric_limits<decltype(std::chrono::high_resolution_clock::now())>::max())
+  start_time_(fake_time_),
+  last_call_time_(fake_time_)
 {
 
 #pragma GCC diagnostic push
@@ -72,7 +74,8 @@ void ToyHardwareInterface::StartDatataking() {
 
 void ToyHardwareInterface::StopDatataking() {
   taking_data_ = false;
-  start_time_ = std::numeric_limits<decltype(std::chrono::high_resolution_clock::now())>::max();
+  start_time_ = fake_time_;
+  last_call_time_ = fake_time_;
 }
 
 
@@ -168,6 +171,30 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read) {
     throw cet::exception("ToyHardwareInterface") <<
       "Attempt to call FillBuffer when not sending data";
   }
+
+  // last_call_time_ != fake_time_ means this isn't the first call to this function since the start of the run
+  if (usecs_between_sends_ != 0 && last_call_time_ != fake_time_) {  
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-compare"
+
+    auto usecs_since_last_call = 
+      std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now()
+							    - last_call_time_).count();
+    assert(usecs_since_last_call > 0);
+
+    if (usecs_since_last_call < usecs_between_sends_) {
+      usleep( usecs_between_sends_ - usecs_since_last_call);
+    } else {
+      throw cet::exception("ToyHardwareInterface") <<
+	"Time between sends of " << usecs_since_last_call << " microseconds exceeded set limit of "
+				 << usecs_between_sends_;
+    }
+
+#pragma GCC diagnostic pop
+  }
+
+  last_call_time_=std::chrono::high_resolution_clock::now();
 }
 
 void ToyHardwareInterface::AllocateReadoutBuffer(char** buffer) {

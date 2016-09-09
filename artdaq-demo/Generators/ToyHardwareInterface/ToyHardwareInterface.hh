@@ -54,8 +54,12 @@ private:
   demo::FragmentType fragment_type_;
   std::size_t maxADCvalue_;
   std::size_t throttle_usecs_;
+  std::size_t usecs_between_sends_;
   DistributionType distribution_type_;
-  
+
+  using time_type = decltype(std::chrono::high_resolution_clock::now());
+
+  const time_type fake_time_ = std::numeric_limits<time_type>::max();  
 
 // Members needed to generate the simulated data
 
@@ -63,7 +67,8 @@ private:
   std::unique_ptr<std::uniform_int_distribution<data_t>> uniform_distn_;
   std::unique_ptr<std::normal_distribution<double>> gaussian_distn_;
   
-  decltype(std::chrono::high_resolution_clock::now()) start_time_;
+  time_type start_time_;
+  time_type last_call_time_;
 };
 
 
