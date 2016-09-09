@@ -185,11 +185,12 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read) {
 
     if (usecs_since_last_call < usecs_between_sends_) {
       usleep( usecs_between_sends_ - usecs_since_last_call);
-    } else {
-      throw cet::exception("ToyHardwareInterface") <<
-	"Time between sends of " << usecs_since_last_call << " microseconds exceeded set limit of "
-				 << usecs_between_sends_;
     }
+	//	else {
+    //  throw cet::exception("ToyHardwareInterface") <<
+	//"Time between sends of " << usecs_since_last_call << " microseconds exceeded set limit of "
+	//			 << usecs_between_sends_;
+    //}
 
 #pragma GCC diagnostic pop
   }
