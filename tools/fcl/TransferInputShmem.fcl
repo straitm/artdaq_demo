@@ -7,9 +7,17 @@
 # of TransferInterface (as of this writing, the only such
 # implementation is RTIDDSTransfer)
 
-######################################################################
-# The ART code
-######################################################################
+# JCF, Sep-13-2016
+
+# Specifically, using artdaq-demo's NthEvent transfer plugin, which in
+# turn will use the Shmem transfer plugin for physical
+# transport. Note the assumption in the FHiCL is that you're on the
+# same host as the dispatcher aggregator
+
+# If "modulus" is set to "N", that means "send every Nth event from
+# the dispatcher"
+
+modulus: 50
 
 physics:
 {
@@ -25,7 +33,7 @@ physics:
       module_type: WFViewer
       fragment_ids: [0, 1]
       fragment_type_labels: [TOY1, TOY2]
-      prescale: 200
+      prescale: 1
 
       digital_sum_only: false
     }
@@ -36,33 +44,13 @@ physics:
      frag_type: TOY1
    }
 
-    printBuildInfo: {
-     module_type: PrintBuildInfo
-
-     buildinfo_module_label: artdaqDemoBuildInfo
-     buildinfo_instance_label: myInstanceName
-    }
-
-    toyDump:
-    {
-      module_type: ToyDump
-      raw_data_label: daq
-      frag_type: TOY1
-      num_adcs_to_show: 0
-    }
   }
 
-  producers:
-  {
 
-  }   
-
-  a1: [ printBuildInfo ]
-  a2: [ toyDump]
-  a3: [app, wf]
-  a4: [checkintegrity]
+  a1: [app, wf]
+  a2: [checkintegrity]
   e1: [ out1 ]
-  end_paths: [ a1, a3, a4 ]
+  end_paths: [ a1 ]
 }
 
 outputs:
@@ -85,15 +73,15 @@ source:
   # The timeout shouldn't be much smaller than the period between events, otherwise 
   # there's a spew of timeout messages
 
-  timeoutInUsecs: 1000000  
+  timeoutInUsecs: 10000000  
 
-  dispatcherHost: localhost
+  dispatcherHost: mu2edaq01
   dispatcherPort: 5266
 
   transfer_plugin: {
 
     transferPluginType: NthEvent
-    nth: 2
+    nth: @local::modulus
 
     physical_transfer_plugin: {
 
@@ -101,23 +89,13 @@ source:
     
       shm_key: 0x40471452
 
-      multicast_address: "224.0.0.1"
-      multicast_port: 30001
-
-      local_address: "10.226.9.16"  # mu2edaq01
-
-      receive_buffer_size: 100000000
-
-      subfragment_size: 6000
-      subfragments_per_send: 10
-
       max_fragment_size_words: 2097152
       first_event_builder_rank: 0
     }
   }
 }
 
-process_name: TransferInput
+process_name: TransferInputShmem
 
 
 
