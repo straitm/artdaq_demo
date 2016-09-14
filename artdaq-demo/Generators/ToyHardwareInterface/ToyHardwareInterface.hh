@@ -68,7 +68,7 @@ private:
   std::unique_ptr<std::normal_distribution<double>> gaussian_distn_;
   
   time_type start_time_;
-  time_type last_call_time_;
+  int send_calls_;
 };
 
 

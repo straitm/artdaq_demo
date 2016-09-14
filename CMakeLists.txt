@@ -18,10 +18,18 @@ IF (NOT CETBUILDTOOLS_VERSION)
     MESSAGE (FATAL_ERROR "ERROR: setup cetbuildtools to get the cmake modules")
 ENDIF()
 
-set(CMAKE_MODULE_PATH 
-        $ENV{ART_DIR}/Modules
-        $ENV{CETBUILDTOOLS_DIR}/Modules
-        ${CMAKE_MODULE_PATH})
+if( DEFINED ENV{CANVAS_DIR} )
+set(CMAKE_MODULE_PATH
+  $ENV{ART_DIR}/Modules
+  $ENV{CANVAS_DIR}/Modules
+	$ENV{CETBUILDTOOLS_DIR}/Modules
+	${CMAKE_MODULE_PATH})
+else()
+set(CMAKE_MODULE_PATH
+  $ENV{ART_DIR}/Modules
+	$ENV{CETBUILDTOOLS_DIR}/Modules
+	${CMAKE_MODULE_PATH})
+endif()
 
 
 include(CetCMakeEnv)
@@ -42,6 +50,7 @@ cet_report_compiler_flags()
 
 # these are minimum required versions, not the actual product versions
 find_ups_product( cetbuildtools v3_03_00 )
+find_ups_product( TRACE v3_03_00 )
 find_ups_product( artdaq v0_04_02 )
 find_ups_product( artdaq_utilities v1_00_00)
 find_ups_product( artdaq_core v1_00_00 )
@@ -68,6 +77,7 @@ check_ups_version(art "$ENV{ART_VERSION}" v2_00_00 PRODUCT_OLDER_VAR no_canvas)
 if (no_canvas)
   set(CANVAS "art")
 else (no_canvas)
+  find_ups_product( canvas v1_00_00 )
   set(CANVAS "canvas")
   add_definitions(-DCANVAS)
 endif()

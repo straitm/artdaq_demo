@@ -5,6 +5,7 @@
 
 #include "fhiclcpp/ParameterSet.h"
 #include "cetlib/exception.h"
+#include "trace.h"				// TRACE
 
 #include <random>
 #include <unistd.h>
@@ -34,7 +35,7 @@ ToyHardwareInterface::ToyHardwareInterface(fhicl::ParameterSet const & ps) :
   uniform_distn_(new std::uniform_int_distribution<data_t>(0, maxADCvalue_)),
   gaussian_distn_(new std::normal_distribution<double>( 0.5*maxADCvalue_, 0.1*maxADCvalue_)),
   start_time_(fake_time_),
-  last_call_time_(fake_time_)
+  send_calls_(0)
 {
 
 #pragma GCC diagnostic push
@@ -70,12 +71,12 @@ ToyHardwareInterface::ToyHardwareInterface(fhicl::ParameterSet const & ps) :
 void ToyHardwareInterface::StartDatataking() {
   taking_data_ = true;
   start_time_ = std::chrono::high_resolution_clock::now();
+  send_calls_ = 0;
 }
 
 void ToyHardwareInterface::StopDatataking() {
   taking_data_ = false;
   start_time_ = fake_time_;
-  last_call_time_ = fake_time_;
 }
 
 
@@ -172,30 +173,24 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read) {
       "Attempt to call FillBuffer when not sending data";
   }
 
-  // last_call_time_ != fake_time_ means this isn't the first call to this function since the start of the run
-  if (usecs_between_sends_ != 0 && last_call_time_ != fake_time_) {  
+  if (usecs_between_sends_ != 0 && send_calls_ != 0) {
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-compare"
 
-    auto usecs_since_last_call = 
+	auto usecs_since_start = 
       std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now()
-							    - last_call_time_).count();
-    assert(usecs_since_last_call > 0);
+							    - start_time_).count();
 
-    if (usecs_since_last_call < usecs_between_sends_) {
-      usleep( usecs_between_sends_ - usecs_since_last_call);
-    }
-	//	else {
-    //  throw cet::exception("ToyHardwareInterface") <<
-	//"Time between sends of " << usecs_since_last_call << " microseconds exceeded set limit of "
-	//			 << usecs_between_sends_;
-    //}
+	long delta = (long)(usecs_between_sends_*send_calls_) - usecs_since_start;
+	TRACE( 15, "ToyHardwareInterface::FillBuffer send_calls=%d usecs_since_start=%ld delta=%ld"
+	      , send_calls_, usecs_since_start, delta );
+    if (delta > 0)
+		usleep( delta );
 
 #pragma GCC diagnostic pop
   }
-
-  last_call_time_=std::chrono::high_resolution_clock::now();
+  ++send_calls_;
 }
 
 void ToyHardwareInterface::AllocateReadoutBuffer(char** buffer) {
