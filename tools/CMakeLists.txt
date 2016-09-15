@@ -27,7 +27,7 @@ art_make_exec(demo_driver
   ${CETLIB}
   )
 
-art_make_exec(readfhicl
+art_make_exec(read_fhicl SOURCE readfhicl.cc
   LIBRARIES
   ${FHICLCPP}
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
