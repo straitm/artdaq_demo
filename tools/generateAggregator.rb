@@ -54,9 +54,9 @@ daq: {
     %{graphite_metric} }
   }
 
-  monitoring_transfer: {
+  transfer_to_dispatcher: {
 
-    transferPluginType: shmem
+    transferPluginType: Shmem
 
     max_fragment_size_words: %{size_words}
     first_event_builder_rank: %{total_frs}
@@ -69,7 +69,7 @@ daq: {
     multicast_port: 30001   
 
     local_address: \"10.226.9.16\"  \# mu2edaq01
-    \#  local_address: \"10.226.9.19\"  \# mu2edaq05
+\#      local_address: \"10.226.9.19\"  \# mu2edaq05
 
     receive_buffer_size: 100000000
 
@@ -77,6 +77,7 @@ daq: {
     subfragments_per_send: 10
 
   }
+
 }" )
 
   agConfig.gsub!(/\%\{size_words\}/, String(fragSizeWords))
@@ -91,7 +92,8 @@ daq: {
   agConfig.gsub!(/\%\{file_duration\}/, String(fileDuration))
   agConfig.gsub!(/\%\{file_event_count\}/, String(fileEventCount))
   if agType == "online_monitor"
-    agConfig.gsub!(/\%\{ag_type_param_name\}/, "is_online_monitor")
+    #agConfig.gsub!(/\%\{ag_type_param_name\}/, "is_online_monitor")
+    agConfig.gsub!(/\%\{ag_type_param_name\}/, "is_dispatcher")
   else
     agConfig.gsub!(/\%\{ag_type_param_name\}/, "is_data_logger")
   end
