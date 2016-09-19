@@ -58,24 +58,10 @@ daq: {
 
     transferPluginType: Shmem
 
+    unique_label: \"shared_memory_between_data_logger_and_dispatcher\"
+
     max_fragment_size_words: %{size_words}
     first_event_builder_rank: %{total_frs}
-    
-    \# Variables below this in the monitoring_transfer table are only relevant
-    \# if transferPluginType, above, is set to multicast. You'll need to 
-    \# figure out what the local_address to use for your system is
-
-    multicast_address: \"224.0.0.1\"
-    multicast_port: 30001   
-
-    local_address: \"10.226.9.16\"  \# mu2edaq01
-\#      local_address: \"10.226.9.19\"  \# mu2edaq05
-
-    receive_buffer_size: 100000000
-
-    subfragment_size: 6000
-    subfragments_per_send: 10
-
   }
 
 }" )
