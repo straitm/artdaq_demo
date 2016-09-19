@@ -119,10 +119,15 @@ else
     install_package artdaq-utilities v1_00_08 || exit 1
 fi
 
+#JCF, Sep-19-2016
+
+# artdaq commit ecce15b4f1428b8ef5132b8c02e831f4820beb9b is the
+# merge-in of the dispatcher code
+
 if [ -n "${opt_HEAD-}" ];then
 install_package artdaq develop eth || exit 1
 else
-install_package artdaq feature/dispatcher eth || exit 1
+install_package artdaq ecce15b4f1428b8ef5132b8c02e831f4820beb9b eth || exit 1
 fi
 
 setup_qualifier="$equalifier $squalifier eth"
