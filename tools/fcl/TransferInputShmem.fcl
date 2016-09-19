@@ -17,7 +17,7 @@
 # If "modulus" is set to "N", that means "send every Nth event from
 # the dispatcher"
 
-modulus: 50
+modulus: 5
 
 physics:
 {
@@ -44,13 +44,22 @@ physics:
      frag_type: TOY1
    }
 
+   toyDump: {
+     module_type: ToyDump
+     raw_data_label: daq
+     frag_type: TOY1
+     num_adcs_to_show: 10   # Obviously this should be no more than ADC counts per fragment
+     dump_to_screen: true
+   }
+
   }
 
 
   a1: [app, wf]
   a2: [checkintegrity]
+  a3: [toyDump]
   e1: [ out1 ]
-  end_paths: [ a1 ]
+  end_paths: [ a3 ]
 }
 
 outputs:
@@ -75,13 +84,15 @@ source:
 
   timeoutInUsecs: 10000000  
 
-  dispatcherHost: mu2edaq01
+  dispatcherHost: localhost
   dispatcherPort: 5266
 
   transfer_plugin: {
 
     transferPluginType: NthEvent
     nth: @local::modulus
+
+    unique_label: "shmem1"
 
     physical_transfer_plugin: {
 
