@@ -17,7 +17,7 @@
 # If "modulus" is set to "N", that means "send every Nth event from
 # the dispatcher"
 
-modulus: 5
+modulus: 100
 
 physics:
 {
@@ -59,7 +59,7 @@ physics:
   a2: [checkintegrity]
   a3: [toyDump]
   e1: [ out1 ]
-  end_paths: [ a3 ]
+  end_paths: [ a1 ]
 }
 
 outputs:

@@ -315,13 +315,14 @@ if [ $installStatus -eq 0 ] && [ "x${opt_run_demo-}" != "x" ]; then
 
     $git_working_path/tools/xt_cmd.sh $root --geom '132x33 -sl 2500' \
         -c '. ./setupARTDAQDEMO' \
+        -c 'cp -p fcl/TransferInputShmem.fcl fcl/TransferInputShmem2.fcl' \
         -c start2x2x2System.sh
     sleep 2
 
     $git_working_path/tools/xt_cmd.sh $root --geom 132 \
         -c '. ./setupARTDAQDEMO' \
         -c ':,sleep 10' \
-        -c 'manage2x2x2System.sh -m on init' \
+        -c 'manage2x2x2System.sh init' \
         -c ':,sleep 5' \
         -c 'manage2x2x2System.sh -N 101 start' \
         -c ':,sleep 60' \
@@ -331,6 +332,24 @@ if [ $installStatus -eq 0 ] && [ "x${opt_run_demo-}" != "x" ]; then
         -c ': For additional commands, see output from: manage2x2x2System.sh --help' \
         -c ':: manage2x2x2System.sh --help' \
         -c ':: manage2x2x2System.sh exit'
+
+    sleep 14;
+
+    $git_working_path/tools/xt_cmd.sh $root --geom '132x33 -sl 2500' \
+        -c '. ./setupARTDAQDEMO' \
+        -c 'art -c fcl/TransferInputShmem.fcl'
+
+    sleep 4;
+
+    $git_working_path/tools/xt_cmd.sh $root --geom '132x33 -sl 2500' \
+        -c '. ./setupARTDAQDEMO' \
+	-c 'sed -r -i "s/.*modulus.*[0-9]+.*/modulus: 10/" fcl/TransferInputShmem2.fcl' \
+	-c 'sed -r -i "/end_paths:/s/a1/a3/" fcl/TransferInputShmem2.fcl' \
+	-c 'sed -r -i "/shm_key:/s/.*/shm_key: 0x40471453/" fcl/TransferInputShmem2.fcl' \
+	-c 'sed -r -i "s/shmem1/shmem2/" fcl/TransferInputShmem2.fcl' \
+        -c 'art -c fcl/TransferInputShmem2.fcl'
+
+
 elif [ $installStatus -eq 0 ]; then
     echo "artdaq-demo has been installed correctly. Please see: "
     echo "https://cdcvs.fnal.gov/redmine/projects/artdaq-demo/wiki/Running_a_sample_artdaq-demo_system"
