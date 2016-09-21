@@ -64,10 +64,10 @@ sourcetext += "\n\n"
 sourcetext += "simple_plugin(" + fraggentoken + " \"generator\"\n"
 sourcetext += <<-'EOS'
   artdaq-demo_Overlays
-  ${ARTDAQ_APPLICATION}
-  ${ARTDAQ_DAQDATA}
-  ${ARTDAQ_UTILITIES}
-  ${ART_UTILITIES}
+  artdaq_Application
+  artdaq_DAQdata
+  artdaq_Utilities
+  art_Utilities
   ${FHICLCPP} 
   ${CETLIB} 
   )

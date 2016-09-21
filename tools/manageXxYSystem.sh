@@ -1,60 +1,8 @@
 #!/bin/bash
 
-source `which setupDemoEnvironment.sh` ""
-
-AGGREGATOR_NODE=`hostname`
-THIS_NODE=`hostname -s`
-
-# this function expects a number of arguments:
-#  1) the DAQ command to be sent
-#  2) the run number (dummy for non-start commands)
-#  3) the compression level for ADC data [0..2]
-#  4) whether to run online monitoring
-#  5) the data directory
-#  6) the logfile name
-#  7) whether to write data to disk [0,1]
-#  8) the desired size of each data file
-#  9) the desired number of events in each file
-# 10) the desired time duration of each file (minutes)
-# 11) whether to print out CFG information (verbose)
-function launch() {
-  ebComp=$3
-  agComp=$3
-  if [[ "$3" == "2" ]]; then
-    ebComp=1
-    agComp=3
-  elif [[ "$3" == "1" ]]; then
-    ebComp=1
-    agComp=0
-  fi
-  enableSerial=""
-  if [[ "${11}" == "1" ]]; then
-      enableSerial="-e"
-  fi
-
-  DemoControl.rb ${enableSerial} -s -c $1 \
-    --v1720 `hostname`,${ARTDAQDEMO_BR_PORT[0]},0 \
-    --v1720 `hostname`,${ARTDAQDEMO_BR_PORT[1]},1 \
-    --eb `hostname`,${ARTDAQDEMO_EB_PORT[0]},$ebComp \
-    --eb `hostname`,${ARTDAQDEMO_EB_PORT[1]},$ebComp \
-    --data-dir ${5} --online-monitoring $4 \
-    --write-data ${7} --file-size ${8} \
-    --file-event-count ${9} --file-duration ${10} \
-    --run-number $2 2>&1 | tee -a ${6}
-}
-
-# 30-Dec-2013, KAB - cut out from usage text below...
-#  -s <file size>: specifies the size threshold for closing data files (in MB)
-#      [default is zero, which means that there is no file size limit]
-#  --file-events <count>: specifies the desired number of events in each file
-#      [default=0, which means no event count limit for files]
-#  --file-duration <duration>: specifies the desired duration of each file (minutes)
-#      [default=0, which means no duration limit for files]
-
 scriptName=`basename $0`
-usage () {
-    echo "
-Usage: ${scriptName} [options] <command>
+USAGE="
+Usage: ${scriptName} <.cfg file> [options] <command>
 Where command is one of:
   init, start, pause, resume, stop, status, get-legal-commands,
   shutdown, start-system, restart, reinit, exit,
@@ -96,12 +44,20 @@ Notes:
    * fast-reinit - this is the same as a fast-shutdown followed by a start-system
        and an init
    * fast-exit - this stops the MPI program, and exits PMT.
-Examples: ${scriptName} -p 32768 init
-          ${scriptName} -N 101 start
-" >&2
-}
-
-# parse the command-line options
+Examples: $scriptName 2x2     -p 32768 init
+          $scriptName 2x2.cfg -N 101 start
+          $scriptName started -N 101 start
+.cfg file format:
+<exe> <node> <port>
+example .cfg:
+BoardReaderMain mu2edaq05-data 5305
+BoardReaderMain mu2edaq06-data 5306
+EventBuilderMain mu2edaq05-data 5335
+EventBuilderMain mu2edaq06-data 5336
+"
+# set env including ARTDAQDEMO_PMT_PORT, resets dataDir
+source `which setupDemoEnvironment.sh` ""
+# defaults
 originalCommand="$0 $*"
 compressionLevel=1
 onmonEnable=off
@@ -113,61 +69,42 @@ fsChoiceSpecified=0
 fileEventCount=0
 fileDuration=0
 verbose=0
-OPTIND=1
-while getopts "hc:N:o:t:m:Ds:w:v-:" opt; do
-    if [ "$opt" = "-" ]; then
-        opt=$OPTARG
+# parse the command-line options
+op1chr='rest=`expr "$op" : "[^-]\(.*\)"`; test -n "$rest" && set -- "-$rest" "$@"'
+op1arg='rest=`expr "$op" : "[^-]\(.*\)"`; test -n "$rest" && set -- "$rest"  "$@"'
+args=
+while [ -n "${1-}" ];do
+    if expr "x${1-}" : 'x-' >/dev/null;then
+        op=`expr "x$1" : 'x-\(.*\)'`; shift   # done with $1
+        case "$op" in
+        h|\?|-help) echo "$USAGE";exit;;
+        v*)  eval $op1chr; verbose=1;;
+        D*)  eval $op1chr; diskWriting=0;;
+        c*)  eval $op1arg; compressionLevel="$1";shift;;
+        N*)  eval $op1arg; runNumber="$1";shift;;
+        m*)  eval $op1arg; onmonEnable="$1";shift;;
+        o*)  eval $op1arg; dataDir="$1";shift;;
+        *)   echo "Unknown opt -$op"; echo "$USAGE"; exit 1;;
+        esac
+    else
+        aa=`echo "$1" | sed -e "s/'/'\"'\"'/g"` args="$args '$aa'"; shift
     fi
-    case $opt in
-        h | help)
-            usage
-            exit 1
-            ;;
-        c)
-            compressionLevel=${OPTARG}
-            ;;
-        N)
-            runNumber=${OPTARG}
-            ;;
-        m)
-            onmonEnable=${OPTARG}
-            ;;
-        o)
-            dataDir=${OPTARG}
-            ;;
-        D)
-            diskWriting=0
-            ;;
-#        file-events)
-#            fileEventCount=${!OPTIND}
-#            let OPTIND=$OPTIND+1
-#            ;;
-#        file-duration)
-#            fileDuration=${!OPTIND}
-#            let OPTIND=$OPTIND+1
-#            ;;
-#        s)
-#            fileSize=${OPTARG}
-#            fsChoiceSpecified=1
-#            ;;
-        v)
-            verbose=1
-            ;;
-        *)
-            usage
-            exit 1
-            ;;
-    esac
 done
-shift $(($OPTIND - 1))
+eval "set -- $args \"\$@\""; unset args aa
+test $# -lt 2 && { echo "Invalid number of args $#"; echo "$USAGE"; exit 1; }
 
-# fetch the command to run
-if [ $# -lt 1 ]; then
-    usage
-    exit
-fi
-command=$1
-shift
+# fetch the config and command to run
+cf=
+test             -f $1.cfg && { cf=$1.cfg; cfgdir=$1.d; }
+test -z "$cf" -a -f $1     && { cf=$1      cfgdir=`dirname $1`/`basename $1 .cfg`; }
+test -z "$cf" && { echo "cfg file not found"; exit 1; }
+command=$2;
+shift 2
+
+cfd=`dirname $cf` # config file dirname
+cfd=`cd $cfd >/dev/null 2>&1;pwd`
+cf="$cfd/`basename $cf`"
+test -d "$cfgdir" && cd "$cfgdir"
 
 # verify that the command is one that we expect
 if [[ "$command" != "start-system" ]] && \
@@ -187,8 +124,8 @@ if [[ "$command" != "start-system" ]] && \
    [[ "$command" != "exit" ]] && \
    [[ "$command" != "fast-exit" ]]; then
     echo "Invalid command."
-    usage
-    exit
+    echo "$USAGE"
+    exit 1
 fi
 
 # verify that the expected arguments were provided
@@ -196,7 +133,7 @@ if [[ "$command" == "start" ]] && [[ "$runNumber" == "" ]]; then
     echo ""
     echo "*** A run number needs to be specified."
     usage
-    exit
+    exit 1
 fi
 
 # fill in values for options that weren't specified
@@ -221,6 +158,48 @@ echo ">>> ${originalCommand} (Disk writing is ${diskWriting})"
 let shmKey=1078394880+${ARTDAQDEMO_PMT_PORT}
 shmKeyString=`printf "0x%x" ${shmKey}`
 
+
+# this function expects a number of arguments:
+#  1) the DAQ command to be sent
+#  2) the run number (dummy for non-start commands)
+#  3) the compression level for ADC data [0..2]
+#  4) whether to run online monitoring
+#  5) the data directory
+#  6) the logfile name
+#  7) whether to write data to disk [0,1]
+#  8) the desired size of each data file
+#  9) the desired number of events in each file
+# 10) the desired time duration of each file (minutes)
+# 11) whether to print out CFG information (verbose)
+function launch() {
+  ebComp=$3
+  agComp=$3
+  if [[ "$3" == "2" ]]; then
+    ebComp=1
+    agComp=3
+  elif [[ "$3" == "1" ]]; then
+    ebComp=1
+    agComp=0
+  fi
+  enableSerial=""
+  if [[ "${11}" == "1" ]]; then
+      enableSerial="-e"
+  fi
+
+  cfg_ops=`cat $cf | awk '
+/BoardReader/{printf "--toy%d %s,%s,%d\n",t+1,$2,$3,b;t=xor(t,1);++b}
+/EventBuilder/{printf "--eb %s,%s,'$ebComp'\n",$2,$3}
+'`
+  DemoControl.rb ${enableSerial} -s -c $1 \
+    $cfg_ops \
+    --data-dir ${5} --online-monitoring $4 \
+    --write-data ${7} --file-size ${8} \
+    --file-event-count ${9} --file-duration ${10} \
+    --run-number $2 2>&1 | tee -a ${6}
+}
+
+THIS_NODE=`hostname -s`
+
 # invoke the requested command
 if [[ "$command" == "shutdown" ]]; then
     # first send a stop command to end the run (in case it is needed)
@@ -233,11 +212,10 @@ if [[ "$command" == "shutdown" ]]; then
         $fileEventCount $fileDuration $verbose
     # stop the MPI program
     xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.stopSystem
-    # clean up any stale shared memory segment
-    ssh ${AGGREGATOR_NODE} "ipcs | grep ${shmKeyString} | awk '{print \$2}' | xargs ipcrm -m 2>/dev/null"
+
 elif [[ "$command" == "start-system" ]]; then
-    ssh ${AGGREGATOR_NODE} "ipcs | grep ${shmKeyString} | awk '{print \$2}' | xargs ipcrm -m 2>/dev/null"
     xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.startSystem
+
 elif [[ "$command" == "restart" ]]; then
     # first send a stop command to end the run (in case it is needed)
     launch "stop" $runNumber $compressionLevel $onmonEnable $dataDir \
@@ -249,10 +227,9 @@ elif [[ "$command" == "restart" ]]; then
         $fileEventCount $fileDuration $verbose
     # stop the MPI program
     xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.stopSystem
-    # clean up any stale shared memory segment
-    ssh ${AGGREGATOR_NODE} "ipcs | grep ${shmKeyString} | awk '{print \$2}' | xargs ipcrm -m 2>/dev/null"
     # start the MPI program
     xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.startSystem
+
 elif [[ "$command" == "reinit" ]]; then
     # first send a stop command to end the run (in case it is needed)
     launch "stop" $runNumber $compressionLevel $onmonEnable $dataDir \
@@ -264,8 +241,6 @@ elif [[ "$command" == "reinit" ]]; then
         $fileEventCount $fileDuration $verbose
     # stop the MPI program
     xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.stopSystem
-    # clean up any stale shared memory segment
-    ssh ${AGGREGATOR_NODE} "ipcs | grep ${shmKeyString} | awk '{print \$2}' | xargs ipcrm -m 2>/dev/null"
     # start the MPI program
     xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.startSystem
     # send the init command to re-initialize the system
@@ -273,24 +248,23 @@ elif [[ "$command" == "reinit" ]]; then
     launch "init" $runNumber $compressionLevel $onmonEnable $dataDir \
         $logFile $diskWriting $fileSize \
         $fileEventCount $fileDuration $verbose
+
 elif [[ "$command" == "exit" ]]; then
     launch "shutdown" $runNumber $compressionLevel $onmonEnable $dataDir \
         $logFile $diskWriting $fileSize \
         $fileEventCount $fileDuration $verbose
     xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.stopSystem
     xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.exit
-    ssh ${AGGREGATOR_NODE} "ipcs | grep ${shmKeyString} | awk '{print \$2}' | xargs ipcrm -m 2>/dev/null"
 
 elif [[ "$command" == "fast-shutdown" ]]; then
     xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.stopSystem
-    ssh ${AGGREGATOR_NODE} "ipcs | grep ${shmKeyString} | awk '{print \$2}' | xargs ipcrm -m 2>/dev/null"
+
 elif [[ "$command" == "fast-restart" ]]; then
     xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.stopSystem
-    ssh ${AGGREGATOR_NODE} "ipcs | grep ${shmKeyString} | awk '{print \$2}' | xargs ipcrm -m 2>/dev/null"
     xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.startSystem
+
 elif [[ "$command" == "fast-reinit" ]]; then
     xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.stopSystem
-    ssh ${AGGREGATOR_NODE} "ipcs | grep ${shmKeyString} | awk '{print \$2}' | xargs ipcrm -m 2>/dev/null"
     xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.startSystem
     sleep 5
     launch "init" $runNumber $compressionLevel $onmonEnable $dataDir \
@@ -299,7 +273,6 @@ elif [[ "$command" == "fast-reinit" ]]; then
 elif [[ "$command" == "fast-exit" ]]; then
     xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.stopSystem
     xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.exit
-    ssh ${AGGREGATOR_NODE} "ipcs | grep ${shmKeyString} | awk '{print \$2}' | xargs ipcrm -m 2>/dev/null"
 
 else
     launch $command $runNumber $compressionLevel $onmonEnable $dataDir \

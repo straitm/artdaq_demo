@@ -105,34 +105,29 @@ function install_package {
 # else
 # install_package artdaq-core v1_04_20 e7 s15 || exit 1
 # fi
-install_package artdaq-core v1_05_00 || exit 1
+install_package artdaq-core v1_05_06 || exit 1
 
 if [ -n "${opt_HEAD-}" ];then
 install_package artdaq-core-demo develop || exit 1
 else
-install_package artdaq-core-demo v1_05_01 || exit 1
+install_package artdaq-core-demo v1_05_02 || exit 1
 fi
 
 if [ -n "${opt_HEAD-}" ];then
     install_package artdaq-utilities develop || exit 1
 else
-    install_package artdaq-utilities v1_00_07 || exit 1
+    install_package artdaq-utilities v1_00_08 || exit 1
 fi
 
-# JCF, Aug-8-2016
+#JCF, Sep-20-2016
 
-# artdaq commit 19ad73b5b4e13423174b0dcab9a33876a09b9971 includes,
-# among other things, the result of my merge of the monitoring branch
-# into the develop branch, as well as my upgrade to artdaqDriver,
-# enabling it to issue the start and stop transitions to generators
-# which derive from CommandableFragmentGenerator. Next time we cut an
-# official artdaq-demo release, we should replace this with an
-# official artdaq release.
+# artdaq commit 5c92d89171ac70d13e371154ecc52cf5cba11206 is the
+# merge-in of the dispatcher code with a bugfix over the previous day's commit
 
 if [ -n "${opt_HEAD-}" ];then
 install_package artdaq develop eth || exit 1
 else
-install_package artdaq 19ad73b5b4e13423174b0dcab9a33876a09b9971 eth || exit 1
+install_package artdaq 5c92d89171ac70d13e371154ecc52cf5cba11206 eth || exit 1
 fi
 
 setup_qualifier="$equalifier $squalifier eth"

@@ -1,5 +1,6 @@
 cet_script(setupDemoEnvironment.sh DemoControl.rb 
 startSystem.sh manageSystem.sh
+startXxYSystem.sh manageXxYSystem.sh
 start2x2System.sh manage2x2System.sh 
 start2x2x2System.sh manage2x2x2System.sh
 start2x2x4System.sh manage2x2x4System.sh
@@ -19,14 +20,14 @@ art_make_exec(demo_driver
   artdaq_DAQrate
   artdaq-core_Utilities
   artdaq-core_Core
-  ${ART_FRAMEWORK_ART}
+  art_Framework_Art
   ${FHICLCPP}
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
   ${MPI_C_LIBRARIES}
   ${CETLIB}
   )
 
-art_make_exec(readfhicl
+art_make_exec(read_fhicl SOURCE readfhicl.cc
   LIBRARIES
   ${FHICLCPP}
   ${Boost_PROGRAM_OPTIONS_LIBRARY}
