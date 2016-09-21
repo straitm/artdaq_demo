@@ -35,8 +35,8 @@ e10:s35:prof   e10:s35:prof  	 e10:s35:prof
 e10:s35:debug  e10:s35:debug 	 e10:s35:debug
 e10:s34:prof   e10:s34:prof  	 e10:s34:prof
 e10:s34:debug  e10:s34:debug 	 e10:s34:debug
-e9:s21:prof    e9:s21:eth:prof  	 e9:s21:prof
-e9:s21:debug   e9:s21:eth:debug 	 e9:s21:debug
+e9:s21:prof    e9:s21:prof  	 e9:s21:prof
+e9:s21:debug   e9:s21:debug 	 e9:s21:debug
 e10:s41:eth:prof   e10:s41:eth:prof  	 e10:s41:prof
 e10:s41:eth:debug  e10:s41:eth:debug 	 e10:s41:debug
 e10:s41:ib:prof    e10:s41:ib:prof   	 e10:s41:prof
