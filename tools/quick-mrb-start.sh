@@ -111,7 +111,10 @@ function detectAndPull() {
 	    exit 1
 	fi
 
+	local returndir=$PWD
+	cd $Base/products
 	tar -xjf $Base/download/$packageFile
+	cd $returndir
     fi
     cd $startDir
 }
