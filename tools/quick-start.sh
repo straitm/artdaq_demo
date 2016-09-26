@@ -265,7 +265,7 @@ $git_working_path/tools/installArtDaqDemo.sh ${productsdir:-products} $git_worki
 installStatus=$?
 
 upsflavor=`ups flavor`
-qt_installed=`ups list -aK+ qt v5_4_2a -q$equalifier -f$upsflavor|grep -c "qt"`
+qt_installed=`ups list -aK+ qt v5_6_1a -q$equalifier -f$upsflavor|grep -c "qt"`
 amfver=`curl http://scisoft.fnal.gov/scisoft/packages/artdaq_mfextensions/ 2>/dev/null|grep artdaq_mfextensions|grep "id=\"v"|tail -1|sed 's/.* id="\(v.*\)".*/\1/'`
 mfe_installed=`ups list -aK+ artdaq_mfextensions $amfver -q$equalifier:$squalifier:$build_type -f$upsflavor|grep -c "artdaq_mfextensions"`
 if [ $installStatus -eq 0 ] &&  [ "x${opt_viewer-}" != "x" ] && [ $qt_installed -eq 0 -o $mfe_installed -eq 0 ]; then
@@ -284,7 +284,7 @@ if [ $installStatus -eq 0 ] &&  [ "x${opt_viewer-}" != "x" ] && [ $qt_installed 
     packagelist=""
     amfdotver=`echo $amfver|sed 's/_/\./g'|sed 's/v//'`
     packagelist="$packagelist artdaq_mfextensions/$amfver/artdaq_mfextensions-$amfdotver-${os}-x86_64-${equalifier}-${squalifier}-$build_type.tar.bz2"
-    packagelist="$packagelist qt/v5_4_2a/qt-5.4.2a-${os}-x86_64-${equalifier}.tar.bz2"
+    packagelist="$packagelist qt/v5_6_1a/qt-5.6.1a-${os}-x86_64-${equalifier}.tar.bz2"
 
     for packagehtml in $packagelist ; do
 	echo "Downloading http://scisoft.fnal.gov/scisoft/packages/${packagehtml}..."
