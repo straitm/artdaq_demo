@@ -119,10 +119,16 @@ else
     install_package artdaq-utilities v1_00_09 || exit 1
 fi
 
+# JCF, Sep-29-2016
+
+# artdaq commit a7380e333f804c54d44faddf2e4b44d987d69c3c includes
+# changes I made to simplify the Transfer plugin interface after the
+# v1_13_02 release
+
 if [ -n "${opt_HEAD-}" ];then
 install_package artdaq develop eth || exit 1
 else
-install_package artdaq v1_13_02 eth || exit 1
+install_package artdaq a7380e333f804c54d44faddf2e4b44d987d69c3c eth || exit 1
 fi
 
 setup_qualifier="$equalifier $squalifier eth"
