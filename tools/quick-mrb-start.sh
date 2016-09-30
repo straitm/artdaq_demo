@@ -111,7 +111,10 @@ function detectAndPull() {
 	    exit 1
 	fi
 
+	local returndir=$PWD
+	cd $Base/products
 	tar -xjf $Base/download/$packageFile
+	cd $returndir
     fi
     cd $startDir
 }
@@ -243,22 +246,10 @@ installStatus=$?
 if [ $installStatus -eq 0 ] && [ "x${opt_run_demo-}" != "x" ]; then
     echo doing the demo
 
-    $ARTDAQ_DEMO_DIR/tools/xt_cmd.sh $Base --geom '132x33 -sl 2500' \
-        -c '. ./setupARTDAQDEMO' \
-        -c start2x2x2System.sh
-    sleep 2
+    toolsdir=${ARTDAQ_DEMO_DIR}/tools
 
-    $ARTDAQ_DEMO_DIR/tools/xt_cmd.sh $Base --geom 132 \
-        -c '. ./setupARTDAQDEMO' \
-        -c ':,sleep 10' \
-        -c 'manage2x2x2System.sh -m on init' \
-        -c ':,sleep 5' \
-        -c 'manage2x2x2System.sh -N 101 start' \
-        -c ':,sleep 60' \
-        -c 'manage2x2x2System.sh stop' \
-        -c ': For additional commands, see output from: manage2x2x2System.sh --help' \
-        -c ':: manage2x2x2System.sh --help' \
-        -c ':: manage2x2x2System.sh exit'
+    . $toolsdir/run_demo.sh $Base $toolsdir
+
 elif [ $installStatus -eq 0 ]; then
     echo "artdaq-demo has been installed correctly. Please see: "
     echo "https://cdcvs.fnal.gov/redmine/projects/artdaq-demo/wiki/Running_a_sample_artdaq-demo_system"

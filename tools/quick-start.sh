@@ -269,7 +269,7 @@ $git_working_path/tools/installArtDaqDemo.sh ${productsdir:-products} $git_worki
 installStatus=$?
 
 upsflavor=`ups flavor`
-qt_installed=`ups list -aK+ qt v5_4_2a -q$equalifier -f$upsflavor|grep -c "qt"`
+qt_installed=`ups list -aK+ qt v5_6_1a -q$equalifier -f$upsflavor|grep -c "qt"`
 amfver=`curl http://scisoft.fnal.gov/scisoft/packages/artdaq_mfextensions/ 2>/dev/null|grep artdaq_mfextensions|grep "id=\"v"|tail -1|sed 's/.* id="\(v.*\)".*/\1/'`
 mfe_installed=`ups list -aK+ artdaq_mfextensions $amfver -q$equalifier:$squalifier:$build_type -f$upsflavor|grep -c "artdaq_mfextensions"`
 if [ $installStatus -eq 0 ] &&  [ "x${opt_viewer-}" != "x" ] && [ $qt_installed -eq 0 -o $mfe_installed -eq 0 ]; then
@@ -288,7 +288,7 @@ if [ $installStatus -eq 0 ] &&  [ "x${opt_viewer-}" != "x" ] && [ $qt_installed 
     packagelist=""
     amfdotver=`echo $amfver|sed 's/_/\./g'|sed 's/v//'`
     packagelist="$packagelist artdaq_mfextensions/$amfver/artdaq_mfextensions-$amfdotver-${os}-x86_64-${equalifier}-${squalifier}-$build_type.tar.bz2"
-    packagelist="$packagelist qt/v5_4_2a/qt-5.4.2a-${os}-x86_64-${equalifier}.tar.bz2"
+    packagelist="$packagelist qt/v5_6_1a/qt-5.6.1a-${os}-x86_64-${equalifier}.tar.bz2"
 
     for packagehtml in $packagelist ; do
 	echo "Downloading http://scisoft.fnal.gov/scisoft/packages/${packagehtml}..."
@@ -317,24 +317,8 @@ fi
 if [ $installStatus -eq 0 ] && [ "x${opt_run_demo-}" != "x" ]; then
     echo doing the demo
 
-    $git_working_path/tools/xt_cmd.sh $root --geom '132x33 -sl 2500' \
-        -c '. ./setupARTDAQDEMO' \
-        -c start2x2x2System.sh
-    sleep 2
+    . $git_working_path/tools/run_demo.sh $root $git_working_path/tools
 
-    $git_working_path/tools/xt_cmd.sh $root --geom 132 \
-        -c '. ./setupARTDAQDEMO' \
-        -c ':,sleep 10' \
-        -c 'manage2x2x2System.sh -m on init' \
-        -c ':,sleep 5' \
-        -c 'manage2x2x2System.sh -N 101 start' \
-        -c ':,sleep 60' \
-        -c 'manage2x2x2System.sh stop' \
-        -c ':,sleep 5' \
-        -c 'manage2x2x2System.sh shutdown' \
-        -c ': For additional commands, see output from: manage2x2x2System.sh --help' \
-        -c ':: manage2x2x2System.sh --help' \
-        -c ':: manage2x2x2System.sh exit'
 elif [ $installStatus -eq 0 ]; then
     echo "artdaq-demo has been installed correctly. Please see: "
     echo "https://cdcvs.fnal.gov/redmine/projects/artdaq-demo/wiki/Running_a_sample_artdaq-demo_system"
