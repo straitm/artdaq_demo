@@ -71,9 +71,9 @@ while [ -n "${1-}" ];do
             -products-dir)    eval $reqarg; productsdir=$1;    shift;;
             -skip-check)opt_skip_check=1;;
             -run-demo)  opt_run_demo=--run-demo;;
-	    -debug)     opt_debug=--debug;;
-	    -viewer) opt_viewer=--viewer;;
-	    -HEAD)  opt_HEAD=--HEAD;;
+			-debug)     opt_debug=--debug;;
+			-viewer) opt_viewer=--viewer;;
+			-HEAD)  opt_HEAD=--HEAD;;
             *)          echo "Unknown option -$op"; do_help=1;;
         esac
     else
@@ -87,7 +87,7 @@ test -n "${do_help-}" -o $# -ge 2 && echo "$USAGE" && exit
 test $# -eq 1 && root=$1
 
 if [ $opt_v -gt 0 ]; then
-  set -x
+	set -x
 fi
 
 #check that $0 is in a git repo
@@ -239,11 +239,6 @@ if [[ ! -n ${productsdir:-} && ( ! -d products || ! -d download || -n "${opt_for
     git clone http://cdcvs.fnal.gov/projects/cetpkgsupport
     os=`./cetpkgsupport/bin/get-directory-name os`
 
-	if [[ "$os" == "u16" ]]; then
-		# No art support for Ubuntu 16 yet...
-		origos="u16"
-		os="u14"
-    fi
 	if [[ "$os" == "u14" ]]; then
 		echo "-H Linux64bit+3.19-2.19" >../products/ups_OVERRIDE.`hostname`
     fi
@@ -251,24 +246,21 @@ if [[ ! -n ${productsdir:-} && ( ! -d products || ! -d download || -n "${opt_for
     echo "Running ./pullProducts ../products ${os} artdaq-${version} $defaultqualWithS $build_type"
     ./pullProducts ../products ${os} artdaq-${version} $defaultqualWithS $build_type
     
-    cd ../products
-	if [[ "$origos" == "u16" ]];then for dir in */*/u14*;do ln -s `echo $dir|sed 's|.*/||g'` `echo $dir|sed 's/u14/u16/g'`;done;fi
-
     if [ $? -ne 0 ]; then
-	echo "Error in pullProducts. Please go to http://scisoft.fnal.gov/scisoft/bundles/artdaq/${version}/manifest and make sure that a manifest for the specified qualifiers ($defaultqualWithS) exists."
-	exit 1
+		echo "Error in pullProducts. Please go to http://scisoft.fnal.gov/scisoft/bundles/artdaq/${version}/manifest and make sure that a manifest for the specified qualifiers ($defaultqualWithS) exists."
+		exit 1
     fi
     cd ..
 
 elif [[ -n ${productsdir:-} ]] ; then 
 
     if [[ ! -d $productsdir ]] ; then
-	echo 'Unable to find products directory "'$productsdir'", ' \
-	    "aborting..."
-	exit 1
+		echo 'Unable to find products directory "'$productsdir'", ' \
+			"aborting..."
+		exit 1
     else
-	echo "Will assume all needed products can be found in " \
-	    "$productsdir; no downloading will be performed"
+		echo "Will assume all needed products can be found in " \
+			"$productsdir; no downloading will be performed"
     fi
 fi
 
@@ -289,64 +281,57 @@ if [ $installStatus -eq 0 ] &&  [ "x${opt_viewer-}" != "x" ] && [ $qt_installed 
 
     cd download
     if [ -n ${os-} ]; then
-	echo "Cloning cetpkgsupport to determine current OS"
-	git clone http://cdcvs.fnal.gov/projects/cetpkgsupport
-	os=`./cetpkgsupport/bin/get-directory-name os`
-
-	if [[ "$os" == "u16" ]]; then os="u14"; origos="u16" fi
-    fi
-
-    packagelist=""
-    amfdotver=`echo $amfver|sed 's/_/\./g'|sed 's/v//'`
-    packagelist="$packagelist artdaq_mfextensions/$amfver/artdaq_mfextensions-$amfdotver-${os}-x86_64-${equalifier}-${squalifier}-$build_type.tar.bz2"
-    packagelist="$packagelist qt/v5_6_1a/qt-5.6.1a-${os}-x86_64-${equalifier}.tar.bz2"
-
-    for packagehtml in $packagelist ; do
-	echo "Downloading http://scisoft.fnal.gov/scisoft/packages/${packagehtml}..."
-	wget http://scisoft.fnal.gov/scisoft/packages/$packagehtml > /dev/null 2>&1
-	
-	packagename=$( echo $packagehtml | awk 'BEGIN { FS="/" } { print $NF }' )
-
-	if [[ ! -e $packagename ]]; then
-	    echo "Unable to download $packagename"
-	    exit 1
+		echo "Cloning cetpkgsupport to determine current OS"
+		git clone http://cdcvs.fnal.gov/projects/cetpkgsupport
+		os=`./cetpkgsupport/bin/get-directory-name os`
 	fi
 
-	downloaddir=$PWD
-	cd ../products
-	echo "De-archiving $packagename ("$( stat -c %s $downloaddir/$packagename)" bytes)..."
-	tar -xjf $downloaddir/$packagename
+	packagelist=""
+	amfdotver=`echo $amfver|sed 's/_/\./g'|sed 's/v//'`
+	packagelist="$packagelist artdaq_mfextensions/$amfver/artdaq_mfextensions-$amfdotver-${os}-x86_64-${equalifier}-${squalifier}-$build_type.tar.bz2"
+	packagelist="$packagelist qt/v5_6_1a/qt-5.6.1a-${os}-x86_64-${equalifier}.tar.bz2"
 
-	if [[ "$origos" == "u16" ]];then for dir in */*/u14*;do ln -s `echo $dir|sed 's|.*/||g'` `echo $dir|sed 's/u14/u16/g'`;done;fi
+	for packagehtml in $packagelist ; do
+		echo "Downloading http://scisoft.fnal.gov/scisoft/packages/${packagehtml}..."
+		wget http://scisoft.fnal.gov/scisoft/packages/$packagehtml > /dev/null 2>&1
+		
+		packagename=$( echo $packagehtml | awk 'BEGIN { FS="/" } { print $NF }' )
 
-	cd $downloaddir
-    done
-    cd ..
+		if [[ ! -e $packagename ]]; then
+			echo "Unable to download $packagename"
+			exit 1
+		fi
+
+		downloaddir=$PWD
+		cd ../products
+		echo "De-archiving $packagename ("$( stat -c %s $downloaddir/$packagename)" bytes)..."
+		tar -xjf $downloaddir/$packagename
+
+		cd $downloaddir
+	done
+	cd ..
 fi
 
 if [ "x${opt_viewer-}" != "x" ]; then
-    echo "setup artdaq_mfextensions $amfver -q$equalifier:$squalifier:$build_type" >>./setupARTDAQDEMO
+	echo "setup artdaq_mfextensions $amfver -q$equalifier:$squalifier:$build_type" >>./setupARTDAQDEMO
 fi
 
 if [ $installStatus -eq 0 ] && [ "x${opt_run_demo-}" != "x" ]; then
-    echo doing the demo
+	echo doing the demo
 
-    . $git_working_path/tools/run_demo.sh $root $git_working_path/tools
+	. $git_working_path/tools/run_demo.sh $root $git_working_path/tools
 
 elif [ $installStatus -eq 0 ]; then
-    echo "artdaq-demo has been installed correctly. Please see: "
-    echo "https://cdcvs.fnal.gov/redmine/projects/artdaq-demo/wiki/Running_a_sample_artdaq-demo_system"
-    echo "for instructions on how to run, or re-run this script with the --run-demo option"
-    echo
+	echo "artdaq-demo has been installed correctly. Please see: "
+	echo "https://cdcvs.fnal.gov/redmine/projects/artdaq-demo/wiki/Running_a_sample_artdaq-demo_system"
+	echo "for instructions on how to run, or re-run this script with the --run-demo option"
+	echo
 else
-    echo "BUILD ERROR!!! SOMETHING IS VERY WRONG!!!"
-    echo
+	echo "BUILD ERROR!!! SOMETHING IS VERY WRONG!!!"
+	echo
 fi
 
 endtime=`date`
 
 echo "Build start time: $starttime"
 echo "Build end time:   $endtime"
-
-
-
