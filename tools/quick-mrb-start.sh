@@ -122,6 +122,10 @@ echo "Cloning cetpkgsupport to determine current OS"
 git clone http://cdcvs.fnal.gov/projects/cetpkgsupport
 os=`./cetpkgsupport/bin/get-directory-name os`
 
+if [[ "$os" == "u14" ]]; then
+	echo "-H Linux64bit+3.19-2.19" >../products/ups_OVERRIDE.`hostname`
+fi
+
 # Get all the information we'll need to decide which exact flavor of the software to install
 if [ -z "${tag:-}" ]; then tag=develop;fi
 wget https://cdcvs.fnal.gov/redmine/projects/artdaq-demo/repository/revisions/$tag/raw/ups/product_deps
