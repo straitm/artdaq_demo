@@ -239,12 +239,21 @@ if [[ ! -n ${productsdir:-} && ( ! -d products || ! -d download || -n "${opt_for
     git clone http://cdcvs.fnal.gov/projects/cetpkgsupport
     os=`./cetpkgsupport/bin/get-directory-name os`
 
+	if [[ "$os" == "u16" ]]; then
+		# No art support for Ubuntu 16 yet...
+		origos="u16"
+		os="u14"
+    fi
 	if [[ "$os" == "u14" ]]; then
 		echo "-H Linux64bit+3.19-2.19" >../products/ups_OVERRIDE.`hostname`
     fi
 
     echo "Running ./pullProducts ../products ${os} artdaq-${version} $defaultqualWithS $build_type"
     ./pullProducts ../products ${os} artdaq-${version} $defaultqualWithS $build_type
+    
+    cd ../products
+	if [[ "$origos" == "u16" ]];then for dir in */*/u14*;do ln -s `echo $dir|sed 's|.*/||g'` `echo $dir|sed 's/u14/u16/g'`;done
+
     if [ $? -ne 0 ]; then
 	echo "Error in pullProducts. Please go to http://scisoft.fnal.gov/scisoft/bundles/artdaq/${version}/manifest and make sure that a manifest for the specified qualifiers ($defaultqualWithS) exists."
 	exit 1
@@ -283,6 +292,8 @@ if [ $installStatus -eq 0 ] &&  [ "x${opt_viewer-}" != "x" ] && [ $qt_installed 
 	echo "Cloning cetpkgsupport to determine current OS"
 	git clone http://cdcvs.fnal.gov/projects/cetpkgsupport
 	os=`./cetpkgsupport/bin/get-directory-name os`
+
+	if [[ "$os" == "u16" ]]; then os="u14"; origos="u16" fi
     fi
 
     packagelist=""
@@ -305,6 +316,9 @@ if [ $installStatus -eq 0 ] &&  [ "x${opt_viewer-}" != "x" ] && [ $qt_installed 
 	cd ../products
 	echo "De-archiving $packagename ("$( stat -c %s $downloaddir/$packagename)" bytes)..."
 	tar -xjf $downloaddir/$packagename
+
+	if [[ "$origos" == "u16" ]];then for dir in */*/u14*;do ln -s `echo $dir|sed 's|.*/||g'` `echo $dir|sed 's/u14/u16/g'`;done
+
 	cd $downloaddir
     done
     cd ..
