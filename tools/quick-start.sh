@@ -252,7 +252,7 @@ if [[ ! -n ${productsdir:-} && ( ! -d products || ! -d download || -n "${opt_for
     ./pullProducts ../products ${os} artdaq-${version} $defaultqualWithS $build_type
     
     cd ../products
-	if [[ "$origos" == "u16" ]];then for dir in */*/u14*;do ln -s `echo $dir|sed 's|.*/||g'` `echo $dir|sed 's/u14/u16/g'`;done
+	if [[ "$origos" == "u16" ]];then for dir in */*/u14*;do ln -s `echo $dir|sed 's|.*/||g'` `echo $dir|sed 's/u14/u16/g'`;done;fi
 
     if [ $? -ne 0 ]; then
 	echo "Error in pullProducts. Please go to http://scisoft.fnal.gov/scisoft/bundles/artdaq/${version}/manifest and make sure that a manifest for the specified qualifiers ($defaultqualWithS) exists."
@@ -317,7 +317,7 @@ if [ $installStatus -eq 0 ] &&  [ "x${opt_viewer-}" != "x" ] && [ $qt_installed 
 	echo "De-archiving $packagename ("$( stat -c %s $downloaddir/$packagename)" bytes)..."
 	tar -xjf $downloaddir/$packagename
 
-	if [[ "$origos" == "u16" ]];then for dir in */*/u14*;do ln -s `echo $dir|sed 's|.*/||g'` `echo $dir|sed 's/u14/u16/g'`;done
+	if [[ "$origos" == "u16" ]];then for dir in */*/u14*;do ln -s `echo $dir|sed 's|.*/||g'` `echo $dir|sed 's/u14/u16/g'`;done;fi
 
 	cd $downloaddir
     done
