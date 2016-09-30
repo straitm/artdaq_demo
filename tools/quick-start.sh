@@ -242,6 +242,10 @@ if [[ ! -n ${productsdir:-} && ( ! -d products || ! -d download || -n "${opt_for
 	if [[ "$os" == "u14" ]]; then
 		echo "-H Linux64bit+3.19-2.19" >../products/ups_OVERRIDE.`hostname`
     fi
+	if [[ `echo $os|grep -c Linux` -gt 0 ]]; then
+		echo "-H Linux64bit+2.6-2.12" >../products/ups_OVERRIDE.`hostname`
+		os="slf6"
+    fi
 
     echo "Running ./pullProducts ../products ${os} artdaq-${version} $defaultqualWithS $build_type"
     ./pullProducts ../products ${os} artdaq-${version} $defaultqualWithS $build_type
