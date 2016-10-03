@@ -246,7 +246,7 @@ if [[ ! -n ${productsdir:-} && ( ! -d products || ! -d download || -n "${opt_for
 		osnumMajor=`uname -r|cut -f1 -d.`
 		osnumMinor=`uname -r|cut -f2 -d.`
 		if [ $osnumMajor -ge 3 ]; then
-			if [ $osnumMinor -ge 19 ]; then
+			if [ $osnumMinor -ge 19 ] || [ $osnumMajor -gt 3 ]; then
 				echo "-H Linux64bit+3.19-2.19" >../products/ups_OVERRIDE.`hostname`
 				os="u14"
 			elif [ $osnumMinor -ge 10 ];then
