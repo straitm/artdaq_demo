@@ -242,9 +242,26 @@ if [[ ! -n ${productsdir:-} && ( ! -d products || ! -d download || -n "${opt_for
 	if [[ "$os" == "u14" ]]; then
 		echo "-H Linux64bit+3.19-2.19" >../products/ups_OVERRIDE.`hostname`
     fi
-	if [[ `echo $os|grep -c Linux` -gt 0 ]]; then
-		echo "-H Linux64bit+2.6-2.12" >../products/ups_OVERRIDE.`hostname`
-		os="slf6"
+	if [[ `echo $os|grep -c Linux` -gt 0 ]] || [[ `echo $os|grep -c rolling` -gt 0 ]]; then
+		osnumMajor=`uname -r|cut -f1 -d.`
+		osnumMinor=`uname -r|cut -f2 -d.`
+		if [ $osnumMajor -ge 3 ]; then
+			if [ $osnumMinor -ge 19 ]; then
+				echo "-H Linux64bit+3.19-2.19" >../products/ups_OVERRIDE.`hostname`
+				os="u14"
+			elif [ $osnumMinor -ge 10 ];then
+				echo "-H Linux64bit+3.10-2.12" >../products/ups_OVERRIDE.`hostname`
+				os="slf7"
+			else
+				echo "-H Linux64bit+2.6-2.12" >../products/ups_OVERRIDE.`hostname`
+				os="slf6"
+			fi
+		elif [ $osnumMajor -ge 2 ] && [ $osnumMinor -ge 6 ]; then
+			echo "-H Linux64bit+2.6-2.12" >../products/ups_OVERRIDE.`hostname`
+			os="slf6"
+		else
+			echo "Incompatible OS detected! Please upgrade to a newer (2.6+) kernel!"
+		fi
     fi
 
     echo "Running ./pullProducts ../products ${os} artdaq-${version} $defaultqualWithS $build_type"
