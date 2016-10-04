@@ -302,9 +302,11 @@ if [ $installStatus -eq 0 ] &&  [ "x${opt_viewer-}" != "x" ] && [ $qt_installed 
     # A simple brute-force download of the packages which will be needed for this example
 
     cd download
-    if [ -n ${os-} ]; then
+    if ! [ -d "./cetpkgsupport" ]; then
 		echo "Cloning cetpkgsupport to determine current OS"
 		git clone http://cdcvs.fnal.gov/projects/cetpkgsupport
+	fi
+	if [ -n ${os-} ];then
 		os=`./cetpkgsupport/bin/get-directory-name os`
 	fi
 
