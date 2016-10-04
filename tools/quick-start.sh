@@ -290,6 +290,7 @@ $git_working_path/tools/installArtDaqDemo.sh ${productsdir:-products} $git_worki
 
 installStatus=$?
 
+source products/setup
 upsflavor=`ups flavor`
 qt_installed=`ups list -aK+ qt v5_6_1a -q$equalifier -f$upsflavor|grep -c "qt"`
 amfver=`curl http://scisoft.fnal.gov/scisoft/packages/artdaq_mfextensions/ 2>/dev/null|grep artdaq_mfextensions|grep "id=\"v"|tail -1|sed 's/.* id="\(v.*\)".*/\1/'`
