@@ -35,8 +35,13 @@ eval "set -- $args \"\$@\""; unset args aa
 test $# -ne 1 && { echo "Invalid number of args $#"; echo "$USAGE"; exit 1; }
 cf=
 test             -f $1.cfg && { cf=$1.cfg; cfgdir=$1.d; }
-test -z "$cf" -a -f $1     && { cf=$1      cfgdir=`dirname $1`/`basename $1 .cfg`; }
+test -z "$cf" -a -f $1     && { cf=$1      cfgdir=`dirname $1`/`basename $1 .cfg`.d; }
 test -z "$cf" && { echo "cfg file not found"; exit 1; }
+reldir=`dirname $cf`
+absdir=`cd $reldir >/dev/null;pwd`
+nf=$absdir/`basename $cf .cfg`.node
+test -f $nf || { echo Corresponding node file $nf not found; exit 1; }
+export NODE_LIST=$nf
 
 source `which setupDemoEnvironment.sh`
 
