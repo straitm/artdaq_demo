@@ -24,11 +24,9 @@ namespace artdaq {
   public:
     NthEventTransfer(fhicl::ParameterSet const& ps, artdaq::TransferInterface::Role role); 
 
-    void copyFragmentTo(bool& fragmentHasBeenCopied,
-			bool& esrHasBeenCopied,
-			bool& eodHasBeenCopied,
-			artdaq::Fragment& fragment,
-			size_t send_timeout_usec = std::numeric_limits<size_t>::max());
+    TransferInterface::CopyStatus
+    copyFragmentTo(artdaq::Fragment& fragment,
+		   size_t send_timeout_usec = std::numeric_limits<size_t>::max());
 
     size_t receiveFragmentFrom(artdaq::Fragment& fragment,
 			       size_t receiveTimeout) {
@@ -51,17 +49,15 @@ namespace artdaq {
   }
 
 
-  void NthEventTransfer::copyFragmentTo(bool& fragmentHasBeenCopied,
-				      bool& esrHasBeenCopied,
-				      bool& eodHasBeenCopied,
-				      artdaq::Fragment& fragment,
-				      size_t send_timeout_usec) {
+  TransferInterface::CopyStatus
+  NthEventTransfer::copyFragmentTo(artdaq::Fragment& fragment,
+				   size_t send_timeout_usec) {
 
     if (fragment.sequenceID() % nth_ != 0) {
-      return;
+      return TransferInterface::CopyStatus::kSuccess;
     }
 
-    physical_transfer_->copyFragmentTo(fragmentHasBeenCopied, esrHasBeenCopied, eodHasBeenCopied, fragment, send_timeout_usec);
+    return physical_transfer_->copyFragmentTo(fragment, send_timeout_usec);
   }
 
 }

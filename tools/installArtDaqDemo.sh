@@ -100,34 +100,32 @@ function install_package {
 # Removing artdaq-core from the develop products list, as it frequently changes.
 # I'm assuming that anyone who wants to do development in artdaq-core can figure
 # out how to get it anyway.
-# if [ -n "${opt_HEAD-}" ];then
-# install_package artdaq-core develop || exit 1
-# else
-# install_package artdaq-core v1_04_20 e7 s15 || exit 1
-# fi
-install_package artdaq-core v1_05_06 || exit 1
+
+# Versions updated 09/30/16
+install_package artdaq-core v1_05_07 || exit 1
 
 if [ -n "${opt_HEAD-}" ];then
 install_package artdaq-core-demo develop || exit 1
 else
-install_package artdaq-core-demo v1_05_02 || exit 1
+install_package artdaq-core-demo v1_05_03 || exit 1
 fi
 
 if [ -n "${opt_HEAD-}" ];then
     install_package artdaq-utilities develop || exit 1
 else
-    install_package artdaq-utilities v1_00_08 || exit 1
+    install_package artdaq-utilities v1_00_09 || exit 1
 fi
 
-#JCF, Sep-20-2016
+# JCF, Sep-29-2016
 
-# artdaq commit 5c92d89171ac70d13e371154ecc52cf5cba11206 is the
-# merge-in of the dispatcher code with a bugfix over the previous day's commit
+# artdaq commit a7380e333f804c54d44faddf2e4b44d987d69c3c includes
+# changes I made to simplify the Transfer plugin interface after the
+# v1_13_02 release
 
 if [ -n "${opt_HEAD-}" ];then
 install_package artdaq develop eth || exit 1
 else
-install_package artdaq 5c92d89171ac70d13e371154ecc52cf5cba11206 eth || exit 1
+install_package artdaq a7380e333f804c54d44faddf2e4b44d987d69c3c eth || exit 1
 fi
 
 setup_qualifier="$equalifier $squalifier eth"
