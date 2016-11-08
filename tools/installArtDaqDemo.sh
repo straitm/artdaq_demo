@@ -102,18 +102,18 @@ function install_package {
 # out how to get it anyway.
 
 # Versions updated 09/30/16
-install_package artdaq-core v1_05_07 || exit 1
+install_package artdaq-core v1_05_09 || exit 1
 
 if [ -n "${opt_HEAD-}" ];then
 install_package artdaq-core-demo develop || exit 1
 else
-install_package artdaq-core-demo v1_05_03 || exit 1
+install_package artdaq-core-demo v1_05_04 || exit 1
 fi
 
 if [ -n "${opt_HEAD-}" ];then
     install_package artdaq-utilities develop || exit 1
 else
-    install_package artdaq-utilities v1_00_09 || exit 1
+    install_package artdaq-utilities v1_00_10 || exit 1
 fi
 
 # JCF, Sep-29-2016
@@ -125,7 +125,7 @@ fi
 if [ -n "${opt_HEAD-}" ];then
 install_package artdaq develop eth || exit 1
 else
-install_package artdaq a7380e333f804c54d44faddf2e4b44d987d69c3c eth || exit 1
+install_package artdaq v1_13_03 eth || exit 1
 fi
 
 setup_qualifier="$equalifier $squalifier eth"
