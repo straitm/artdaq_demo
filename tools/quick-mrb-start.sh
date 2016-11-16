@@ -22,14 +22,15 @@ USAGE="\
 examples: `basename $0` .
           `basename $0` --run-demo
           `basename $0` --debug
-          `basename $0` --tag v2_08_01
+          `basename $0` --tag v2_08_04
 If the \"demo_root\" optional parameter is not supplied, the user will be
 prompted for this location.
 --run-demo    runs the demo
 --debug       perform a debug build
+--develop     Install the develop version of the software (may be unstable!)
 --viewer      install and run the artdaq Message Viewer
 --tag         Install a specific tag of artdaq_demo
--e, -s        Use specific qualifiers when building ARTDAQ (only e9:s31, e9:s21, e7:s15 supported)
+-e, -s        Use specific qualifiers when building ARTDAQ
 -v            Be more verbose
 -x            set -x this script
 -w            Check out repositories read/write
@@ -41,7 +42,7 @@ eval "set -- $env_opts \"\$@\""
 op1chr='rest=`expr "$op" : "[^-]\(.*\)"`   && set -- "-$rest" "$@"'
 op1arg='rest=`expr "$op" : "[^-]\(.*\)"`   && set --  "$rest" "$@"'
 reqarg="$op1arg;"'test -z "${1+1}" &&echo opt -$op requires arg. &&echo "$USAGE" &&exit'
-args= do_help= opt_v=0; opt_w=0
+args= do_help= opt_v=0; opt_w=0; opt_develop=0;
 while [ -n "${1-}" ];do
     if expr "x${1-}" : 'x-' >/dev/null;then
         op=`expr "x$1" : 'x-\(.*\)'`; shift   # done with $1
@@ -56,6 +57,7 @@ while [ -n "${1-}" ];do
 			w*)         eval $op1chr; opt_w=`expr $opt_w + 1`;;
             -run-demo)  opt_run_demo=--run-demo;;
 	    -debug)     opt_debug=--debug;;
+			-develop) opt_develop=1;;
 			-tag)       eval $reqarg; tag=$1; shift;;
 	    -viewer)    opt_viewer=--viewer;;
             *)          echo "Unknown option -$op"; do_help=1;;
@@ -130,9 +132,16 @@ if [[ "$os" == "u14" ]]; then
 fi
 
 # Get all the information we'll need to decide which exact flavor of the software to install
-if [ -z "${tag:-}" ]; then tag=develop;fi
+notag=0
+if [ -z "${tag:-}" ]; then 
+  tag=develop;
+  notag=1;
+fi
 wget https://cdcvs.fnal.gov/redmine/projects/artdaq-demo/repository/revisions/$tag/raw/ups/product_deps
 demo_version=`grep "parent artdaq_demo" $Base/download/product_deps|awk '{print $3}'`
+if [ $notag -eq 1 ];then
+  tag=$demo_version
+fi
 artdaq_version=`grep "^artdaq " $Base/download/product_deps | awk '{print $2}'`
 coredemo_version=`grep "^artdaq_core_demo " $Base/download/product_deps | awk '{print $2}'`
 defaultQuals=`grep "defaultqual" $Base/download/product_deps|awk '{print $2}'`
@@ -175,7 +184,7 @@ source $Base/localProducts_artdaq_demo_${demo_version}_${equalifier}_${squalifie
 set -u
 
 cd $MRB_SOURCE
-if [[ "$tag" == "develop" ]]; then
+if [[ $opt_develop -eq 1 ]]; then
 if [ $opt_w -gt 0 ];then
 mrb gitCheckout -d artdaq_core ssh://p-artdaq@cdcvs.fnal.gov/cvs/projects/artdaq-core
 mrb gitCheckout -d artdaq_utilities ssh://p-artdaq-utilities@cdcvs.fnal.gov/cvs/projects/artdaq-utilities
