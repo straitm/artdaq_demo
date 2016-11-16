@@ -200,9 +200,11 @@ mrb gitCheckout -d artdaq_demo http://cdcvs.fnal.gov/projects/artdaq-demo
 fi
 else
 if [ $opt_w -gt 0 ];then
+mrb gitCheckout -t ${artdaq_version} -d artdaq ssh://p-artdaq@cdcvs.fnal.gov/cvs/projects/artdaq
 mrb gitCheckout -t ${coredemo_version} -d artdaq_core_demo ssh://p-artdaq-core-demo@cdcvs.fnal.gov/cvs/projects/artdaq-core-demo
 mrb gitCheckout -t ${demo_version} -d artdaq_demo ssh://p-artdaq-demo@cdcvs.fnal.gov/cvs/projects/artdaq-demo
 else
+mrb gitCheckout -t ${artdaq_version} -d artdaq http://cdcvs.fnal.gov/projects/artdaq
 mrb gitCheckout -t ${coredemo_version} -d artdaq_core_demo http://cdcvs.fnal.gov/projects/artdaq-core-demo
 mrb gitCheckout -t ${demo_version} -d artdaq_demo http://cdcvs.fnal.gov/projects/artdaq-demo
 fi
