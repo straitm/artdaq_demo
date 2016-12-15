@@ -38,6 +38,16 @@ namespace  bpo = boost::program_options;
 int main(int argc, char * argv[]) try
 {
 
+  // 15-Dec-2016, KAB: by consensus, we want people to use the "artdaqDriver"
+  // program (which corresponds to "artdaq/proto/driver.cc").
+  if (true) {
+    std::cout << "****************************************" << std::endl;
+    std::cout << "*** \"demo_driver\" has been deprecated (15-Dec-2016)." << std::endl;
+    std::cout << "*** Please use the \"artdaqDriver\" application that is available from" << std::endl
+              << "*** the artdaq software package instead of \"demo_driver\"." << std::endl;
+    exit(1);
+  }
+
   // Get the input parameters via the boost::program_options library,
   // designed to make it relatively simple to define arguments and
   // issue errors if argument list is supplied incorrectly
