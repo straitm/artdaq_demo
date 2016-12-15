@@ -127,7 +127,6 @@ int main(int argc, char * argv[]) try
 
   artdaq::EventStore store(event_builder_pset, event_builder_pset.get<size_t>("expected_fragments_per_event"),
 			   complete_pset.get<artdaq::EventStore::run_id_t>("run_number"),
-                           1,
                            es_argc,
                            es_argv,
                            es_fcn);

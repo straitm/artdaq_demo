@@ -97,8 +97,8 @@ bool demo::ToySimulator::getNext_(artdaq::FragmentPtrs & frags) {
 
   frags.emplace_back( std::move(fragptr ));
 
-  if(metricMan_ != nullptr) {
-    metricMan_->sendMetric("Fragments Sent",ev_counter(), "Events", 3);
+  if(metricMan != nullptr) {
+    metricMan->sendMetric("Fragments Sent",ev_counter(), "Events", 3);
   }
 
   ev_counter_inc();
