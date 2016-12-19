@@ -1,7 +1,8 @@
 art_make(NO_PLUGINS # WAnt different link lists for modues
  BASENAME_ONLY
  LIBRARY_NAME artdaq-demo_ArtModules
- LIB_LIBRARIES artdaq-core-demo_Overlays artdaq-demo_Products
+ SUBDIRS detail
+ LIB_LIBRARIES artdaq-core-demo_Overlays artdaq-demo_Products artdaq_ArtModules
 )
 
 #art_make(NO_PLUGINS # WAnt different link lists for modues
@@ -35,4 +36,15 @@ simple_plugin(WFViewer "module" artdaq-core-demo_Overlays ${ROOT_GPAD} ${ROOT_HI
 simple_plugin(CheckIntegrity "module"
               ${MF_MESSAGELOGGER}				
 	      ${MF_UTILITIES}
+)
+
+simple_plugin(DemoInput "source"
+  artdaq-demo_ArtModules
+  artdaq_ArtModules
+  art_Framework_Core
+  art_Framework_IO_Sources
+  art_Framework_Principal
+  art_Persistency_Provenance
+  art_Utilities
+  MF_MessageLogger
 )
