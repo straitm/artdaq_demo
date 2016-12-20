@@ -25,5 +25,13 @@ namespace demo {
   } // detail
 } // demo
 
+// Specialize an art source trait to tell art that we don't care about
+// source.fileNames and don't want the files services to be used.
+namespace art {
+  template <>
+  struct Source_generator<demo::detail::RawEventQueueReader> {
+    static constexpr bool value = true;
+  };
+}
 
 #endif /* artdaq_demo_ArtModules_detail_RawEventQueueReader_hh */
