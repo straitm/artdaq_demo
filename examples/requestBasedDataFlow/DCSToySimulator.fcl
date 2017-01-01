@@ -1,10 +1,10 @@
 
-# Trigger configuration
-triggers_enabled: true # Whether to set up the socket for listening for trigger messages
-trigger_mode: "Single" # Possible values are: Ignored, Single, Buffer, Window
+# Request configuration
+requests_enabled: true # Whether to set up the socket for listening for request messages
+request_mode: "Single" # Possible values are: Ignored, Single, Buffer, Window
 
 # Threading
-separate_data_thread: true # MUST be true for triggers to be applied! If triggering is not desired, but a separate readout thread is, set this to true, triggers_enabled to false and trigger_mode to ignored.
+separate_data_thread: true # MUST be true for requests to be applied! If requesting is not desired, but a separate readout thread is, set this to true, requests_enabled to false and request_mode to ignored.
 
 # "nADCcounts" is the number of ADC values produced per fragment per
 #  event by the ToySimulator module

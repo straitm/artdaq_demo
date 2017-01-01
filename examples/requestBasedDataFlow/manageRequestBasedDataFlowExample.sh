@@ -6,7 +6,7 @@ if [ -z "${ARTDAQDEMO_REPO:-}" ]; then
   echo "Please set ARTDAQDEMO_REPO to the artdaq-demo directory (containing tools/ and examples/)"
   exit 1
 fi
-export FHICL_FILE_PATH=$ARTDAQDEMO_REPO/examples/triggeredReceiver:$FHICL_FILE_PATH
+export FHICL_FILE_PATH=$ARTDAQDEMO_REPO/examples/requestBasedDataFlow:$FHICL_FILE_PATH
 
 AGGREGATOR_NODE=`hostname`
 THIS_NODE=`hostname -s`
