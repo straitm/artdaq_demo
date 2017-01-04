@@ -9,7 +9,7 @@ require File.join( File.dirname(__FILE__), 'generateEventBuilder' )
 def generateEventBuilderMain(ebIndex, totalFRs, totalEBs, totalAGs, compressionLevel, 
                          totalv1720s, totalv1724s, dataDir, onmonEnable,
                          diskWritingEnable, fragSizeWords, totalFragments,
-                         fclWFViewer, ebHost, ebPort, sendTriggers, withGanglia, withMsgFacility, withGraphite )
+                         fclWFViewer, ebHost, ebPort, sendRequests, withGanglia, withMsgFacility, withGraphite )
   # Do the substitutions in the event builder configuration given the options
   # that were passed in from the command line.  
 
@@ -99,7 +99,7 @@ if Integer(totalAGs) >= 1
 end
 
 
-event_builder_code = generateEventBuilder( fragSizeWords, totalFRs, totalAGs, totalFragments, verbose, ebHost, ebPort,sendTriggers, withGanglia, withMsgFacility, withGraphite)
+event_builder_code = generateEventBuilder( fragSizeWords, totalFRs, totalAGs, totalFragments, verbose, ebHost, ebPort,sendRequests, withGanglia, withMsgFacility, withGraphite)
 
 ebConfig.gsub!(/\%\{event_builder_code\}/, event_builder_code)
 
