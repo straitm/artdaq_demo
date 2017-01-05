@@ -14,7 +14,6 @@
 #include "artdaq-core/Data/Fragments.hh"
 
 #include "artdaq-core-demo/Overlays/FragmentType.hh"
-#include "artdaq-core-demo/Overlays/V172xFragment.hh"
 #include "artdaq-core-demo/Overlays/ToyFragment.hh"
 
 #include "cetlib/exception.h"
@@ -179,7 +178,6 @@ void demo::WFViewer::analyze (art::Event const & e) {
     // Pointers to the types of fragment overlays WFViewer can handle;
     // only one will be used per fragment, of course
 
-    std::unique_ptr<V172xFragment> v172xPtr;
     std::unique_ptr<ToyFragment> toyPtr;
     
     //  const auto& frag( fragments[i] );  // Basically a shorthand
@@ -197,26 +195,8 @@ void demo::WFViewer::analyze (art::Event const & e) {
     std::size_t max_adc_count = std::numeric_limits<std::size_t>::max();
     std::size_t total_adc_values = std::numeric_limits<std::size_t>::max();
 
-    // John F., 1/22/14 -- this should definitely be improved; I'm
-    // just using the max # of bits per ADC value for a given fragment
-    // type as is currently defined for the V172x fragments (as
-    // opposed to the Toy fragment, which have this value in their
-    // metadata). Since it's not using external variables for this
-    // quantity, this would need to be edited should these values
-    // change.
-
     switch ( fragtype ) {
 
-    case FragmentType::V1720:  
-      v172xPtr.reset( new V172xFragment(frag ));
-      total_adc_values = v172xPtr->total_adc_values();
-      max_adc_count = pow(2,12) -1;
-      break;
-    case FragmentType::V1724: 
-      v172xPtr.reset( new V172xFragment(frag ));
-      total_adc_values = v172xPtr->total_adc_values();
-      max_adc_count = pow(2,14) -1;
-      break;
     case FragmentType::TOY1: 
       toyPtr.reset( new ToyFragment(frag ));
       total_adc_values = toyPtr->total_adc_values();
@@ -252,12 +232,6 @@ void demo::WFViewer::analyze (art::Event const & e) {
     // stuck with this switch code...
 
     switch ( fragtype ) {
-
-    case FragmentType::V1720:  
-    case FragmentType::V1724: 
-      for (auto val = v172xPtr->dataBegin(); val != v172xPtr->dataEnd(); ++val ) 
-	histograms_[ind]->Fill( *val );
-      break;
 
     case FragmentType::TOY1: 
     case FragmentType::TOY2: 
@@ -301,13 +275,6 @@ void demo::WFViewer::analyze (art::Event const & e) {
       // Is there some way to templatize an ART module? If not, we're stuck with this awkward switch code...
 
       switch ( fragtype ) {
-
-      case FragmentType::V1720:  
-      case FragmentType::V1724: 
-	{
-	  std::copy (v172xPtr->dataBegin(), v172xPtr->dataBegin() + total_adc_values, graphs_[ind]->GetY ());
-	}
-	break;
 
       case FragmentType::TOY1: 
       case FragmentType::TOY2: 

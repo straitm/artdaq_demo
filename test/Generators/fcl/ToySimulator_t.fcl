@@ -31,5 +31,4 @@ source:
 {
   module_type: RawInput
   waiting_time: 25.0
-  # fragment_type_map: [[1, \"missed\"], [3, \"V1720\"], [4, \"V1724\"], [6, \"Toy1\"], [7, \"Toy2\"] ]
 }

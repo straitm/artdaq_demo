@@ -235,14 +235,13 @@ cd $Base
     export ARTDAQDEMO_REPO=$ARTDAQ_DEMO_DIR
     export ARTDAQDEMO_BUILD=$MRB_BUILDDIR/artdaq_demo
 	#export ARTDAQDEMO_BASE_PORT=52200
-	export DAQ_INDATA_PATH=$ARTDAQ_DEMO_DIR/test/Generators:$ARTDAQ_DEMO_DIR/inputData
+	export DAQ_INDATA_PATH=$ARTDAQ_DEMO_DIR/test/Generators
 
 	export FHICL_FILE_PATH=.:\$ARTDAQ_DEMO_DIR/tools/snippets:\$ARTDAQ_DEMO_DIR/tools/fcl:\$FHICL_FILE_PATH
 
 	alias toy1toy2EventDump="art -c $ARTDAQ_DEMO_DIR/artdaq-demo/ArtModules/fcl/toy1toy2Dump.fcl"
 	alias rawEventDump="art -c $ARTDAQ_DEMO_DIR/artdaq-demo/ArtModules/fcl/rawEventDump.fcl"
-	alias compressedEventDump="art -c $ARTDAQ_DEMO_DIR/artdaq-demo/ArtModules/fcl/compressedEventDump.fcl"
-	alias compressedEventComparison="art -c $ARTDAQ_DEMO_DIR/artdaq-demo/ArtModules/fcl/compressedEventComparison.fcl"
+
 	EOF
     #
 
