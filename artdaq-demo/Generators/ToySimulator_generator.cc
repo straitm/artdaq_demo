@@ -44,10 +44,10 @@ demo::ToySimulator::ToySimulator(fhicl::ParameterSet const & ps)
   metadata_.num_adc_bits = hardware_interface_->NumADCBits();
 
   switch (hardware_interface_->BoardType()) {
-  case 1006:
+  case 1002:
     fragment_type_ = toFragmentType("TOY1");
     break;
-  case 1007:
+  case 1003:
     fragment_type_ = toFragmentType("TOY2");
     break;
   default:
