@@ -6,8 +6,6 @@ physics:
     {
       module_type: EventDump
       raw_data_label: daq
-      uncompressed_V1720_label: unhuffV1720
-      uncompressed_V1724_label: unhuffV1724
     }
 
     printBuildInfo: {

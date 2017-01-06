@@ -9,9 +9,9 @@ art_make(NO_PLUGINS # WAnt different link lists for modues
 #  LIB_LIBRARIES artdaq-core-demo_Overlays 
 #)
 
- foreach (mod Baseline Converter Summer NthEvent )
-   simple_plugin(${mod} "module" artdaq-demo_ArtModules)
- endforeach()
+# foreach (mod NthEvent )
+#   simple_plugin(${mod} "module" artdaq-demo_ArtModules)
+# endforeach()
 
 simple_plugin(ArtdaqDemoBuildInfo "module"
   artdaq_DAQdata
@@ -24,11 +24,10 @@ simple_plugin(ArtdaqDemoBuildInfo "module"
   ${CETLIB}
 )
 
- simple_plugin(DataCharacterizer "module")
+simple_plugin(NthEvent "module")
  simple_plugin(EventDump "module")
 simple_plugin(ToyDump "module")
 simple_plugin(ASCIIDump "module")
-simple_plugin(CompressionChecker "module" ${ARTDAQ_DAQDATA} ${ARTDAQ-CORE_DATA})
 
 simple_plugin(RootApplication "module")
 simple_plugin(WFViewer "module" artdaq-core-demo_Overlays ${ROOT_GPAD} ${ROOT_HIST} ${ROOT_GUI} ${ROOT_RIO})
