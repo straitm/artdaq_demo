@@ -7,9 +7,7 @@ def generateFragmentReceiver(startingFragmentId, boardId,
                              fragmentType, configDoc )
 
   generator = nil
-  if fragmentType == "V1720" || fragmentType == "V1724"
-    generator = "V172xSimulator"
-  elsif fragmentType == "TOY1" || fragmentType == "TOY2"
+  if fragmentType == "TOY1" || fragmentType == "TOY2"
     generator = "ToySimulator"
   elsif fragmentType == "UDP"
     generator = "UDPReceiver"

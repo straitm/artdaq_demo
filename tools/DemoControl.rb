@@ -77,17 +77,13 @@ end
 
 class ConfigGen
 
-  def generateComposite(totalEBs, totalFRs, configStringArray)
+  def generateComposite(destinations_fhicl, configStringArray)
 
 
     compositeConfig = String.new( "\
 %{prolog}
 daq: {
-  max_fragment_size_words: %{size_words}
   fragment_receiver: {
-    mpi_buffer_count: %{buffer_count}
-    first_event_builder_rank: %{total_frs}
-    event_builder_count: %{total_ebs}
     generator: CompositeDriver
     fragment_id: 999
     board_id: 999
@@ -96,12 +92,14 @@ daq: {
       # the format of this list is {daq:<paramSet},{daq:<paramSet>},...
       %{generator_list}
     ]
+
+	destinations: {
+		%{destinations_fhicl}
+	}
   }
 }" )
 
-    compositeConfig.gsub!(/\%\{total_ebs\}/, String(totalEBs))
-    compositeConfig.gsub!(/\%\{total_frs\}/, String(totalFRs))
-    compositeConfig.gsub!(/\%\{buffer_count\}/, String(totalEBs*8))
+    compositeConfig.gsub!(/\%\{destinations_fhicl\}/, destinations_fhicl)
 
     # The complications here are A) determining the largest buffer size that
     # has been requested by the child configurations and using that for the
@@ -136,19 +134,7 @@ daq: {
       end
       configString += "{" + cfg + "}"
 
-      my_match = /max_fragment_size_words\s*\:\s*(\d+)/.match(cfg)
-      if my_match
-        begin
-          sizeWords = Integer(my_match[1])
-          if sizeWords > fragSizeWords
-            fragSizeWords = sizeWords
-          end
-        rescue Exception => msg
-          puts "Warning: exception parsing size_words in composite child configuration: " + my_match[1] + " " + msg
-        end
-      end
     end
-    compositeConfig.gsub!(/\%\{size_words\}/, String(fragSizeWords))
     compositeConfig.gsub!(/\%\{generator_list\}/, configString)
 
     prologString = ""
@@ -205,7 +191,6 @@ class CommandLineParser
     @options = OpenStruct.new
     @options.aggregators = []
     @options.eventBuilders = []
-    @options.v1720s = []
     @options.toys = []
     @options.asciis = []
     @options.pbrs = []
@@ -297,7 +282,7 @@ class CommandLineParser
                 brConfig.name = element.elements["name"].text
                 brConfig.configFile = element.elements["configFile"].text
                 puts "DEBUG: Before getting index"
-                brConfig.index = (@options.v1720s + @options.toys + @options.asciis + @options.pbrs).length
+                brConfig.index = (@options.toys + @options.asciis + @options.pbrs).length
                 brConfig.kind = "pbr"
                 puts "DEBUG: Loading TypeConfig"
                 typeConfig = ""
@@ -326,7 +311,6 @@ class CommandLineParser
 
         # Event Builders
         numEvbs = doc.elements["eventBuilders/count"].text
-        compression = doc.elements["eventBuilders/compress"].text == "true" ? 1 : 0
         *hosts = doc.elements["eventBuilders/hostnames/hostname"]     
         it = 0
         while it < numEvbs.to_i do
@@ -334,7 +318,6 @@ class CommandLineParser
           ebConfig.host = hosts.at(it % hosts.size).text
           ebConfig.port = currentPort
           currentPort += 1
-          ebConfig.compression_level = compression
           ebConfig.kind = "eb"
           ebConfig.index = it
           @options.eventBuilders << ebConfig
@@ -363,10 +346,10 @@ class CommandLineParser
         end
       end
 
-      opts.on("--eb [host,port,compression_level,send_requests]", Array,
+      opts.on("--eb [host,port,send_requests]", Array,
               "Add an event builder that runs on the",
               "specified host and port and optionally",
-              "compresses ADC data.") do |eb|
+              "sends data requests to BoardReaders.") do |eb|
         if eb.length < 3
           puts "You must specifiy a host, port, and compression level."
           exit
@@ -384,7 +367,7 @@ end
         @options.eventBuilders << ebConfig
       end
 
-      opts.on("--ag [host,port,bunch_size,compression_level,demoPrescale]", Array,
+      opts.on("--ag [host,port,bunch_size,demoPrescale]", Array,
               "Add an aggregator that runs on the",
               "specified host and port.  Also specify the",
               "number of events to pass to art per bunch,",
@@ -409,51 +392,6 @@ end
         @options.aggregators << agConfig
       end
     
-      opts.on("--v1720 [host,port,board_id,config_file]", Array, 
-              "Add a V1720 fragment receiver that runs on the specified host and port, ",
-              "and has the specified board ID. Read config_file in FHICL_FILE_PATH for additional configuration.") do |v1720|
-        if v1720.length < 3
-          puts "You must specifiy a host, port, and board ID."
-          exit
-        end
-        v1720Config = OpenStruct.new
-        v1720Config.host = v1720[0]
-        v1720Config.port = Integer(v1720[1])
-        v1720Config.board_id = Integer(v1720[2])
-        v1720Config.kind = "V1720"
-        v1720Config.fragType = "V1720"
-        if v1720.length > 3
-          v1720Config.configFile = v1720[3]
-        end
-        v1720Config.index = (@options.v1720s + @options.toys + @options.asciis + @options.pbrs + @options.udps).length
-        v1720Config.board_reader_index = addToBoardReaderList(v1720Config.host, v1720Config.port,
-                                                              v1720Config.kind, v1720Config.index, v1720Config.configFile)
-        @options.v1720s << v1720Config
-      end
-
-      opts.on("--v1724 [host,port,board_id,config_file]", Array, 
-              "Add a V1724 fragment receiver that runs on the specified host, port, ",
-              "and board ID. Read config_file in FHICL_FILE_PATH for additional configuration.") do |v1724|
-        if v1724.length < 3
-          puts "You must specifiy a host, port, and board ID."
-          exit
-        end
-        v1724Config = OpenStruct.new
-        v1724Config.host = v1724[0]
-        v1724Config.port = Integer(v1724[1])
-        v1724Config.board_id = Integer(v1724[2])
-        v1724Config.kind = "V1724"
-        v1724Config.fragType = "V1724"
-        if v1724.length > 3
-          v1724Config.configFile = v1724[3]
-        end
-        v1724Config.index = (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).length
-        v1724Config.board_reader_index = addToBoardReaderList(v1724Config.host, v1724Config.port,
-                                                              v1724Config.kind, v1724Config.index, v1724Config.configFile)
-        # NOTE that we're simply adding this to the 1720 list...
-        @options.v1720s << v1724Config
-      end
-
       opts.on("--ascii [host,port,board_id,config_file]", Array, 
               "Add a ASCII fragment receiver that runs on the specified host, port, ",
               "and board ID. Reads configuration parameters from config_file ",
@@ -755,21 +693,12 @@ class SystemControl
 
     ebIndex = 0
     agIndex = 0
-    totalv1720s = 0
-    totalv1724s = 0
     totaltoy1s = 0
     totaltoy2s = 0
     totalasciis = @options.asciis.length
     totalpbrs = @options.pbrs.length
     totaludps = @options.udps.length
-    @options.v1720s.each do |proc|
-      case proc.kind
-      when "V1720"
-        totalv1720s += 1
-      when "V1724"
-        totalv1724s += 1
-      end
-    end
+
     @options.toys.each do |proc|
       case proc.kind
       when "TOY1"
@@ -778,7 +707,7 @@ class SystemControl
         totaltoy2s += 1
       end
     end
-    totalBoards = @options.v1720s.length + @options.toys.length + @options.asciis.length + @options.udps.length + @options.pbrs.length
+    totalBoards = @options.toys.length + @options.asciis.length + @options.udps.length + @options.pbrs.length
     totalFRs = @options.boardReaders.length
     totalEBs = @options.eventBuilders.length
     totalAGs = @options.aggregators.length
@@ -794,7 +723,7 @@ class SystemControl
 
     # John F., 1/21/14 -- added the toy fragment generators
 
-    (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).each { |boardreaderOptions|
+    (@options.toys + @options.asciis + @options.udps + @options.pbrs).each { |boardreaderOptions|
       br = @options.boardReaders[boardreaderOptions.board_reader_index]
       fileName = "BoardReader_%s_%s_%d.fcl" % [boardreaderOptions.kind,boardreaderOptions.host, boardreaderOptions.port]
       if forceRegen || !File.file?(fileName)
@@ -859,15 +788,11 @@ class SystemControl
       fileName = "EventBuilder_%s_%d.fcl" % [ebOptions.host, ebOptions.port]
       if forceRegen || !File.file?(fileName)
         puts "Generating %s" % [fileName]
-        fclWFViewer = generateWFViewer( (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).map { |board| board.board_id },
-                                        (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).map { |board| board.fragType }
+        fclWFViewer = generateWFViewer( (@options.toys + @options.asciis + @options.udps + @options.pbrs).map { |board| board.board_id },
+                                        (@options.toys + @options.asciis + @options.udps + @options.pbrs).map { |board| board.fragType }
                                         )
-
-        puts "HAVE %d v1720s and %d v1724s" % [ totalv1720s, totalv1724s ]
-
+										
         ebOptions.cfg = generateEventBuilderMain(ebIndex, totalFRs, totalEBs, totalAGs,
-                                                 ebOptions.compression_level,
-                                                 totalv1720s, totalv1724s,
                                                  @options.dataDir, @options.runOnmon,
                                                  @options.writeData, fullEventBuffSizeWords,
                                                  totalBoards, 
@@ -937,14 +862,6 @@ class SystemControl
     totalasciis = @options.asciis.length
     totalpbrs = @options.pbrs.length
     totaludps = @options.udps.length
-    @options.v1720s.each do |proc|
-      case proc.kind
-      when "V1720"
-        totalv1720s += 1
-      when "V1724"
-        totalv1724s += 1
-      end
-    end
     @options.toys.each do |proc|
       case proc.kind
       when "TOY1"
@@ -953,7 +870,7 @@ class SystemControl
         totaltoy2s += 1
       end
     end
-    totalBoards = @options.v1720s.length + @options.toys.length + @options.asciis.length + @options.udps.length + @options.pbrs.length
+    totalBoards = @options.toys.length + @options.asciis.length + @options.udps.length + @options.pbrs.length
     totalFRs = @options.boardReaders.length
     totalEBs = @options.eventBuilders.length
     totalAGs = @options.aggregators.length
@@ -1111,12 +1028,6 @@ class SystemControl
         when "ag"
           puts "%s: Aggregator on %s:%d result: %s" %
             [currentTime, proc.host, proc.port, result]
-        when "V1720"
-          puts "%s: V1720 FragmentReceiver on %s:%d result: %s" %
-            [currentTime, proc.host, proc.port, result]
-        when "V1724"
-          puts "%s: V1724 FragmentReceiver on %s:%d result: %s" %
-            [currentTime, proc.host, proc.port, result]
         when "TOY1"
           puts "%s: TOY1 FragmentReceiver on %s:%d result: %s" %
             [currentTime, proc.host, proc.port, result]
@@ -1145,7 +1056,6 @@ class SystemControl
   end
 
   def shutdown()
-    self.sendCommandSet("shutdown", @options.v1720s)
     self.sendCommandSet("shutdown", @options.toys)
     self.sendCommandSet("shutdown", @options.asciis)
     self.sendCommandSet("shutdown", @options.pbrs)
@@ -1155,7 +1065,6 @@ class SystemControl
   end
 
   def pause()
-    self.sendCommandSet("pause", @options.v1720s)
     self.sendCommandSet("pause", @options.toys)
     self.sendCommandSet("pause", @options.asciis)
     self.sendCommandSet("pause", @options.pbrs)
@@ -1293,7 +1202,6 @@ class SystemControl
       end
     end
 
-    self.sendCommandSet("stop", @options.v1720s)
     self.sendCommandSet("stop", @options.toys)
     self.sendCommandSet("stop", @options.asciis)
     self.sendCommandSet("stop", @options.pbrs)
@@ -1309,7 +1217,6 @@ class SystemControl
   def resume()
     self.sendCommandSet("resume", @options.aggregators)
     self.sendCommandSet("resume", @options.eventBuilders)
-    self.sendCommandSet("resume", @options.v1720s)
     self.sendCommandSet("resume", @options.toys)
     self.sendCommandSet("resume", @options.asciis)
     self.sendCommandSet("resume", @options.pbrs)
@@ -1319,7 +1226,6 @@ class SystemControl
   def checkStatus()
     self.sendCommandSet("status", @options.aggregators)
     self.sendCommandSet("status", @options.eventBuilders)
-    self.sendCommandSet("status", @options.v1720s)
     self.sendCommandSet("status", @options.toys)
     self.sendCommandSet("status", @options.asciis)
     self.sendCommandSet("status", @options.pbrs)
@@ -1329,7 +1235,6 @@ class SystemControl
   def getLegalCommands()
     self.sendCommandSet("legal_commands", @options.aggregators)
     self.sendCommandSet("legal_commands", @options.eventBuilders)
-    self.sendCommandSet("legal_commands", @options.v1720s)
     self.sendCommandSet("legal_commands", @options.toys)
     self.sendCommandSet("legal_commands", @options.asciis)
     self.sendCommandSet("legal_commands", @options.pbrs)
