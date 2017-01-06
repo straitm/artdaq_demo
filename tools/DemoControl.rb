@@ -106,7 +106,6 @@ daq: {
     # composite buffers size and B) moving any PROLOG declarations from the
     # individual configuration strings to the front of the full CFG string.
     prologList = []
-    fragSizeWords = 0
     configString = ""
     first = true
     configStringArray.each do |cfg|
@@ -154,7 +153,7 @@ daq: {
     xmlrpcClients = ""
 #    boardreaders = Array.new + @options.v1720s + @options.toys
 #    boardreaders.each do |proc|
-    (cmdLineOptions.v1720s + cmdLineOptions.toys + cmdLineOptions.asciis + cmdLineOptions.udps).each do |proc|
+    (cmdLineOptions.toys + cmdLineOptions.asciis + cmdLineOptions.udps).each do |proc|
       br = cmdLineOptions.boardReaders[proc.board_reader_index]
       if br.hasBeenIncludedInXMLRPCList
         next
@@ -201,6 +200,8 @@ class CommandLineParser
     @options.summary = false
     @options.runNumber = "0101"
     @options.serialize = false
+	@options.transferType = "MPI"
+	@options.transferBasePort = 5300
     @options.runOnmon = 0
     @options.onmonFile = nil
     @options.onmon_modules = nil
@@ -350,18 +351,17 @@ class CommandLineParser
               "Add an event builder that runs on the",
               "specified host and port and optionally",
               "sends data requests to BoardReaders.") do |eb|
-        if eb.length < 3
-          puts "You must specifiy a host, port, and compression level."
+        if eb.length < 2
+          puts "You must specifiy a host and port."
           exit
         end
         ebConfig = OpenStruct.new
         ebConfig.host = eb[0]
         ebConfig.port = Integer(eb[1])
-        ebConfig.compression_level = Integer(eb[2])
         ebConfig.kind = "eb"
         ebConfig.sendRequests = 0
-if eb.length == 4
-  ebConfig.sendRequests = Integer(eb[3])
+if eb.length == 3
+  ebConfig.sendRequests = Integer(eb[2])
 end
         ebConfig.index = @options.eventBuilders.length
         @options.eventBuilders << ebConfig
@@ -370,11 +370,9 @@ end
       opts.on("--ag [host,port,bunch_size,demoPrescale]", Array,
               "Add an aggregator that runs on the",
               "specified host and port.  Also specify the",
-              "number of events to pass to art per bunch,",
-              "and the compression level.") do |ag|
-        if ag.length < 4
-          puts "You must specifiy a host, port, bunch size, and"
-          puts "compression level."
+              "number of events to pass to art per bunch.") do |ag|
+        if ag.length < 3
+          puts "You must specifiy a host, port and bunch size"
           exit
         end
         agConfig = OpenStruct.new
@@ -382,9 +380,8 @@ end
         agConfig.port = Integer(ag[1])
         agConfig.kind = "ag"
         agConfig.bunch_size = Integer(ag[2])
-        agConfig.compression_level = Integer(ag[3])
-        if ag.length == 5
-            agConfig.demoPrescale = Integer(ag[4])
+        if ag.length == 4
+            agConfig.demoPrescale = Integer(ag[3])
         else
             agConfig.demoPrescale = 0
         end
@@ -409,7 +406,7 @@ end
         if ascii.length > 3
           asciiConfig.configFile = ascii[3]
         end
-        asciiConfig.index = (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).length
+        asciiConfig.index = (@options.toys + @options.asciis + @options.udps + @options.pbrs).length
         asciiConfig.board_reader_index = addToBoardReaderList(asciiConfig.host, asciiConfig.port,
                                                               asciiConfig.kind, asciiConfig.index, asciiConfig.configFile)
         @options.asciis << asciiConfig
@@ -431,7 +428,7 @@ end
         if toy1.length > 3
            toy1Config.configFile = toy1[3]
         end
-        toy1Config.index = (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).length
+        toy1Config.index = (@options.toys + @options.asciis + @options.udps + @options.pbrs).length
         toy1Config.board_reader_index = addToBoardReaderList(toy1Config.host, toy1Config.port,
                                                               toy1Config.kind, toy1Config.index, toy1Config.configFile)
         @options.toys << toy1Config
@@ -454,7 +451,7 @@ end
         if toy2.length > 3
            toy2Config.configFile = toy2[3]
         end
-        toy2Config.index = (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).length
+        toy2Config.index = (@options.toys + @options.asciis + @options.udps + @options.pbrs).length
         toy2Config.board_reader_index = addToBoardReaderList(toy2Config.host, toy2Config.port,
                                                               toy2Config.kind, toy2Config.index, toy2Config.configFile)
 
@@ -476,7 +473,7 @@ end
         if udp.length > 3
           udpConfig.configFile = udp[3]
         end
-        udpConfig.index = (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).length
+        udpConfig.index = (@options.toys + @options.asciis + @options.udps + @options.pbrs).length
         udpConfig.board_reader_index = addToBoardReaderList(udpConfig.host, udpConfig.port,
                                                               udpConfig.kind, udpConfig.index, udpConfig.configFile)
 
@@ -563,6 +560,21 @@ end
         @options.serialize = true
       end
 
+	  opts.on("--transfer-type [type] [base_port]", Array,
+	  "Use the specified transferPluginType for data transport. Default: \"MPI\"",
+	  "Supported types: \"MPI\" \"TCPSocket\" \"Autodetect\"",
+	  "If TCPSocket or Autodetect are used, specify base_port (default 5300)"
+	  ) do |type|
+	    if type.legnth < 1
+	      puts "You must specify a type name with this option"
+  	      exit
+	    end
+		@options.transferType = type[0]
+		if type.length == 2
+		  @options.transferBasePort = Integer(type[1])
+		end
+      end
+
       opts.on_tail("-h", "--help", "Show this message.") do
         puts opts
         exit
@@ -630,7 +642,7 @@ end
     # is running on which host.
     puts "Configuration Summary:"
     hostMap = {}
-    (@options.eventBuilders + @options.v1720s + @options.toys + @options.aggregators + @options.asciis + @options.udps + @options.pbrs).each do |proc|
+    (@options.eventBuilders + @options.toys + @options.aggregators + @options.asciis + @options.udps + @options.pbrs).each do |proc|
       if not hostMap.keys.include?(proc.host)
         hostMap[proc.host] = []
       end
@@ -654,7 +666,7 @@ end
         when "pbr"
           puts "    BoardReader, port %d, rank %d, board_id %d, generator %s" %
             [ item.port, item.index, item.board_id, item.fragType ]
-        when "V1720", "V1724", "TOY1", "TOY2", "ASCII"
+        when "TOY1", "TOY2", "ASCII"
           puts "    FragmentGenerator, Simulated %s, port %d, rank %d, board_id %d, config_file %s" % 
             [item.kind.upcase,
              item.port,
@@ -711,9 +723,53 @@ class SystemControl
     totalFRs = @options.boardReaders.length
     totalEBs = @options.eventBuilders.length
     totalAGs = @options.aggregators.length
+	logger_rank = totalFRs + totalEBs
+	dispatcher_rank = logger_rank + 1
     fullEventBuffSizeWords = 2097152
-
+	
     xmlrpcClients = @configGen.generateXmlRpcClientList(@options)
+
+	# Loop over all the system elements, assigning ranks (BR, EVB, AGG order)
+	# and building the host map. Also make the fhicl snippets for configuring the TransferPlugins
+
+	current_rank = 0
+	br_destinations_fhicl = ""
+	eb_sources_fhicl = ""
+	eb_destinations_fhicl = ""
+	ag_sources_fhicl = ""
+	host_map = "["
+	# BoardReaders are EventBuilder sources
+    (@options.toys + @options.asciis + @options.udps + @options.pbrs).each { |boardreaderOptions|
+		eb_sources_fhicl += ("s%s: { transferPluginType: %s source_rank: %s max_fragment_size_words: %s host_map: {{host_map}}}\n" % [current_rank, @options.transferType,current_rank, fullEventBuffSizeWords])
+		host_map += ("{rank: %s host: \"%s\" portOffset: %s}," % [ current_rank, boardreaderOptions.host,(current_rank * 10) + @options.transferBasePort ] )
+		current_rank += 1
+	}
+
+	# Event Builders are BoardReader destinations and Aggregator sources
+    @options.eventBuilders.each { |ebOptions|
+		br_destinations_fhicl += ("d%s: { transferPluginType: %s destination_rank: %s max_fragment_size_words: %s host_map: {{host_map}}}\n" % [current_rank, @options.transferType,current_rank, fullEventBuffSizeWords])
+		ag_sources_fhicl += ("s%s: { transferPluginType: %s source_rank: %s max_fragment_size_words: %s host_map: {{host_map}}}\n" % [current_rank, @options.transferType,current_rank, fullEventBuffSizeWords])
+		host_map += ("{rank: %s host: \"%s\" portOffset: %s}," % [ current_rank, ebOptions.host,(current_rank * 10) + @options.transferBasePort ] )
+	  current_rank += 1
+	}
+  	
+	# The first aggregator is the destination for the EventBuilders
+	first = true
+    @options.aggregators.each { |agOptions|
+	  if first
+		eb_destinations_fhicl += ("d%s: { transferPluginType: %s destination_rank: %s max_fragment_size_words: %s host_map: {{host_map}}}\n" % [current_rank, @options.transferType,current_rank, fullEventBuffSizeWords])
+		first = false
+      end
+		host_map += ("{rank: %s host: \"%s\" portOffset: %s}," % [ current_rank, agOptions.host,(current_rank * 10) + @options.transferBasePort ] )
+	  current_rank += 1
+    }
+
+	host_map = host_map.chomp(",")
+	host_map += "]"
+	br_destinations_fhicl.gsub!(/\{\{host_map\}\}/, host_map)
+	eb_sources_fhicl.gsub!(/\{\{host_map\}\}/, host_map)
+	eb_destinations_fhicl.gsub!(/\{\{host_map\}\}/, host_map)
+	ag_sources_fhicl.gsub!(/\{\{host_map\}\}/, host_map)
 
     # 02-Dec-2013, KAB - loop over the front-end boards and build the configurations
     # that we will send to them.  These configurations are stored in the associated
@@ -743,8 +799,7 @@ class SystemControl
             # 16-Feb-2016, KAB: Here in the Demo, we don't know whether the data is equally
             # split between the BoardReaders or mainly concentrated in a single BoardReader, so
             # we do the safest thing and make all of the BoardReader MPI buffers the maximum size.
-            cfg = generateBoardReaderMain(totalEBs, totalFRs, fullEventBuffSizeWords,
-                                          generatorCode, br.host, br.port,
+            cfg = generateBoardReaderMain(generatorCode, br_destinations_fhicl,
                                           @options.gangliaMetric, @options.msgFacilityMetric, @options.graphiteMetric)
 
             br.cfgList[listIndex] = cfg
@@ -759,7 +814,7 @@ class SystemControl
           next
         else
           br.fileHasBeenGenerated = true
-          br.cfg = @configGen.generateComposite(totalEBs, totalFRs, br.cfgList)
+          br.cfg = @configGen.generateComposite(br_destinations_fhicl, br.cfgList)
         end
       else
         br.cfg = br.cfgList[0]
@@ -792,11 +847,10 @@ class SystemControl
                                         (@options.toys + @options.asciis + @options.udps + @options.pbrs).map { |board| board.fragType }
                                         )
 										
-        ebOptions.cfg = generateEventBuilderMain(ebIndex, totalFRs, totalEBs, totalAGs,
-                                                 @options.dataDir, @options.runOnmon,
-                                                 @options.writeData, fullEventBuffSizeWords,
-                                                 totalBoards, 
-                                                 fclWFViewer, ebOptions.host, ebOptions.port, ebOptions.sendRequests,
+        ebOptions.cfg = generateEventBuilderMain(ebIndex, totalAGs,  @options.dataDir, @options.runOnmon,
+                                                 @options.writeData, totalBoards, 
+                                                 fclWFViewer, eb_sources_fhicl, eb_destinations_fhicl,
+												 ebOptions.sendRequests,
                                                  @options.gangliaMetric, @options.msgFacilityMetric, @options.graphiteMetric
                                                  )
 
@@ -810,29 +864,25 @@ class SystemControl
     end
   }
 
-  
   @options.aggregators.each { |agOptions|
     fileName = "Aggregator_%s_%d.fcl" % [agOptions.host, agOptions.port]
     if forceRegen || !File.file?(fileName)
       puts "Generating %s" % [fileName]
-      fclWFViewer = generateWFViewer( (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).map { |board| board.board_id },
-                                      (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).map { |board| board.fragType }
+      fclWFViewer = generateWFViewer( (@options.toys + @options.asciis + @options.udps + @options.pbrs).map { |board| board.board_id },
+                                      (@options.toys + @options.asciis + @options.udps + @options.pbrs).map { |board| board.fragType }
                                       )
 
       if @options.onmon_modules = "" || @options.onmon_modules = nil
         @options.onmon_modules = ONMON_MODULES 
       end
-      agOptions.cfg = generateAggregatorMain(@options.dataDir, @options.runNumber,
-                                             totalFRs, totalEBs, agOptions.bunch_size,
-                                             agOptions.compression_level,
-                                             totalv1720s, totalv1724s,
+      agOptions.cfg = generateAggregatorMain(@options.dataDir, agOptions.bunch_size,
                                              @options.runOnmon, @options.writeData, agOptions.demoPrescale,
                                              agIndex, totalAGs, fullEventBuffSizeWords,
+											 ag_sources_fhicl, logger_rank, dispatcher_rank,
                                              xmlrpcClients, @options.fileSizeThreshold,
                                              @options.fileDurationSeconds,
                                              @options.eventsInFile, fclWFViewer, ONMON_EVENT_PRESCALE,
                                              @options.onmon_modules, @options.onmonFileEnabled, @options.onmonFile,
-                                             agOptions.host, agOptions.port,
                                              @options.gangliaMetric, @options.msgFacilityMetric, @options.graphiteMetric)
 
       puts "  writing %s..." % fileName
@@ -855,8 +905,6 @@ class SystemControl
 
     ebIndex = 0
     agIndex = 0
-    totalv1720s = 0
-    totalv1724s = 0
     totaltoy1s = 0
     totaltoy2s = 0
     totalasciis = @options.asciis.length
@@ -885,7 +933,7 @@ class SystemControl
 
     threads = []
 
-    (@options.v1720s + @options.toys + @options.asciis + @options.udps + @options.pbrs).each { |proc|
+    (@options.toys + @options.asciis + @options.udps + @options.pbrs).each { |proc|
       br = @options.boardReaders[proc.board_reader_index]
 
       if br.boardCount > 1
@@ -971,7 +1019,6 @@ class SystemControl
   def start(runNumber)
     self.sendCommandSet("start", @options.aggregators, runNumber)
     self.sendCommandSet("start", @options.eventBuilders, runNumber)
-    self.sendCommandSet("start", @options.v1720s, runNumber)
     self.sendCommandSet("start", @options.pbrs, runNumber)
     self.sendCommandSet("start", @options.toys, runNumber)
     self.sendCommandSet("start", @options.asciis, runNumber)

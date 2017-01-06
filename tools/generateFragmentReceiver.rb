@@ -3,8 +3,7 @@
 
 require File.join( File.dirname(__FILE__), 'demo_utilities' )
 
-def generateFragmentReceiver(startingFragmentId, boardId, 
-                             fragmentType, configDoc )
+def generateFragmentReceiver(startingFragmentId, boardId, fragmentType, configDoc )
 
   generator = nil
   if fragmentType == "TOY1" || fragmentType == "TOY2"

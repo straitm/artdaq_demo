@@ -9,7 +9,7 @@ generateEventBuilderMain.rb generateEventBuilder.rb
 generateWFViewer.rb demo_utilities.rb
 generateFragmentReceiver.rb
 generateAggregatorMain.rb generateAggregator.rb
-generateCompression.rb generateBoardReaderMain.rb RunDriver.rb
+generateBoardReaderMain.rb RunDriver.rb
 makeConfigs.rb
 multi_udp_send_artdaq.py)
 

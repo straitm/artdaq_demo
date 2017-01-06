@@ -2,7 +2,7 @@ art_make(NO_PLUGINS # WAnt different link lists for modues
  BASENAME_ONLY
  LIBRARY_NAME artdaq-demo_ArtModules
  SUBDIRS detail
- LIB_LIBRARIES artdaq-core-demo_Overlays artdaq-demo_Products artdaq_ArtModules
+ LIB_LIBRARIES artdaq-core-demo_Overlays artdaq_ArtModules
 )
 
 #art_make(NO_PLUGINS # WAnt different link lists for modues
