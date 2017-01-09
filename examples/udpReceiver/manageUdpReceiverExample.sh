@@ -2,6 +2,12 @@
 
 source `which setupDemoEnvironment.sh` ""
 
+if [ -z "${ARTDAQDEMO_REPO:-}" ]; then
+  echo "Please set ARTDAQDEMO_REPO to the artdaq-demo directory (containing tools/ and examples/)"
+  exit 1
+fi
+export FHICL_FILE_PATH=$ARTDAQDEMO_REPO/examples/udpReceiver:$FHICL_FILE_PATH
+
 AGGREGATOR_NODE=`hostname`
 THIS_NODE=`hostname -s`
 
@@ -35,7 +41,7 @@ function launch() {
   fi
 
   DemoControl.rb ${enableSerial} -s -c $1 \
-	--ascii `hostname`,${ARTDAQDEMO_BR_PORT[0]},0 \
+    --udp `hostname`,${ARTDAQDEMO_BR_PORT[0]},0 \
     --eb `hostname`,${ARTDAQDEMO_EB_PORT[0]},$ebComp \
     --eb `hostname`,${ARTDAQDEMO_EB_PORT[1]},$ebComp \
     --ag `hostname`,${ARTDAQDEMO_AG_PORT[0]},1,$agComp \
@@ -52,7 +58,7 @@ usage () {
     echo "
 Usage: ${scriptName} [options] <command>
 Where command is one of:
-  init, start, pause, resume, stop, status, get-legal-commands,
+  generate, init, start, pause, resume, stop, status, get-legal-commands,
   shutdown, start-system, restart, reinit, exit,
   fast-shutdown, fast-restart, fast-reinit, or fast-exit
 General options:
@@ -195,6 +201,7 @@ shift
 # verify that the command is one that we expect
 if [[ "$command" != "start-system" ]] && \
    [[ "$command" != "init" ]] && \
+   [[ "$command" != "generate" ]] && \
    [[ "$command" != "start" ]] && \
    [[ "$command" != "pause" ]] && \
    [[ "$command" != "resume" ]] && \

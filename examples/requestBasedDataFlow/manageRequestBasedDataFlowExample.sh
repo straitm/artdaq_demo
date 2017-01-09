@@ -60,7 +60,7 @@ usage () {
     echo "
 Usage: ${scriptName} [options] <command>
 Where command is one of:
-  init, start, pause, resume, stop, status, get-legal-commands,
+  generate, init, start, pause, resume, stop, status, get-legal-commands,
   shutdown, start-system, restart, reinit, exit,
   fast-shutdown, fast-restart, fast-reinit, or fast-exit
 General options:
@@ -203,6 +203,7 @@ shift
 # verify that the command is one that we expect
 if [[ "$command" != "start-system" ]] && \
    [[ "$command" != "init" ]] && \
+   [[ "$command" != "generate" ]] && \
    [[ "$command" != "start" ]] && \
    [[ "$command" != "pause" ]] && \
    [[ "$command" != "resume" ]] && \
