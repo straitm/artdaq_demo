@@ -21,31 +21,6 @@ compared with the output of AsciiDump; they will be identical.
 
 =====================================================================
 
-cfgManagement:
-
-Demonstrates a simple configuration scheme using artdaq-utilities'
-Node.js server. Single-layer systems of arbitrary size may be defined
-and run from the Web-based GUI.
-
-=====================================================================
-
-complexSystems: <<< NOT YET IMPLEMENTED >>>
-
-Demonstrates a multi-layer configuration, for use when one subsystem
-must trigger the rest of the detector or another subsystem. This
-scheme allows ARTDAQ to implement Level-2 triggering.
-
-=====================================================================
-
-mfextensions:
-
-Demonstrates the artdaq-mfextensions package and the ARTDAQ Message
-Viewer GUI. This utility can be used to view, sort, and filter the
-MessageFacility messages produced by all of the applications and
-modules within the ARTDAQ system.
-
-=====================================================================
-
 requestBasedDataFlow:
 
 Demonstrates the Data Request capabilities of the CommandableFragmentGenerator
@@ -64,3 +39,5 @@ Demonstrates the UDPReceiver_generator class. Also contains a script
 to send in UDP packets that will trigger the system. As with the
 asciiSimulator example, this can be used to demonstrate ARTDAQ's
 data preservation throughout the readout.
+
+=====================================================================
