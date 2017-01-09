@@ -32,18 +32,18 @@ toolsdir=$2
 	xloc=800
     fi
 
-    $toolsdir/xt_cmd.sh $basedir --geom '100x33+0+0 -sl 2500' \
+    $toolsdir/xt_cmd.sh $basedir --geom '100x33+'$xloc'+0 -sl 2500' \
         -c '. ./setupARTDAQDEMO' \
         -c 'art -c '$toolsdir'/fcl/TransferInputShmem.fcl'
 
     sleep 4;
 
-    $toolsdir/xt_cmd.sh $basedir --geom '100x33+'$xloc'+0 -sl 2500' \
+    $toolsdir/xt_cmd.sh $basedir --geom '100x33+0+0 -sl 2500' \
         -c '. ./setupARTDAQDEMO' \
 	-c 'rm -f '$toolsdir'/fcl/TransferInputShmem2.fcl' \
         -c 'cp -p '$toolsdir'/fcl/TransferInputShmem.fcl '$toolsdir'/fcl/TransferInputShmem2.fcl' \
-	-c 'sed -r -i "s/.*modulus.*[0-9]+.*/modulus: 10/" '$toolsdir'/fcl/TransferInputShmem2.fcl' \
-	-c 'sed -r -i "/end_paths:/s/a1/a3/" '$toolsdir'/fcl/TransferInputShmem2.fcl' \
+	-c 'sed -r -i "s/.*modulus.*[0-9]+.*/modulus: 100/" '$toolsdir'/fcl/TransferInputShmem2.fcl' \
+	-c 'sed -r -i "/end_paths:/s/a3/a1/" '$toolsdir'/fcl/TransferInputShmem2.fcl' \
 	-c 'sed -r -i "/shm_key:/s/.*/shm_key: 0x40471453/" '$toolsdir'/fcl/TransferInputShmem2.fcl' \
 	-c 'sed -r -i "s/shmem1/shmem2/" '$toolsdir'/fcl/TransferInputShmem2.fcl' \
         -c 'art -c '$toolsdir'/fcl/TransferInputShmem2.fcl'
