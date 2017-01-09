@@ -10,7 +10,7 @@ import sys
 import socket
 import random
 from time import sleep
-USAGE='send host:port seqnum [packetCount] [outoforder]'
+USAGE='send host:port seqnum [packetCount] [outoforder] [json]'
 
 # first byte is cmd
 # 2nd byte is seqnum (yes, just 8 bits)
@@ -22,16 +22,17 @@ def main(argv):
     print('len(argv)=%d'%(len(argv),))
     packetCount = 1
     outOfOrder = False
+    jsonMode = False
     if len(argv) < 3: print(USAGE); sys.exit()
     if len(argv) >= 4: packetCount = int(argv[3])
     if len(argv) >= 5: outOfOrder = int(argv[4]) == 1
-    if len(argv) >= 6: json = int(argv[5]) == 1
+    if len(argv) >= 6: jsonMode = int(argv[5]) == 1
 
     node,port = argv[1].split(':')
     seqnum= int(argv[2])&0xff
     s = socket.socket( socket.AF_INET, socket.SOCK_DGRAM )  
 
-    if json:
+    if jsonMode:
         packetsSent = 0
         while packetsSent < packetCount:
             buf=chr(0x10)
