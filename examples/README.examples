@@ -7,9 +7,7 @@
 =====================================================================
 
 These examples demonstrate different features of the ARTDAQ toolkit.
-Each example directory contains a "quick-start.sh" script which can
-be used to run that example. For more information about each
-example, please see that example's README file.
+For more information about each example, please see that example's README file.
 
 =====================================================================
 =====================================================================
