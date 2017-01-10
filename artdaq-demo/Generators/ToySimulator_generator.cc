@@ -5,11 +5,7 @@
 
 #include "artdaq-demo/Generators/ToySimulator.hh"
 
-#ifdef CANVAS
 #include "canvas/Utilities/Exception.h"
-#else
-#include "art/Utilities/Exception.h"
-#endif
 
 #include "artdaq/Application/GeneratorMacros.hh"
 #include "artdaq-core/Utilities/SimpleLookupPolicy.h"

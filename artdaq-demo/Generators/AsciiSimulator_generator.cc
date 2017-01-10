@@ -1,10 +1,6 @@
 #include "artdaq-demo/Generators/AsciiSimulator.hh"
 
-#ifdef CANVAS
 #include "canvas/Utilities/Exception.h"
-#else
-#include "art/Utilities/Exception.h"
-#endif
 
 #include "artdaq/Application/GeneratorMacros.hh"
 #include "cetlib/exception.h"
