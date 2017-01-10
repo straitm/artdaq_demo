@@ -175,10 +175,9 @@ outputs:
 
 source:
   {
-  module_type: RawInput
+  module_type: DemoInput
   waiting_time: 900
   resume_after_timeout: true
-  fragment_type_map: [[3, \"V1720\"], [4, \"V1724\"], [6, \"TOY1\"], [7, \"TOY2\"] ]
 }
 
 process_name: Driver

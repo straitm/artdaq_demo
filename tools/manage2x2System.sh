@@ -172,6 +172,7 @@ shift
 # verify that the command is one that we expect
 if [[ "$command" != "start-system" ]] && \
    [[ "$command" != "init" ]] && \
+   [[ "$command" != "generate" ]] && \
    [[ "$command" != "start" ]] && \
    [[ "$command" != "pause" ]] && \
    [[ "$command" != "resume" ]] && \

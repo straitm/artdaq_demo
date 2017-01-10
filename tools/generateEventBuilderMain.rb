@@ -2,14 +2,11 @@
 # EventBuilderMain application by configuring its
 # artdaq::EventBuilderCore object
 
-require File.join( File.dirname(__FILE__), 'generateCompression' )
 require File.join( File.dirname(__FILE__), 'generateEventBuilder' )
 
 
-def generateEventBuilderMain(ebIndex, totalFRs, totalEBs, totalAGs, compressionLevel, 
-                         totalv1720s, totalv1724s, dataDir, onmonEnable,
-                         diskWritingEnable, fragSizeWords, totalFragments,
-                         fclWFViewer, ebHost, ebPort, sendRequests, withGanglia, withMsgFacility, withGraphite )
+def generateEventBuilderMain(ebIndex, totalAGs, dataDir, onmonEnable, diskWritingEnable, totalFragments,
+                         fclWFViewer, sources_fhicl, destinations_fhicl, sendRequests, withGanglia, withMsgFacility, withGraphite )
   # Do the substitutions in the event builder configuration given the options
   # that were passed in from the command line.  
 
@@ -22,11 +19,10 @@ services: {
   }
   NetMonTransportServiceInterface: {
     service_provider: NetMonTransportService
-    first_data_receiver_rank: %{ag_rank}
-    mpi_buffer_count: %{rootmpiout_buffer_count}
-    max_fragment_size_words: %{size_words}
-    data_receiver_count: %{ag_count}
     #broadcast_sends: true
+	destinations: {	
+	  %{destinations_fhicl}
+    }
   }
 
   #SimpleMemoryCheck: { }
@@ -38,14 +34,11 @@ outputs: {
   %{rootmpi_output}rootMPIOutput: {
   %{rootmpi_output}  module_type: RootMPIOutput
   %{rootmpi_output}  #SelectEvents: { SelectEvents: [ pmod2,pmod3 ] }
-  %{rootmpi_output}  %{drop_uncompressed}outputCommands: [ \"keep *\", \"drop artdaq::Fragments_daq_V1720_*\", \"drop artdaq::Fragments_daq_V1724_*\" ]
   %{rootmpi_output}}
   %{root_output}normalOutput: {
   %{root_output}  module_type: RootOutput
   %{root_output}  fileName: \"%{output_file}\"
-  %{root_output}  compressionLevel: 0
   %{root_output}  #SelectEvents: { SelectEvents: [ pmod2,pmod3 ] }
-  %{root_output}  %{drop_uncompressed}outputCommands: [ \"keep *\", \"drop artdaq::Fragments_daq_V1720_*\", \"drop artdaq::Fragments_daq_V1724_*\" ]
   %{root_output}}
 }
 
@@ -55,10 +48,6 @@ physics: {
   }
 
   producers: {
-
-     %{huffdiffV1720}
-
-     %{huffdiffV1724}
   }
 
   filters: {
@@ -74,7 +63,6 @@ physics: {
     }
   }
 
-  p1: [ %{compressionModules} ] 
   pmod2: [ prescaleMod2 ]
   pmod3: [ prescaleMod3 ]
    
@@ -85,10 +73,9 @@ physics: {
   %{root_output}my_output_modules: [ normalOutput ]
 }
 source: {
-  module_type: RawInput
+  module_type: DemoInput
   waiting_time: 2500000
   resume_after_timeout: true
-  fragment_type_map: [[1, \"missed\"], [2, \"TOY1\"], [3, \"TOY2\"], [4, \"ASCII\"]]
 }
 process_name: DAQ" )
 
@@ -99,48 +86,10 @@ if Integer(totalAGs) >= 1
 end
 
 
-event_builder_code = generateEventBuilder( fragSizeWords, totalFRs, totalAGs, totalFragments, verbose, ebHost, ebPort,sendRequests, withGanglia, withMsgFacility, withGraphite)
+event_builder_code = generateEventBuilder( totalFragments, verbose, sources_fhicl, sendRequests, withGanglia, withMsgFacility, withGraphite)
 
+ebConfig.gsub!(/\%\{destinations_fhicl\}/, destinations_fhicl)
 ebConfig.gsub!(/\%\{event_builder_code\}/, event_builder_code)
-
-ebConfig.gsub!(/\%\{ag_rank\}/, String(totalFRs + totalEBs))
-if Integer(totalAGs) > 1
-  ebConfig.gsub!(/\%\{ag_count\}/, String(totalAGs - 1))
-else
-  ebConfig.gsub!(/\%\{ag_count\}/, String(totalAGs))
-end
-ebConfig.gsub!(/\%\{size_words\}/, String(fragSizeWords))
-ebConfig.gsub!(/\%\{rootmpiout_buffer_count\}/, String(totalAGs*4))
-
-compressionModules = []
-
-if Integer(compressionLevel) > 0 && Integer(compressionLevel) < 3
-  if Integer(totalv1720s) > 0
-    ebConfig.gsub!(/\%\{huffdiffV1720\}/, "huffdiffV1720: { " + generateCompression("V1720") + "}" )
-    compressionModules << "huffdiffV1720"
-  else
-    ebConfig.gsub!(/\%\{huffdiffV1720\}/, "")
-  end
-
-  if Integer(totalv1724s) > 0
-    ebConfig.gsub!(/\%\{huffdiffV1724\}/, "huffdiffV1724: { " + generateCompression("V1724") + "}" )
-    compressionModules << "huffdiffV1724"
-  else
-    ebConfig.gsub!(/\%\{huffdiffV1724\}/, "")
-  end
-
-else
-  ebConfig.gsub!(/\%\{huffdiffV1720\}/, "")
-  ebConfig.gsub!(/\%\{huffdiffV1724\}/, "")
-end
-
-if Integer(compressionLevel) > 1
-  ebConfig.gsub!(/\%\{drop_uncompressed\}/, "")
-else
-  ebConfig.gsub!(/\%\{drop_uncompressed\}/, "#")
-end
-
-ebConfig.gsub!(/\%\{compressionModules\}/, compressionModules.join(","))
 
 if Integer(totalAGs) >= 1
   ebConfig.gsub!(/\%\{rootmpi_output\}/, "")

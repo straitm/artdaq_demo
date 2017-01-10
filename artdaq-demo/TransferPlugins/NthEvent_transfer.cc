@@ -25,12 +25,15 @@ namespace artdaq {
     NthEventTransfer(fhicl::ParameterSet const& ps, artdaq::TransferInterface::Role role); 
 
     TransferInterface::CopyStatus
-    copyFragmentTo(artdaq::Fragment& fragment,
+    copyFragment(artdaq::Fragment& fragment,
 		   size_t send_timeout_usec = std::numeric_limits<size_t>::max());
+	TransferInterface::CopyStatus
+		moveFragment(artdaq::Fragment&& fragment,
+			size_t send_timeout_usec = std::numeric_limits<size_t>::max());
 
-    size_t receiveFragmentFrom(artdaq::Fragment& fragment,
+    int receiveFragment(artdaq::Fragment& fragment,
 			       size_t receiveTimeout) {
-      return physical_transfer_->receiveFragmentFrom(fragment, receiveTimeout);
+      return physical_transfer_->receiveFragment(fragment, receiveTimeout);
     }
 
 
@@ -50,14 +53,25 @@ namespace artdaq {
 
 
   TransferInterface::CopyStatus
-  NthEventTransfer::copyFragmentTo(artdaq::Fragment& fragment,
+  NthEventTransfer::copyFragment(artdaq::Fragment& fragment,
 				   size_t send_timeout_usec) {
 
     if (fragment.sequenceID() % nth_ != 0) {
       return TransferInterface::CopyStatus::kSuccess;
     }
 
-    return physical_transfer_->copyFragmentTo(fragment, send_timeout_usec);
+    return physical_transfer_->copyFragment(fragment, send_timeout_usec);
+  }
+
+  TransferInterface::CopyStatus
+	  NthEventTransfer::moveFragment(artdaq::Fragment&& fragment,
+		  size_t send_timeout_usec) {
+
+	  if (fragment.sequenceID() % nth_ != 0) {
+		  return TransferInterface::CopyStatus::kSuccess;
+	  }
+
+	  return physical_transfer_->moveFragment(std::move(fragment), send_timeout_usec);
   }
 
 }
