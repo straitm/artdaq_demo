@@ -6,7 +6,7 @@ simple_plugin(ToySimulator "generator"
   artdaq_DAQdata
   artdaq-core_Utilities
   artdaq-core_Data
-  ${CANVAS}_Utilities
+  canvas_Utilities
   ${FHICLCPP}
   ${MF_MESSAGELOGGER}
   ${MF_UTILITIES}
@@ -29,7 +29,7 @@ simple_plugin(UDPReceiver "generator"
     artdaq_DAQdata
     artdaq-core_Utilities
     artdaq-core_Data
-  ${CANVAS}_Utilities
+  canvas_Utilities
     ${FHICLCPP}
   ${MF_MESSAGELOGGER}
   ${MF_UTILITIES}

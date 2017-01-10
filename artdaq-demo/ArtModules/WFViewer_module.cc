@@ -4,12 +4,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Core/ModuleMacros.h"
-
-#ifdef CANVAS
 #include "canvas/Utilities/InputTag.h"
-#else
-#include "art/Utilities/InputTag.h"
-#endif
 
 #include "artdaq-core/Data/Fragments.hh"
 
