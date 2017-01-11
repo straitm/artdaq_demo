@@ -6,6 +6,7 @@ simple_plugin(ToySimulator "generator"
   artdaq_DAQdata
   artdaq-core_Utilities
   artdaq-core_Data
+  artdaq-utilities_Plugins
   canvas_Utilities
   ${FHICLCPP}
   ${MF_MESSAGELOGGER}
