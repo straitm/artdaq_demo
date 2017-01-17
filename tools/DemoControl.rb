@@ -360,7 +360,7 @@ class CommandLineParser
         ebConfig.port = Integer(eb[1])
         ebConfig.kind = "eb"
         ebConfig.sendRequests = 0
-if eb.length == 3
+if eb.length > 2
   ebConfig.sendRequests = Integer(eb[2])
 end
         ebConfig.index = @options.eventBuilders.length
@@ -380,7 +380,7 @@ end
         agConfig.port = Integer(ag[1])
         agConfig.kind = "ag"
         agConfig.bunch_size = Integer(ag[2])
-        if ag.length == 4
+        if ag.length > 3
             agConfig.demoPrescale = Integer(ag[3])
         else
             agConfig.demoPrescale = 0
