@@ -2,6 +2,8 @@
 requests_enabled: true # Whether to set up the socket for listening for request messages
 request_mode: "Window" # Possible values are: Ignored, Single, Buffer, Window
 
+data_buffer_depth_fragments: 10 # How many fragments to store in the data buffer.
+
 # Window Request configuration
 # For Window request, timestamp must be filled in Fragment. 
 # Timestamp is arbitrary, but must be a "clock" in that it is a monotonically-increasing number
