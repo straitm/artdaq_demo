@@ -5,8 +5,6 @@ physics:
     evtDump:
     {
       module_type: ASCIIDump
-      raw_data_label: daq
-      frag_type: ASCII
     }
 
     printBuildInfo: {

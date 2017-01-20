@@ -15,7 +15,7 @@ toolsdir=$ARTDAQDEMO_REPO/tools
     $toolsdir/xt_cmd.sh $basedir --geom 132 \
         -c '. ./setupARTDAQDEMO' \
         -c ':,sleep 10' \
-        -c '$ARTDAQDEMO_REPO/examples/requestBasedDataFlow/manageRequestBasedDataFlowExample.sh init' \
+        -c '$ARTDAQDEMO_REPO/examples/requestBasedDataFlow/manageRequestBasedDataFlowExample.sh -m on init' \
         -c ':,sleep 5' \
         -c '$ARTDAQDEMO_REPO/examples/requestBasedDataFlow/manageRequestBasedDataFlowExample.sh -N 101 start' \
         -c ':,sleep 60' \

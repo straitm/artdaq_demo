@@ -843,9 +843,7 @@ class SystemControl
       fileName = "EventBuilder_%s_%d.fcl" % [ebOptions.host, ebOptions.port]
       if forceRegen || !File.file?(fileName)
         puts "Generating %s" % [fileName]
-        fclWFViewer = generateWFViewer( (@options.toys + @options.asciis + @options.udps + @options.pbrs).map { |board| board.board_id },
-                                        (@options.toys + @options.asciis + @options.udps + @options.pbrs).map { |board| board.fragType }
-                                        )
+        fclWFViewer = generateWFViewer( (@options.toys + @options.asciis + @options.udps + @options.pbrs).map { |board| board.board_id } )
 										
         ebOptions.cfg = generateEventBuilderMain(ebIndex, totalAGs,  @options.dataDir, @options.runOnmon,
                                                  @options.writeData, totalBoards, 
@@ -868,9 +866,7 @@ class SystemControl
     fileName = "Aggregator_%s_%d.fcl" % [agOptions.host, agOptions.port]
     if forceRegen || !File.file?(fileName)
       puts "Generating %s" % [fileName]
-      fclWFViewer = generateWFViewer( (@options.toys + @options.asciis + @options.udps + @options.pbrs).map { |board| board.board_id },
-                                      (@options.toys + @options.asciis + @options.udps + @options.pbrs).map { |board| board.fragType }
-                                      )
+      fclWFViewer = generateWFViewer( (@options.toys + @options.asciis + @options.udps + @options.pbrs).map { |board| board.board_id } )
 
       if @options.onmon_modules = "" || @options.onmon_modules = nil
         @options.onmon_modules = ONMON_MODULES 
