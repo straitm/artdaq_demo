@@ -39,7 +39,8 @@ outputs: {
   %{root_output}  module_type: RootOutput
   %{root_output}  fileName: \"%{output_file}\"
   %{root_output}  #SelectEvents: { SelectEvents: [ pmod2,pmod3 ] }
-  %{root_output}}
+  %{root_output}  fileProperties: {maxRuns:1 maxSubRuns:1}
+ %{root_output}}
 }
 
 physics: {
