@@ -165,7 +165,7 @@ fi
 
 wget http://scisoft.fnal.gov/scisoft/bundles/tools/pullProducts
 chmod +x pullProducts
-./pullProducts $Base/products ${os} artdaq-${artdaq_version} ${squalifier}-${equalifier} ${build_type}
+./pullProducts $Base/products ${os} artdaq_demo-${demo_version} ${squalifier}-${equalifier} ${build_type}
     if [ $? -ne 0 ]; then
 	echo "Error in pullProducts. Please go to http://scisoft.fnal.gov/scisoft/bundles/artdaq/${artdaq_version}/manifest and make sure that a manifest for the specified qualifiers ($defaultqualWithS) exists."
 	exit 1
@@ -200,17 +200,15 @@ mrb gitCheckout -d artdaq_demo http://cdcvs.fnal.gov/projects/artdaq-demo
 fi
 else
 if [ $opt_w -gt 0 ];then
-mrb gitCheckout -t ${artdaq_version} -d artdaq ssh://p-artdaq@cdcvs.fnal.gov/cvs/projects/artdaq
 mrb gitCheckout -t ${coredemo_version} -d artdaq_core_demo ssh://p-artdaq-core-demo@cdcvs.fnal.gov/cvs/projects/artdaq-core-demo
 mrb gitCheckout -t ${demo_version} -d artdaq_demo ssh://p-artdaq-demo@cdcvs.fnal.gov/cvs/projects/artdaq-demo
 else
-mrb gitCheckout -t ${artdaq_version} -d artdaq http://cdcvs.fnal.gov/projects/artdaq
 mrb gitCheckout -t ${coredemo_version} -d artdaq_core_demo http://cdcvs.fnal.gov/projects/artdaq-core-demo
 mrb gitCheckout -t ${demo_version} -d artdaq_demo http://cdcvs.fnal.gov/projects/artdaq-demo
 fi
 fi
 
-if [[ "x${opt_viewer-}" != "x" ]]; then
+if [[ "x${opt_viewer-}" != "x" ]] && [[ $opt_develop -eq 1 ]]; then
     cd $MRB_SOURCE
     mrb gitCheckout -d artdaq_mfextensions http://cdcvs.fnal.gov/projects/mf-extensions-git
 
