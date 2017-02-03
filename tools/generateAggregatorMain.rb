@@ -35,6 +35,7 @@ outputs: {
   %{root_output}  module_type: RootOutput
   %{root_output}  fileName: \"%{output_file}\"
   %{root_output}  fileProperties: {maxRuns:1 maxSubRuns:1}
+  %{root_output}  fastCloning: false
   %{root_output}}
 
   %{root_output2}normalOutputMod2: {
@@ -42,6 +43,7 @@ outputs: {
   %{root_output2}  fileName: \"%{output_file_mod2}\"
   %{root_output2}  SelectEvents: { SelectEvents: [ pmod2 ] }
   %{root_output2}  fileProperties: {maxRuns:1 maxSubRuns:1}
+  %{root_output2}  fastCloning: false
   %{root_output2}}
 
   %{root_output2}normalOutputMod3: {
@@ -49,6 +51,7 @@ outputs: {
   %{root_output2}  fileName: \"%{output_file_mod3}\"
   %{root_output2}  SelectEvents: { SelectEvents: [ pmod3 ] }
   %{root_output2}  fileProperties: {maxRuns:1 maxSubRuns:1}
+  %{root_output2}  fastCloning: false
   %{root_output2}}
 
 }
