@@ -565,7 +565,7 @@ end
 	  "Supported types: \"MPI\" \"TCPSocket\" \"Autodetect\"",
 	  "If TCPSocket or Autodetect are used, specify base_port (default 5300)"
 	  ) do |type|
-	    if type.legnth < 1
+	    if type.length < 1
 	      puts "You must specify a type name with this option"
   	      exit
 	    end
