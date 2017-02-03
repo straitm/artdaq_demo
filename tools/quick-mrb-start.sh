@@ -89,6 +89,9 @@ function detectAndPull() {
 
     if [ $# -gt 2 ];then
 	local qualifiers=$3
+     	if [[ "$qualifiers" == "nq" ]]; then
+		    qualifiers=
+		fi
     fi
     if [ $# -gt 3 ];then
 	local packageVersion=$4
@@ -99,8 +102,8 @@ function detectAndPull() {
 
     if [[ "$packageOs" != "noarch" ]]; then
         local upsflavor=`ups flavor`
-	local packageQualifiers="-`echo $qualifiers|sed 's/:/-/g'`"
-	local packageUPSString="-f $upsflavor -q$qualifiers"
+    	local packageQualifiers="-`echo $qualifiers|sed 's/:/-/g'`"
+    	local packageUPSString="-f $upsflavor -q$qualifiers"
     fi
     local packageInstalled=`ups list -aK+ $packageName $packageVersion ${packageUPSString-}|grep -c "$packageName"`
     if [ $packageInstalled -eq 0 ]; then
@@ -109,8 +112,13 @@ function detectAndPull() {
 	local packageFile=$( echo $packagePath | awk 'BEGIN { FS="/" } { print $NF }' )
 
 	if [[ ! -e $packageFile ]]; then
-	    echo "Unable to download $packageName"
-	    exit 1
+		if [[ "$packageOs" == "slf7" ]]; then
+			# Try sl7, as they're both valid...
+			detectAndPull $packageName sl7 ${qualifiers:-"nq"} $packageVersion
+		else
+	      echo "Unable to download $packageName"
+	      exit 1
+		fi
 	fi
 
 	local returndir=$PWD
