@@ -7,6 +7,7 @@ daq: {
     expected_fragments_per_event: %{total_fragments}
     use_art: true
     print_event_store_stats: true
+    max_incomplete_events: 75 # Same as boardreader sync interval
     verbose: %{verbose}
     send_requests: %{requests_enabled}
 
