@@ -28,7 +28,7 @@ daq: {
     aggFile: {
       metricPluginType: \"file\"
       level: 3
-      fileName: \"/tmp/aggregator/agg_%UID%_metrics.log\"
+      fileName: \"${ARTDAQDEMO_LOG_DIR:-/tmp}/aggregator/agg_%UID%_metrics.log\"
       uniquify: true
     }
     %{ganglia_metric} ganglia: {

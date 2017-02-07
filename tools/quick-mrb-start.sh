@@ -30,6 +30,8 @@ prompted for this location.
 --develop     Install the develop version of the software (may be unstable!)
 --viewer      install and run the artdaq Message Viewer
 --tag         Install a specific tag of artdaq_demo
+--logdir      Set <dir> as the destination for log files
+--datafir     Set <dir> as the destination for data files
 -e, -s        Use specific qualifiers when building ARTDAQ
 -v            Be more verbose
 -x            set -x this script
@@ -38,6 +40,8 @@ prompted for this location.
 
 # Process script arguments and options
 eval env_opts=\${$env_opts_var-} # can be args too
+datadir="${ARTDAQDEMO_DATA_DIR:-/tmp}"
+logdir="${ARTDAQDEMO_LOG_DIR:-/tmp}"
 eval "set -- $env_opts \"\$@\""
 op1chr='rest=`expr "$op" : "[^-]\(.*\)"`   && set -- "-$rest" "$@"'
 op1arg='rest=`expr "$op" : "[^-]\(.*\)"`   && set --  "$rest" "$@"'
@@ -60,6 +64,8 @@ while [ -n "${1-}" ];do
 			-develop) opt_develop=1;;
 			-tag)       eval $reqarg; tag=$1; shift;;
 	    -viewer)    opt_viewer=--viewer;;
+		-logdir)    eval $op1arg; logdir=$1; shift;;
+		-datadir)   eval $op1arg; datadir=$1; shift;;
             *)          echo "Unknown option -$op"; do_help=1;;
         esac
     else
@@ -247,6 +253,9 @@ cd $Base
     export ARTDAQDEMO_BUILD=$MRB_BUILDDIR/artdaq_demo
 	#export ARTDAQDEMO_BASE_PORT=52200
 	export DAQ_INDATA_PATH=$ARTDAQ_DEMO_DIR/test/Generators
+
+	export ARTDAQDEMO_DATA_DIR=${datadir}
+	export ARTDAQDEMO_LOG_DIR=${logdir}
 
 	export FHICL_FILE_PATH=.:\$ARTDAQ_DEMO_DIR/tools/snippets:\$ARTDAQ_DEMO_DIR/tools/fcl:\$FHICL_FILE_PATH
 

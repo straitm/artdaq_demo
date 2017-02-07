@@ -19,7 +19,7 @@ daq: {
     evbFile: {
       metricPluginType: \"file\"
       level: 3
-      fileName: \"/tmp/eventbuilder/evb_%UID%_metrics.log\"
+      fileName: \"${ARTDAQDEMO_LOG_DIR:-/tmp}/eventbuilder/evb_%UID%_metrics.log\"
       uniquify: true
     }
     %{ganglia_metric} ganglia: {

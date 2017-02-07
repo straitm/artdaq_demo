@@ -41,7 +41,7 @@ if [ "x$configFile" == "x" ]; then
   echo "AggregatorMain `hostname` ${ARTDAQDEMO_AG_PORT[1]}" >> $tempFile
 
   # create the logfile directories, if needed
-  logroot="/tmp"
+  logroot="${ARTDAQDEMO_LOG_DIR:-/tmp}"
   makeLogDirs $logroot
   
   # start PMT

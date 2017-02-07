@@ -13,7 +13,7 @@ echo "AggregatorMain `hostname` ${ARTDAQDEMO_AG_PORT[0]}" >> $tempFile
 echo "AggregatorMain `hostname` ${ARTDAQDEMO_AG_PORT[1]}" >> $tempFile
 
 # create the logfile directories, if needed
-logroot="/tmp"
+logroot="${ARTDAQDEMO_LOG_DIR:-/tmp}"
 mkdir -p -m 0777 ${logroot}/pmt
 mkdir -p -m 0777 ${logroot}/masterControl
 mkdir -p -m 0777 ${logroot}/boardreader

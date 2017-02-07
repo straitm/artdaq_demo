@@ -20,7 +20,7 @@ def generateBoardReaderMain( generatorCode, destinations_fhicl, withGanglia = 0,
     brFile: {
       metricPluginType: \"file\"
       level: 3
-      fileName: \"/tmp/boardreader/br_%UID%_metrics.log\"
+      fileName: \"${ARTDAQDEMO_LOG_DIR:-/tmp}/boardreader/br_%UID%_metrics.log\"
       uniquify: true
     }
     %{ganglia_metric} ganglia: {
