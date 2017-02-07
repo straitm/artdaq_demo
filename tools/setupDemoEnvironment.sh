@@ -81,6 +81,6 @@ done
 if [[ "${dataDir}" != "" ]]; then
     ARTDAQDEMO_DATA_DIR=$dataDir
 else
-    ARTDAQDEMO_DATA_DIR=/tmp
+    ARTDAQDEMO_DATA_DIR=${ARTDAQDEMO_DATA_DIR:-/tmp}
 fi
 export ARTDAQDEMO_DATA_DIR

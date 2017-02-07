@@ -88,7 +88,7 @@ if Integer(totalAGs) >= 1
 end
 
 
-event_builder_code = generateEventBuilder( totalFragments, verbose, sources_fhicl, sendRequests, withGanglia, withMsgFacility, withGraphite)
+event_builder_code = generateEventBuilder( totalFragments, verbose, sources_fhicl,dataDir, sendRequests, withGanglia, withMsgFacility, withGraphite)
 
 ebConfig.gsub!(/\%\{destinations_fhicl\}/, destinations_fhicl)
 ebConfig.gsub!(/\%\{event_builder_code\}/, event_builder_code)

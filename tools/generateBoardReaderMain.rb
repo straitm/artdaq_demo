@@ -2,7 +2,7 @@
 # BoardReaderMain application by configuring its
 # artdaq::BoardReaderCore object
   
-def generateBoardReaderMain( generatorCode, destinations_fhicl, withGanglia = 0, withMsgFacility = 0, withGraphite = 0)
+def generateBoardReaderMain( generatorCode, destinations_fhicl,dataDir, withGanglia = 0, withMsgFacility = 0, withGraphite = 0)
 
   brConfig = String.new( "\
   daq: {
@@ -20,7 +20,7 @@ def generateBoardReaderMain( generatorCode, destinations_fhicl, withGanglia = 0,
     brFile: {
       metricPluginType: \"file\"
       level: 3
-      fileName: \"/tmp/boardreader/br_%UID%_metrics.log\"
+      fileName: \"%{datadir}/boardreader/br_%UID%_metrics.log\"
       uniquify: true
     }
     %{ganglia_metric} ganglia: {
@@ -50,7 +50,8 @@ def generateBoardReaderMain( generatorCode, destinations_fhicl, withGanglia = 0,
   
   brConfig.gsub!(/\%\{generator_code\}/, String(generatorCode))
   brConfig.gsub!(/\%\{destinations_fhicl\}/, destinations_fhicl)
-
+  
+  brConfig.gsub!(/\%\{datadir\}/, dataDir)
   if Integer(withGanglia) > 0
     brConfig.gsub!(/\%\{ganglia_metric\}/, "")
     brConfig.gsub!(/\%\{ganglia_level\}/, Integer(withGanglia))

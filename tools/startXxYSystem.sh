@@ -16,7 +16,8 @@ BoardReaderMain mu2edaq06-data 5306
 EventBuilderMain mu2edaq05-data 5335
 EventBuilderMain mu2edaq06-data 5336
 "
-logroot="/tmp"
+source `which setupDemoEnvironment.sh`
+logroot="${ARTDAQDEMO_LOG_DIR:-/tmp}"
 op1arg='rest=`expr "$op" : "[^-]\(.*\)"`; test -n "$rest" && set -- "$rest"  "$@"'
 args=
 while [ -n "${1-}" ];do
@@ -43,7 +44,6 @@ nf=$absdir/`basename $cf .cfg`.node
 test -f $nf || { echo Corresponding node file $nf not found; exit 1; }
 export NODE_LIST=$nf
 
-source `which setupDemoEnvironment.sh`
 
 /bin/cp -f $cf started.cfg
 echo cfgdir=$cfgdir

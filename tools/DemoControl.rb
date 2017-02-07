@@ -799,7 +799,7 @@ class SystemControl
             # 16-Feb-2016, KAB: Here in the Demo, we don't know whether the data is equally
             # split between the BoardReaders or mainly concentrated in a single BoardReader, so
             # we do the safest thing and make all of the BoardReader MPI buffers the maximum size.
-            cfg = generateBoardReaderMain(generatorCode, br_destinations_fhicl,
+            cfg = generateBoardReaderMain(generatorCode, br_destinations_fhicl, @options.dataDir,
                                           @options.gangliaMetric, @options.msgFacilityMetric, @options.graphiteMetric)
 
             br.cfgList[listIndex] = cfg

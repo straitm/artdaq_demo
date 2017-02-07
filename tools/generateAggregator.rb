@@ -2,7 +2,7 @@
 def generateAggregator(bunchSize, fragSizeWords, sources_fhicl,
                        xmlrpcClientList, fileSizeThreshold, fileDuration,
                        fileEventCount, queueDepth, queueTimeout, onmonEventPrescale,
-                       agType, logger_rank, dispatcher_rank,
+                       agType, logger_rank, dispatcher_rank, dataDir
 					   withGanglia = 0, withMsgFacility = 0, withGraphite = 0)
 
 agConfig = String.new( "\
@@ -28,7 +28,7 @@ daq: {
     aggFile: {
       metricPluginType: \"file\"
       level: 3
-      fileName: \"/tmp/aggregator/agg_%UID%_metrics.log\"
+      fileName: \"%{datadir}/aggregator/agg_%UID%_metrics.log\"
       uniquify: true
     }
     %{ganglia_metric} ganglia: {
@@ -82,8 +82,10 @@ agConfig.gsub!(/\%\{sources_fhicl\}/, sources_fhicl)
   agConfig.gsub!(/\%\{logger_rank\}/, String(logger_rank))
   agConfig.gsub!(/\%\{dispatcher_rank\}/, String(dispatcher_rank))
 
+  
+  agConfig.gsub!(/\%\{datadir\}/, dataDir)
   if Integer(withGanglia) > 0
-    brConfig.gsub!(/\%\{ganglia_metric\}/, "")
+    agConfig.gsub!(/\%\{ganglia_metric\}/, "")
     agConfig.gsub!(/\%\{ganglia_level\}/, Integer(withGanglia))
   else
     agConfig.gsub!(/\%\{ganglia_metric\}/, "#")

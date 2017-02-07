@@ -120,7 +120,7 @@ process_name: DAQAG"
   aggregator_code = generateAggregator( bunchSize, fragSizeWords, sources_fhicl,
                                         xmlrpcClientList, fileSizeThreshold, fileDuration, 
 										fileEventCount, queueDepth, queueTimeout, onmonEventPrescale,
-										agType, logger_rank, dispatcher_rank,
+										agType, logger_rank, dispatcher_rank, dataDir,
 										withGanglia, withMsgFacility, withGraphite )
   agConfig.gsub!(/\%\{aggregator_code\}/, aggregator_code)
 
