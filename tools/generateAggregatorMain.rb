@@ -7,8 +7,9 @@ require File.join( File.dirname(__FILE__), 'generateAggregator' )
 def generateAggregatorMain(dataDir, bunchSize, onmonEnable,
                            diskWritingEnable, demoPrescale, agIndex, totalAGs, fragSizeWords,
 						   sources_fhicl, logger_rank, dispatcher_rank,
-                           xmlrpcClientList, fileSizeThreshold, fileDuration,
-                           fileEventCount, fclWFViewer, onmonEventPrescale, 
+                           xmlrpcClientList, filePropertiesFhicl,
+						    subrunSizeThreshold, subrunDuration, subrunEventCount,
+							fclWFViewer, onmonEventPrescale, 
                            onmon_modules, onmonFileEnable, onmonFileName,
                            withGanglia, withMsgFacility, withGraphite)
 
@@ -34,7 +35,7 @@ outputs: {
   %{root_output}normalOutput: {
   %{root_output}  module_type: RootOutput
   %{root_output}  fileName: \"%{output_file}\"
-  %{root_output}  fileProperties: {maxRuns:1 maxSubRuns:1}
+  %{root_output}  %{fileproperties}
   %{root_output}  fastCloning: false
   %{root_output}}
 
@@ -42,7 +43,7 @@ outputs: {
   %{root_output2}  module_type: RootOutput
   %{root_output2}  fileName: \"%{output_file_mod2}\"
   %{root_output2}  SelectEvents: { SelectEvents: [ pmod2 ] }
-  %{root_output2}  fileProperties: {maxRuns:1 maxSubRuns:1}
+  %{root_output2}   %{fileproperties}
   %{root_output2}  fastCloning: false
   %{root_output2}}
 
@@ -50,7 +51,7 @@ outputs: {
   %{root_output2}  module_type: RootOutput
   %{root_output2}  fileName: \"%{output_file_mod3}\"
   %{root_output2}  SelectEvents: { SelectEvents: [ pmod3 ] }
-  %{root_output2}  fileProperties: {maxRuns:1 maxSubRuns:1}
+  %{root_output2}   %{fileproperties}
   %{root_output2}  fastCloning: false
   %{root_output2}}
 
@@ -118,8 +119,8 @@ process_name: DAQAG"
   end
 
   aggregator_code = generateAggregator( bunchSize, fragSizeWords, sources_fhicl,
-                                        xmlrpcClientList, fileSizeThreshold, fileDuration, 
-										fileEventCount, queueDepth, queueTimeout, onmonEventPrescale,
+                                        xmlrpcClientList, subrunSizeThreshold, subrunDuration, 
+										subrunEventCount, queueDepth, queueTimeout, onmonEventPrescale,
 										agType, logger_rank, dispatcher_rank, dataDir,
 										withGanglia, withMsgFacility, withGraphite )
   agConfig.gsub!(/\%\{aggregator_code\}/, aggregator_code)
@@ -140,6 +141,7 @@ process_name: DAQAG"
   outputFile = File.join(dataDir, fileName)
 
   agConfig.gsub!(/\%\{output_file\}/, outputFile)
+  agConfig.gsub!(/\%\{fileproperties\}/, filePropertiesFhicl)
   agConfig.gsub!(/\%\{output_file_mod2\}/, outputFile.sub(".root", "_mod2.root"))
   agConfig.gsub!(/\%\{output_file_mod3\}/, outputFile.sub(".root", "_mod3.root"))
 

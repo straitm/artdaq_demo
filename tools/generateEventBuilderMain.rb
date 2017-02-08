@@ -5,7 +5,7 @@
 require File.join( File.dirname(__FILE__), 'generateEventBuilder' )
 
 
-def generateEventBuilderMain(ebIndex, totalAGs, dataDir, onmonEnable, diskWritingEnable, totalFragments,
+def generateEventBuilderMain(ebIndex, totalAGs, dataDir, onmonEnable, diskWritingEnable, totalFragments, filePropertiesFhicl,
                          fclWFViewer, sources_fhicl, destinations_fhicl, sendRequests, withGanglia, withMsgFacility, withGraphite )
   # Do the substitutions in the event builder configuration given the options
   # that were passed in from the command line.  
@@ -39,7 +39,7 @@ outputs: {
   %{root_output}  module_type: RootOutput
   %{root_output}  fileName: \"%{output_file}\"
   %{root_output}  #SelectEvents: { SelectEvents: [ pmod2,pmod3 ] }
-  %{root_output}  fileProperties: {maxRuns:1 maxSubRuns:1}
+  %{root_output}  %{fileProperties}
   %{root_output}  fastCloning: false
  %{root_output}}
 }
@@ -92,6 +92,8 @@ event_builder_code = generateEventBuilder( totalFragments, verbose, sources_fhic
 
 ebConfig.gsub!(/\%\{destinations_fhicl\}/, destinations_fhicl)
 ebConfig.gsub!(/\%\{event_builder_code\}/, event_builder_code)
+
+  ebConfig.gsub!(/\%\{fileProperties\}/, filePropertiesFhicl)
 
 if Integer(totalAGs) >= 1
   ebConfig.gsub!(/\%\{rootmpi_output\}/, "")

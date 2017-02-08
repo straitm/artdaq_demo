@@ -211,6 +211,11 @@ class CommandLineParser
     @options.fileSizeThreshold = 0
     @options.fileDurationSeconds = 0
     @options.eventsInFile = 0
+	@options.runsInFile = 1
+	@options.subrunsInFile = 1
+	@options.eventsInSubrun = -1
+	@options.subrunDurationSeconds = -1
+	@options.subrunSizeThreshold = -1
     @options.onmonFileEnabled = 0
     @options.gangliaMetric = 0
     @options.msgFacilityMetric = 0
@@ -552,6 +557,31 @@ end
         @options.eventsInFile = Integer(eventCount)
       end
 
+      opts.on("--file-run-count [number]",
+              "Close each file after the specified number of runs have been written. Default: 1") do |eventCount|
+        @options.eventsInFile = Integer(eventCount)
+      end
+
+      opts.on("--file-subrun-count [number]",
+              "Close each file after the specified number of subruns have been written. Default: 1") do |eventCount|
+        @options.eventsInFile = Integer(eventCount)
+      end
+
+      opts.on("--subrun-size [number of MB]",
+              "Create a new subrun when the specified size is reached (MB).") do |subrunSize|
+        @options.subrunSizeThreshold = Float(subrunSize)
+      end
+
+      opts.on("--subrun-duration [minutes]",
+              "Closes each file after the specified amount of time (minutes).") do |timeInMinutes|
+        @options.subrunDurationSeconds = Integer(timeInMinutes) * 60
+      end
+
+      opts.on("--subrun-event-count [number]",
+              "Close each file after the specified number of events have been written.") do |eventCount|
+        @options.eventsInSubrun = Integer(eventCount)
+      end
+
       opts.on("-s", "--summary", "Summarize the configuration.") do
         @options.summary = true
       end
@@ -836,6 +866,24 @@ class SystemControl
       end
     }
 
+	fileProperties = "fileProperties: {%{maxevents} %{maxsubruns} %{maxruns} %{maxsize} %{maxage}}"
+	if @options.fileSizeThreshold > 1
+		fileProperties.gsub!(/\%\{maxsize\}/, "maxSize: %d" % [@options.fileSizeThreshold] )
+	else
+		fileProperties.gsub!(/\%\{maxsize\}/, "")
+	end
+	if @options.fileDurationSeconds > 1
+		fileProperties.gsub!(/\%\{maxage\}/, "maxAge: %d" % [@options.fileDurationSeconds] )
+	else
+		fileProperties.gsub!(/\%\{maxage\}/, "")
+	end
+	if @options.eventsInFile > 1
+		fileProperties.gsub!(/\%\{maxevents\}/, "maxEvents: %d" % [@options.eventsInFile] )
+	else
+		fileProperties.gsub!(/\%\{maxevents\}/, "")
+	end
+		fileProperties.gsub!(/\%\{maxruns\}/, "maxRuns: %d" % [@options.runsInFile] )
+		fileProperties.gsub!(/\%\{maxsubruns\}/, "maxSubRuns: %d" % [@options.subrunsInFile] )
 
     # 27-Jun-2013, KAB - send INIT to EBs and AG last
     @options.eventBuilders.each { |ebOptions|
@@ -846,7 +894,7 @@ class SystemControl
         fclWFViewer = generateWFViewer( (@options.toys + @options.asciis + @options.udps + @options.pbrs).map { |board| board.board_id } )
 										
         ebOptions.cfg = generateEventBuilderMain(ebIndex, totalAGs,  @options.dataDir, @options.runOnmon,
-                                                 @options.writeData, totalBoards, 
+                                                 @options.writeData, totalBoards, fileProperties,
                                                  fclWFViewer, eb_sources_fhicl, eb_destinations_fhicl,
 												 ebOptions.sendRequests,
                                                  @options.gangliaMetric, @options.msgFacilityMetric, @options.graphiteMetric
@@ -875,9 +923,9 @@ class SystemControl
                                              @options.runOnmon, @options.writeData, agOptions.demoPrescale,
                                              agIndex, totalAGs, fullEventBuffSizeWords,
 											 ag_sources_fhicl, logger_rank, dispatcher_rank,
-                                             xmlrpcClients, @options.fileSizeThreshold,
-                                             @options.fileDurationSeconds,
-                                             @options.eventsInFile, fclWFViewer, ONMON_EVENT_PRESCALE,
+                                             xmlrpcClients, fileProperties,
+											  @options.subrunSizeThreshold, @options.subrunDurationSeconds,
+                                             @options.eventsInSubrun, fclWFViewer, ONMON_EVENT_PRESCALE,
                                              @options.onmon_modules, @options.onmonFileEnabled, @options.onmonFile,
                                              @options.gangliaMetric, @options.msgFacilityMetric, @options.graphiteMetric)
 
