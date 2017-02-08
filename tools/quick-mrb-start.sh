@@ -92,8 +92,10 @@ function detectAndPull() {
 	cd $Base/download
 	local packageName=$1
 	local packageOs=$2
-	local packageOsArch="$2-x86_64"
-	packageOs=`echo $packageOsArch|sed 's/-x86_64-x86_64/-x86_64/g'`
+    if [[ "$packageOs" != "noarch" ]]; then
+	    local packageOsArch="$2-x86_64"
+	    packageOs=`echo $packageOsArch|sed 's/-x86_64-x86_64/-x86_64/g'`
+    fi
 
 	if [ $# -gt 2 ];then
 		local qualifiers=$3
