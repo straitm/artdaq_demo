@@ -88,51 +88,53 @@ exec  > >(tee "$Base/log/$alloutput_file")
 exec 2> >(tee "$Base/log/$stderr_file")
 
 function detectAndPull() {
-    local startDir=$PWD
-    cd $Base/download
-    local packageName=$1
-    local packageOs=$2
+	local startDir=$PWD
+	cd $Base/download
+	local packageName=$1
+	local packageOs=$2
+	local packageOsArch="$2-x86_64"
+	packageOs=`echo $packageOsArch|sed 's/-x86_64-x86_64/-x86_64/g'`
 
-    if [ $# -gt 2 ];then
-	local qualifiers=$3
-     	if [[ "$qualifiers" == "nq" ]]; then
-		    qualifiers=
-		fi
-    fi
-    if [ $# -gt 3 ];then
-	local packageVersion=$4
-    else
-	local packageVersion=`curl http://scisoft.fnal.gov/scisoft/packages/${packageName}/ 2>/dev/null|grep ${packageName}|grep "id=\"v"|tail -1|sed 's/.* id="\(v.*\)".*/\1/'`
-    fi
-    local packageDotVersion=`echo $packageVersion|sed 's/_/\./g'|sed 's/v//'`
-
-    if [[ "$packageOs" != "noarch" ]]; then
-        local upsflavor=`ups flavor`
-    	local packageQualifiers="-`echo $qualifiers|sed 's/:/-/g'`"
-    	local packageUPSString="-f $upsflavor -q$qualifiers"
-    fi
-    local packageInstalled=`ups list -aK+ $packageName $packageVersion ${packageUPSString-}|grep -c "$packageName"`
-    if [ $packageInstalled -eq 0 ]; then
-	local packagePath="$packageName/$packageVersion/$packageName-$packageDotVersion-${packageOs}${packageQualifiers-}.tar.bz2"
-	wget http://scisoft.fnal.gov/scisoft/packages/$packagePath >/dev/null 2>&1
-	local packageFile=$( echo $packagePath | awk 'BEGIN { FS="/" } { print $NF }' )
-
-	if [[ ! -e $packageFile ]]; then
-		if [[ "$packageOs" == "slf7" ]]; then
-			# Try sl7, as they're both valid...
-			detectAndPull $packageName sl7 ${qualifiers:-"nq"} $packageVersion
-		else
-	      echo "Unable to download $packageName"
-	      exit 1
+	if [ $# -gt 2 ];then
+		local qualifiers=$3
+		if [[ "$qualifiers" == "nq" ]]; then
+			qualifiers=
 		fi
 	fi
+	if [ $# -gt 3 ];then
+		local packageVersion=$4
+	else
+		local packageVersion=`curl http://scisoft.fnal.gov/scisoft/packages/${packageName}/ 2>/dev/null|grep ${packageName}|grep "id=\"v"|tail -1|sed 's/.* id="\(v.*\)".*/\1/'`
+	fi
+	local packageDotVersion=`echo $packageVersion|sed 's/_/\./g'|sed 's/v//'`
 
-	local returndir=$PWD
-	cd $Base/products
-	tar -xjf $Base/download/$packageFile
-	cd $returndir
-    fi
-    cd $startDir
+	if [[ "$packageOs" != "noarch" ]]; then
+		local upsflavor=`ups flavor`
+		local packageQualifiers="-`echo $qualifiers|sed 's/:/-/g'`"
+		local packageUPSString="-f $upsflavor -q$qualifiers"
+	fi
+	local packageInstalled=`ups list -aK+ $packageName $packageVersion ${packageUPSString-}|grep -c "$packageName"`
+	if [ $packageInstalled -eq 0 ]; then
+		local packagePath="$packageName/$packageVersion/$packageName-$packageDotVersion-${packageOs}${packageQualifiers-}.tar.bz2"
+		wget http://scisoft.fnal.gov/scisoft/packages/$packagePath >/dev/null 2>&1
+		local packageFile=$( echo $packagePath | awk 'BEGIN { FS="/" } { print $NF }' )
+
+		if [[ ! -e $packageFile ]]; then
+			if [[ "$packageOs" == "slf7-x86_64" ]]; then
+				# Try sl7, as they're both valid...
+				detectAndPull $packageName sl7-x86_64 ${qualifiers:-"nq"} $packageVersion
+			else
+				echo "Unable to download $packageName"
+				return 1
+			fi
+		else
+			local returndir=$PWD
+			cd $Base/products
+			tar -xjf $Base/download/$packageFile
+			cd $returndir
+		fi
+	fi
+	cd $startDir
 }
 
 cd $Base/download
