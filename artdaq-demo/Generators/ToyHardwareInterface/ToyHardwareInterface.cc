@@ -10,6 +10,7 @@
 #include <random>
 #include <unistd.h>
 #include <iostream>
+#include <cstdlib>
 
 // JCF, Mar-17-2016
 
@@ -26,6 +27,12 @@ ToyHardwareInterface::ToyHardwareInterface(fhicl::ParameterSet const & ps) :
 					 std::numeric_limits<size_t>::max())),
   nADCcounts_after_N_seconds_(ps.get<int>("nADCcounts_after_N_seconds",
 					     nADCcounts_)),
+  exception_after_N_seconds_(ps.get<bool>("exception_after_N_seconds",
+					  false)),
+  exit_after_N_seconds_(ps.get<bool>("exit_after_N_seconds",
+				     false)),
+  abort_after_N_seconds_(ps.get<bool>("abort_after_N_seconds",
+				      false)),
   fragment_type_(demo::toFragmentType(ps.get<std::string>("fragment_type"))), 
   maxADCvalue_(pow(2, NumADCBits() ) - 1), // MUST be after "fragment_type"
   throttle_usecs_(ps.get<size_t>("throttle_usecs", 100000)),
@@ -53,10 +60,14 @@ ToyHardwareInterface::ToyHardwareInterface(fhicl::ParameterSet const & ps) :
       " is larger than the \"maxADCcounts\" setting (currently at " << maxADCcounts_ << ")";
   }
 
-  if (nADCcounts_after_N_seconds_ != nADCcounts_ && 
+  bool planned_disruption = nADCcounts_after_N_seconds_ != nADCcounts_ ||
+    exception_after_N_seconds_ ||
+    exit_after_N_seconds_ ||
+    abort_after_N_seconds_;
+
+  if (planned_disruption &&
       change_after_N_seconds_ == std::numeric_limits<size_t>::max()) {
-    throw cet::exception("HardwareInterface") << "If \"nADCcounts_after_N_seconds\""
-					      << " is set, then \"change_after_N_seconds\" should be set as well";
+    throw cet::exception("HardwareInterface") << "A FHiCL parameter designed to create a disruption has been set, so \"change_after_N_seconds\" should be set as well";
 #pragma GCC diagnostic pop
       
   }
@@ -97,7 +108,14 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read) {
 
       *bytes_read = sizeof(demo::ToyFragment::Header) + nADCcounts_ * sizeof(data_t);
     } else {
-      if (nADCcounts_after_N_seconds_ >= 0) {
+
+      if (abort_after_N_seconds_) {
+	std::abort();
+      } else if (exit_after_N_seconds_) {
+	std::exit(1);
+      } else if (exception_after_N_seconds_) {
+	throw cet::exception("HardwareInterface") << "This is an engineered exception designed for testing purposes";
+      } else if (nADCcounts_after_N_seconds_ >= 0) {
 	*bytes_read = sizeof(demo::ToyFragment::Header) + nADCcounts_after_N_seconds_ * sizeof(data_t);
       } else {
 	// Pretend the hardware hangs
