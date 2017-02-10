@@ -30,6 +30,8 @@ prompted for this location.
 --develop     Install the develop version of the software (may be unstable!)
 --viewer      install and run the artdaq Message Viewer
 --tag         Install a specific tag of artdaq_demo
+--logdir      Set <dir> as the destination for log files
+--datafir     Set <dir> as the destination for data files
 -e, -s        Use specific qualifiers when building ARTDAQ
 -v            Be more verbose
 -x            set -x this script
@@ -38,6 +40,8 @@ prompted for this location.
 
 # Process script arguments and options
 eval env_opts=\${$env_opts_var-} # can be args too
+datadir="${ARTDAQDEMO_DATA_DIR:-/tmp}"
+logdir="${ARTDAQDEMO_LOG_DIR:-/tmp}"
 eval "set -- $env_opts \"\$@\""
 op1chr='rest=`expr "$op" : "[^-]\(.*\)"`   && set -- "-$rest" "$@"'
 op1arg='rest=`expr "$op" : "[^-]\(.*\)"`   && set --  "$rest" "$@"'
@@ -60,6 +64,8 @@ while [ -n "${1-}" ];do
 			-develop) opt_develop=1;;
 			-tag)       eval $reqarg; tag=$1; shift;;
 	    -viewer)    opt_viewer=--viewer;;
+		-logdir)    eval $op1arg; logdir=$1; shift;;
+		-datadir)   eval $op1arg; datadir=$1; shift;;
             *)          echo "Unknown option -$op"; do_help=1;;
         esac
     else
@@ -82,43 +88,55 @@ exec  > >(tee "$Base/log/$alloutput_file")
 exec 2> >(tee "$Base/log/$stderr_file")
 
 function detectAndPull() {
-    local startDir=$PWD
-    cd $Base/download
-    local packageName=$1
-    local packageOs=$2
-
-    if [ $# -gt 2 ];then
-	local qualifiers=$3
-    fi
-    if [ $# -gt 3 ];then
-	local packageVersion=$4
-    else
-	local packageVersion=`curl http://scisoft.fnal.gov/scisoft/packages/${packageName}/ 2>/dev/null|grep ${packageName}|grep "id=\"v"|tail -1|sed 's/.* id="\(v.*\)".*/\1/'`
-    fi
-    local packageDotVersion=`echo $packageVersion|sed 's/_/\./g'|sed 's/v//'`
-
+	local startDir=$PWD
+	cd $Base/download
+	local packageName=$1
+	local packageOs=$2
     if [[ "$packageOs" != "noarch" ]]; then
-        local upsflavor=`ups flavor`
-	local packageQualifiers="-`echo $qualifiers|sed 's/:/-/g'`"
-	local packageUPSString="-f $upsflavor -q$qualifiers"
+	    local packageOsArch="$2-x86_64"
+	    packageOs=`echo $packageOsArch|sed 's/-x86_64-x86_64/-x86_64/g'`
     fi
-    local packageInstalled=`ups list -aK+ $packageName $packageVersion ${packageUPSString-}|grep -c "$packageName"`
-    if [ $packageInstalled -eq 0 ]; then
-	local packagePath="$packageName/$packageVersion/$packageName-$packageDotVersion-${packageOs}${packageQualifiers-}.tar.bz2"
-	wget http://scisoft.fnal.gov/scisoft/packages/$packagePath >/dev/null 2>&1
-	local packageFile=$( echo $packagePath | awk 'BEGIN { FS="/" } { print $NF }' )
 
-	if [[ ! -e $packageFile ]]; then
-	    echo "Unable to download $packageName"
-	    exit 1
+	if [ $# -gt 2 ];then
+		local qualifiers=$3
+		if [[ "$qualifiers" == "nq" ]]; then
+			qualifiers=
+		fi
 	fi
+	if [ $# -gt 3 ];then
+		local packageVersion=$4
+	else
+		local packageVersion=`curl http://scisoft.fnal.gov/scisoft/packages/${packageName}/ 2>/dev/null|grep ${packageName}|grep "id=\"v"|tail -1|sed 's/.* id="\(v.*\)".*/\1/'`
+	fi
+	local packageDotVersion=`echo $packageVersion|sed 's/_/\./g'|sed 's/v//'`
 
-	local returndir=$PWD
-	cd $Base/products
-	tar -xjf $Base/download/$packageFile
-	cd $returndir
-    fi
-    cd $startDir
+	if [[ "$packageOs" != "noarch" ]]; then
+		local upsflavor=`ups flavor`
+		local packageQualifiers="-`echo $qualifiers|sed 's/:/-/g'`"
+		local packageUPSString="-f $upsflavor -q$qualifiers"
+	fi
+	local packageInstalled=`ups list -aK+ $packageName $packageVersion ${packageUPSString-}|grep -c "$packageName"`
+	if [ $packageInstalled -eq 0 ]; then
+		local packagePath="$packageName/$packageVersion/$packageName-$packageDotVersion-${packageOs}${packageQualifiers-}.tar.bz2"
+		wget http://scisoft.fnal.gov/scisoft/packages/$packagePath >/dev/null 2>&1
+		local packageFile=$( echo $packagePath | awk 'BEGIN { FS="/" } { print $NF }' )
+
+		if [[ ! -e $packageFile ]]; then
+			if [[ "$packageOs" == "slf7-x86_64" ]]; then
+				# Try sl7, as they're both valid...
+				detectAndPull $packageName sl7-x86_64 ${qualifiers:-"nq"} $packageVersion
+			else
+				echo "Unable to download $packageName"
+				return 1
+			fi
+		else
+			local returndir=$PWD
+			cd $Base/products
+			tar -xjf $Base/download/$packageFile
+			cd $returndir
+		fi
+	fi
+	cd $startDir
 }
 
 cd $Base/download
@@ -165,7 +183,7 @@ fi
 
 wget http://scisoft.fnal.gov/scisoft/bundles/tools/pullProducts
 chmod +x pullProducts
-./pullProducts $Base/products ${os} artdaq-${artdaq_version} ${squalifier}-${equalifier} ${build_type}
+./pullProducts $Base/products ${os} artdaq_demo-${demo_version} ${squalifier}-${equalifier} ${build_type}
     if [ $? -ne 0 ]; then
 	echo "Error in pullProducts. Please go to http://scisoft.fnal.gov/scisoft/bundles/artdaq/${artdaq_version}/manifest and make sure that a manifest for the specified qualifiers ($defaultqualWithS) exists."
 	exit 1
@@ -200,23 +218,26 @@ mrb gitCheckout -d artdaq_demo http://cdcvs.fnal.gov/projects/artdaq-demo
 fi
 else
 if [ $opt_w -gt 0 ];then
-mrb gitCheckout -t ${artdaq_version} -d artdaq ssh://p-artdaq@cdcvs.fnal.gov/cvs/projects/artdaq
 mrb gitCheckout -t ${coredemo_version} -d artdaq_core_demo ssh://p-artdaq-core-demo@cdcvs.fnal.gov/cvs/projects/artdaq-core-demo
 mrb gitCheckout -t ${demo_version} -d artdaq_demo ssh://p-artdaq-demo@cdcvs.fnal.gov/cvs/projects/artdaq-demo
 else
-mrb gitCheckout -t ${artdaq_version} -d artdaq http://cdcvs.fnal.gov/projects/artdaq
 mrb gitCheckout -t ${coredemo_version} -d artdaq_core_demo http://cdcvs.fnal.gov/projects/artdaq-core-demo
 mrb gitCheckout -t ${demo_version} -d artdaq_demo http://cdcvs.fnal.gov/projects/artdaq-demo
 fi
 fi
 
-if [[ "x${opt_viewer-}" != "x" ]]; then
+if [[ "x${opt_viewer-}" != "x" ]] && [[ $opt_develop -eq 1 ]]; then
     cd $MRB_SOURCE
     mrb gitCheckout -d artdaq_mfextensions http://cdcvs.fnal.gov/projects/mf-extensions-git
 
     qtver=$( awk '/^[[:space:]]*qt[[:space:]]*/ {print $2}' artdaq_mfextensions/ups/product_deps )
 
     os=`$Base/download/cetpkgsupport/bin/get-directory-name os`
+
+    if [[ "$os" == "slf7" ]]; then
+	os="sl7"
+    fi
+
     detectAndPull qt ${os}-x86_64 ${equalifier} ${qtver}
 fi
 
@@ -236,6 +257,9 @@ cd $Base
     export ARTDAQDEMO_BUILD=$MRB_BUILDDIR/artdaq_demo
 	#export ARTDAQDEMO_BASE_PORT=52200
 	export DAQ_INDATA_PATH=$ARTDAQ_DEMO_DIR/test/Generators
+
+	export ARTDAQDEMO_DATA_DIR=${datadir}
+	export ARTDAQDEMO_LOG_DIR=${logdir}
 
 	export FHICL_FILE_PATH=.:\$ARTDAQ_DEMO_DIR/tools/snippets:\$ARTDAQ_DEMO_DIR/tools/fcl:\$FHICL_FILE_PATH
 

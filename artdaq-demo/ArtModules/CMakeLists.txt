@@ -45,11 +45,22 @@ simple_plugin(ArtdaqDemoBuildInfo "module"
 
 simple_plugin(NthEvent "module")
  simple_plugin(EventDump "module")
-simple_plugin(ToyDump "module")
-simple_plugin(ASCIIDump "module")
+simple_plugin(ToyDump "module" 
+              artdaq-core_Data 
+			  artdaq-core-demo_Overlays )
+simple_plugin(ASCIIDump "module" 
+              artdaq-core_Data 
+			  artdaq-core-demo_Overlays )
 
 simple_plugin(RootApplication "module")
-simple_plugin(WFViewer "module" artdaq-core-demo_Overlays ${ROOT_GPAD} ${ROOT_HIST} ${ROOT_GUI} ${ROOT_RIO})
+simple_plugin(WFViewer "module" 
+              artdaq-core_Data 
+			  artdaq-core-demo_Overlays 
+			  MF_MessageLogger
+			  ${ROOT_GPAD} 
+			  ${ROOT_HIST} 
+			  ${ROOT_GUI} 
+			  ${ROOT_RIO})
 
 simple_plugin(CheckIntegrity "module"
               ${MF_MESSAGELOGGER}				

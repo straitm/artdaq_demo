@@ -78,7 +78,7 @@ Configuration options (init commands):
       0 = no compression
       1 = compression, both raw and compressed data kept [default]
       2 = compression, only compressed data kept
-  -o <data dir>: specifies the directory for data files [default=/tmp]
+  -o <data dir>: specifies the directory for data files [default=${ARTDAQDEMO_DATA_DIR:-/tmp}]
 Begin-run options (start command):
   -N <run number>: specifies the run number
 End-run options (stop command):
@@ -121,7 +121,7 @@ originalCommand="$0 $*"
 compressionLevel=1
 onmonEnable=off
 diskWriting=1
-dataDir="/tmp"
+dataDir="${ARTDAQDEMO_DATA_DIR:-/tmp}"
 runNumber=""
 runEventCount=0
 runDuration=0
@@ -256,7 +256,7 @@ fi
 
 # build the logfile name
 TIMESTAMP=`date '+%Y%m%d%H%M%S'`
-logFile="/tmp/masterControl/dsMC-${TIMESTAMP}-${command}.log"
+logFile="${ARTDAQDEMO_LOG_DIR:-/tmp}/masterControl/dsMC-${TIMESTAMP}-${command}.log"
 echo "${originalCommand}" > $logFile
 echo ">>> ${originalCommand} (Disk writing is ${diskWriting})"
 

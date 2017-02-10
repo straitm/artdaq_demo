@@ -5,8 +5,6 @@ physics:
     evtDump:
     {
       module_type: ToyDump
-      raw_data_label: daq
-      frag_type: TOY1
       num_adcs_to_show: 0
     }
 

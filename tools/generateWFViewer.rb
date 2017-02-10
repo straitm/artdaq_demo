@@ -10,7 +10,7 @@
 
 require File.join( File.dirname(__FILE__), 'demo_utilities' )
 
-def generateWFViewer(fragmentIDList, fragmentTypeList, prescale = nil, digital_sum_only = nil, configDoc = "WFViewer.fcl")
+def generateWFViewer(fragmentIDList, prescale = nil, digital_sum_only = nil, configDoc = "WFViewer.fcl")
 
   wfViewerConfig = String.new( "\
     app: {
@@ -19,8 +19,7 @@ def generateWFViewer(fragmentIDList, fragmentTypeList, prescale = nil, digital_s
     }
     wf: {
       module_type: WFViewer
-      fragment_ids: %{fragment_ids}
-      fragment_type_labels: %{fragment_type_labels} " \
+      fragment_ids: %{fragment_ids} " \
       + read_fcl(configDoc) \
       + "    }" )
 
@@ -33,21 +32,13 @@ def generateWFViewer(fragmentIDList, fragmentTypeList, prescale = nil, digital_s
     # John F., 3/8/14 -- adding a feature whereby the fragments are
     # sorted in ascending order of ID
 
-    fragmentIDListString, fragmentTypeListString = "[ ", "[ "
-
-    typemap = Hash.new
-
-    0.upto(fragmentIDList.length-1) do |i|
-      typemap[ fragmentIDList[i]  ] = fragmentTypeList[i]
-    end
-
+    fragmentIDListString = "[ "
+	
     fragmentIDList.sort.each { |id| fragmentIDListString += " %d," % [ id ] }
-    fragmentIDList.sort.each { |id| fragmentTypeListString += "%s," % [ typemap[ id ] ] }
 
-    fragmentIDListString[-1], fragmentTypeListString[-1] = "]", "]" 
+    fragmentIDListString[-1] = "]"
 
   wfViewerConfig.gsub!(/\%\{fragment_ids\}/, String(fragmentIDListString))
-  wfViewerConfig.gsub!(/\%\{fragment_type_labels\}/, String(fragmentTypeListString))
 
 if ! prescale.nil?
   wfViewerConfig.gsub!(/.*prescale.*\:.*/, "prescale: %d" % [prescale])

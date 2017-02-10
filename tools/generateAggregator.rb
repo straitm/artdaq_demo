@@ -1,8 +1,9 @@
 
 def generateAggregator(bunchSize, fragSizeWords, sources_fhicl,
-                       xmlrpcClientList, fileSizeThreshold, fileDuration,
-                       fileEventCount, queueDepth, queueTimeout, onmonEventPrescale,
-                       agType, logger_rank, dispatcher_rank,
+                       xmlrpcClientList,
+					   subrunSizeThreshold, subrunDuration, subrunEventCount, 
+					   queueDepth, queueTimeout, onmonEventPrescale,
+                       agType, logger_rank, dispatcher_rank, dataDir,
 					   withGanglia = 0, withMsgFacility = 0, withGraphite = 0)
 
 agConfig = String.new( "\
@@ -14,9 +15,9 @@ daq: {
     event_queue_wait_time: %{queue_timeout}
     onmon_event_prescale: %{onmon_event_prescale}
     xmlrpc_client_list: \"%{xmlrpc_client_list}\"
-    file_size_MB: %{file_size}
-    file_duration: %{file_duration}
-    file_event_count: %{file_event_count}
+    subrun_size_MB: %{subrun_size}
+    subrun_duration: %{subrun_duration}
+    subrun_event_count: %{subrun_event_count}
     %{ag_type_param_name}: true
 
 	sources: {
@@ -28,7 +29,7 @@ daq: {
     aggFile: {
       metricPluginType: \"file\"
       level: 3
-      fileName: \"/tmp/aggregator/agg_%UID%_metrics.log\"
+      fileName: \"%{datadir}/aggregator/agg_%UID%_metrics.log\"
       uniquify: true
     }
     %{ganglia_metric} ganglia: {
@@ -70,9 +71,9 @@ agConfig.gsub!(/\%\{sources_fhicl\}/, sources_fhicl)
   agConfig.gsub!(/\%\{queue_timeout\}/, String(queueTimeout))  
   agConfig.gsub!(/\%\{onmon_event_prescale\}/, String(onmonEventPrescale))
   agConfig.gsub!(/\%\{xmlrpc_client_list\}/, String(xmlrpcClientList))
-  agConfig.gsub!(/\%\{file_size\}/, String(fileSizeThreshold))
-  agConfig.gsub!(/\%\{file_duration\}/, String(fileDuration))
-  agConfig.gsub!(/\%\{file_event_count\}/, String(fileEventCount))
+  agConfig.gsub!(/\%\{subrun_size\}/, String(subrunSizeThreshold))
+  agConfig.gsub!(/\%\{subrun_duration\}/, String(subrunDuration))
+  agConfig.gsub!(/\%\{subrun_event_count\}/, String(subrunEventCount))
   if agType == "online_monitor"
     #agConfig.gsub!(/\%\{ag_type_param_name\}/, "is_online_monitor")
     agConfig.gsub!(/\%\{ag_type_param_name\}/, "is_dispatcher")
@@ -82,8 +83,10 @@ agConfig.gsub!(/\%\{sources_fhicl\}/, sources_fhicl)
   agConfig.gsub!(/\%\{logger_rank\}/, String(logger_rank))
   agConfig.gsub!(/\%\{dispatcher_rank\}/, String(dispatcher_rank))
 
+  
+  agConfig.gsub!(/\%\{datadir\}/, dataDir)
   if Integer(withGanglia) > 0
-    brConfig.gsub!(/\%\{ganglia_metric\}/, "")
+    agConfig.gsub!(/\%\{ganglia_metric\}/, "")
     agConfig.gsub!(/\%\{ganglia_level\}/, Integer(withGanglia))
   else
     agConfig.gsub!(/\%\{ganglia_metric\}/, "#")

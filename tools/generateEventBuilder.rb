@@ -1,5 +1,5 @@
 
-def generateEventBuilder( totalFragments, verbose, sources_fhicl, sendRequests = 0, withGanglia = 0, withMsgFacility = 0, withGraphite = 0)
+def generateEventBuilder( totalFragments, verbose, sources_fhicl, dataDir, sendRequests = 0, withGanglia = 0, withMsgFacility = 0, withGraphite = 0)
 
 ebConfig = String.new( "\
 daq: {
@@ -7,6 +7,7 @@ daq: {
     expected_fragments_per_event: %{total_fragments}
     use_art: true
     print_event_store_stats: true
+    max_incomplete_events: 75 # Same as boardreader sync interval
     verbose: %{verbose}
     send_requests: %{requests_enabled}
 
@@ -18,7 +19,7 @@ daq: {
     evbFile: {
       metricPluginType: \"file\"
       level: 3
-      fileName: \"/tmp/eventbuilder/evb_%UID%_metrics.log\"
+      fileName: \"%{datadir}/eventbuilder/evb_%UID%_metrics.log\"
       uniquify: true
     }
     %{ganglia_metric} ganglia: {
@@ -50,8 +51,10 @@ daq: {
   ebConfig.gsub!(/\%\{verbose\}/, String(verbose))
   ebConfig.gsub!(/\%\{sources_fhicl\}/, sources_fhicl)
 
+  ebConfig.gsub!(/\%\{datadir\}/, dataDir)
+
   if Integer(withGanglia) > 0
-    brConfig.gsub!(/\%\{ganglia_metric\}/, "")
+    ebConfig.gsub!(/\%\{ganglia_metric\}/, "")
     ebConfig.gsub!(/\%\{ganglia_level\}/, Integer(withGanglia))
   else
     ebConfig.gsub!(/\%\{ganglia_metric\}/, "#")

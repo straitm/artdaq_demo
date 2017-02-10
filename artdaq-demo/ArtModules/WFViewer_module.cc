@@ -7,6 +7,7 @@
 #include "canvas/Utilities/InputTag.h"
 
 #include "artdaq-core/Data/Fragments.hh"
+#include "artdaq-core/Data/ContainerFragment.hh"
 
 #include "artdaq-core-demo/Overlays/FragmentType.hh"
 #include "artdaq-core-demo/Overlays/ToyFragment.hh"
@@ -56,7 +57,7 @@ namespace demo {
     std::size_t num_x_plots_;
     std::size_t num_y_plots_;
 
-    std::vector<std::string> fragment_type_labels_;
+	std::string raw_data_label_;
     std::vector<artdaq::Fragment::fragment_id_t> fragment_ids_;
 
     std::vector<std::unique_ptr<TGraph>> graphs_;
@@ -77,7 +78,7 @@ demo::WFViewer::WFViewer (fhicl::ParameterSet const & ps):
   current_run_(0), 
   num_x_plots_(ps.get<std::size_t>("num_x_plots", std::numeric_limits<std::size_t>::max() )),
   num_y_plots_(ps.get<std::size_t>("num_y_plots", std::numeric_limits<std::size_t>::max() )),
-  fragment_type_labels_(ps.get<std::vector<std::string>>("fragment_type_labels")),
+	raw_data_label_(ps.get<std::string>("raw_data_label", "daq")),
   fragment_ids_(ps.get<std::vector<artdaq::Fragment::fragment_id_t> >("fragment_ids")),
   graphs_( fragment_ids_.size() ), 
   histograms_( fragment_ids_.size() ),
@@ -98,7 +99,7 @@ demo::WFViewer::WFViewer (fhicl::ParameterSet const & ps):
      case 7:
      case 8: num_x_plots_ = 4; num_y_plots_ = 2; break;
      default: 
-       num_x_plots_ = num_y_plots_ = static_cast<std::size_t>( ceil( sqrt( fragment_type_labels_.size() ) ) );
+       num_x_plots_ = num_y_plots_ = static_cast<std::size_t>( ceil( sqrt(fragment_ids_.size() ) ) );
      }
 
    }
@@ -110,19 +111,10 @@ demo::WFViewer::WFViewer (fhicl::ParameterSet const & ps):
      id_to_index_[ fragment_ids_[i_f] ] = i_f;
    }
 
-
-  // Throw out any duplicate fragment_type_labels_ ; in this context we only
-  // care about the different types that we plan to encounter, not how
-  // many of each there are
-
-  sort( fragment_type_labels_.begin(), fragment_type_labels_.end() );
-  fragment_type_labels_.erase( unique( fragment_type_labels_.begin(), fragment_type_labels_.end() ), fragment_type_labels_.end() );
-
   gStyle->SetOptStat("irm");
   gStyle->SetMarkerStyle(22);
   gStyle->SetMarkerColor(4);
 }
-
 
 void demo::WFViewer::analyze (art::Event const & e) {
 
@@ -135,20 +127,40 @@ void demo::WFViewer::analyze (art::Event const & e) {
   // fragments locally
 
   artdaq::Fragments fragments;
+  std::vector<std::string> fragment_type_labels{ "TOY1","TOY2","Container" };
 
-  for (auto label: fragment_type_labels_) {
+  for (auto label: fragment_type_labels) {
 
     art::Handle<artdaq::Fragments> fragments_with_label;
-
     e.getByLabel ("daq", label, fragments_with_label);
     
+	if (!fragments_with_label.isValid()) continue;
     //    for (int i_l = 0; i_l < static_cast<int>(fragments_with_label->size()); ++i_l) {
     //      fragments.emplace_back( (*fragments_with_label)[i_l] );
     //    }
 
-    for (auto frag : *fragments_with_label) { 
-      fragments.emplace_back( frag);
-    }
+	if (label == "Container") {
+		for (auto cont : *fragments_with_label) {
+			artdaq::ContainerFragment contf(cont);
+			for (size_t ii = 0; ii < contf.block_count(); ++ii)
+			{
+				size_t fragSize = contf.fragSize(ii);
+				artdaq::Fragment thisfrag;
+				thisfrag.resizeBytes(fragSize);
+
+				//mf::LogDebug("WFViewer") << "Copying " << fragSize << " bytes from " << contf.at(ii) << " to " << thisfrag.headerAddress();
+				memcpy(thisfrag.headerAddress(), contf.at(ii), fragSize);
+				
+				//mf::LogDebug("WFViewer") << "Putting new fragment into output vector";
+				fragments.push_back(thisfrag);
+			}
+		}
+	}
+	else {
+		for (auto frag : *fragments_with_label) {
+			fragments.emplace_back(frag);
+		}
+	}
   }
 
   // John F., 1/5/14 
