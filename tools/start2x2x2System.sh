@@ -26,6 +26,8 @@ if [[ "x${ARTDAQ_MFEXTENSIONS_DIR-}" != "x" ]] && [[ "x${DISPLAY-}" != "x" ]]; t
     msgviewer -c $configPath 2>&1 >${logroot}/msgviewer.log &
     echo "udp: { type: \"UDP\" threshold: \"DEBUG\" host: \"${HOSTNAME}\" port: 30000 }" >${logroot}/MessageFacility.fcl
     export ARTDAQ_LOG_FHICL=${logroot}/MessageFacility.fcl
+    echo "Sleeping for 5 seconds to allow MessageViewer time to start"
+    sleep 5
 fi
 
 # start PMT
