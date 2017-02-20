@@ -40,6 +40,7 @@ outputs: {
   %{root_output}  fileName: \"%{output_file}\"
   %{root_output}  #SelectEvents: { SelectEvents: [ pmod2,pmod3 ] }
   %{root_output}  %{fileProperties}
+  %{root_output}  compressionLevel: 3
   %{root_output}  fastCloning: false
  %{root_output}}
 }
