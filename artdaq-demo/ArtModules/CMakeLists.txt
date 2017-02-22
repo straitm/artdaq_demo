@@ -22,6 +22,7 @@ art_make( BASENAME_ONLY
   ${ROOT_NET}
   ${ROOT_REFLEX}
   cetlib
+  ${CETLIB_EXCEPT}
 )
 
 #art_make(NO_PLUGINS # WAnt different link lists for modues
@@ -41,18 +42,24 @@ simple_plugin(ArtdaqDemoBuildInfo "module"
   ${MF_MESSAGELOGGER}
   ${FHICLCPP}
   ${CETLIB}
+  ${CETLIB_EXCEPT}
 )
 
-simple_plugin(NthEvent "module")
- simple_plugin(EventDump "module")
+simple_plugin(NthEvent "module"
+  ${CETLIB_EXCEPT})
+ simple_plugin(EventDump "module"
+  ${CETLIB_EXCEPT})
 simple_plugin(ToyDump "module" 
               artdaq-core_Data 
-			  artdaq-core-demo_Overlays )
+			  artdaq-core-demo_Overlays 
+  ${CETLIB_EXCEPT})
 simple_plugin(ASCIIDump "module" 
               artdaq-core_Data 
-			  artdaq-core-demo_Overlays )
+			  artdaq-core-demo_Overlays 
+  ${CETLIB_EXCEPT})
 
-simple_plugin(RootApplication "module")
+simple_plugin(RootApplication "module"
+  ${CETLIB_EXCEPT})
 simple_plugin(WFViewer "module" 
               artdaq-core_Data 
 			  artdaq-core-demo_Overlays 
@@ -60,11 +67,13 @@ simple_plugin(WFViewer "module"
 			  ${ROOT_GPAD} 
 			  ${ROOT_HIST} 
 			  ${ROOT_GUI} 
-			  ${ROOT_RIO})
+			  ${ROOT_RIO}
+  ${CETLIB_EXCEPT})
 
 simple_plugin(CheckIntegrity "module"
               ${MF_MESSAGELOGGER}				
 	      ${MF_UTILITIES}
+  ${CETLIB_EXCEPT}
 )
 
 simple_plugin(DemoInput "source"
@@ -76,4 +85,5 @@ simple_plugin(DemoInput "source"
   art_Persistency_Provenance
   art_Utilities
   MF_MessageLogger
+  ${CETLIB_EXCEPT}
 )
