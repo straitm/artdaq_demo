@@ -3,6 +3,7 @@ art_make(
         art_Utilities
         ${FHICLCPP}
         ${CETLIB}
+        ${CETLIB_EXCEPT}
 	artdaq-core_Data
 	artdaq-core-demo_Overlays
         )
