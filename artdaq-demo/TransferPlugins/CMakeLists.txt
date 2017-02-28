@@ -8,6 +8,7 @@ simple_plugin(NthEvent "transfer"
   MF_MessageLogger
   fhiclcpp
   ${CETLIB}
+  ${CETLIB_EXCEPT}
   ${ROOT_RIO}
   ${ROOT_NET}
   ${ROOT_CORE}

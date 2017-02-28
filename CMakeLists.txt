@@ -58,6 +58,13 @@ find_ups_boost( v1_50_0 filesystem
                         program_options
                         unit_test_framework
  )
+ 
+check_ups_version(canvas "$ENV{CANVAS_VERSION}" v1_06_00 PRODUCT_OLDER_VAR CANVAS_MULTILIB)
+if(CANVAS_MULTILIB)
+  set(CANVAS_LIB_LIST canvas_Utilities canvas_Persistency_Provenance)
+else()
+ set(CANVAS_LIB_LIST canvas)
+endif(CANVAS_MULTILIB)
 
 # macros for art_dictionary and simple_plugin
 include(ArtDictionary)

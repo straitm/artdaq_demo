@@ -7,11 +7,12 @@ simple_plugin(ToySimulator "generator"
   artdaq-core_Utilities
   artdaq-core_Data
   artdaq-utilities_Plugins
-  canvas_Utilities
+  ${CANVAS_LIB_LIST}
   ${FHICLCPP}
   ${MF_MESSAGELOGGER}
   ${MF_UTILITIES}
   ${CETLIB}
+${CETLIB_EXCEPT}
   )
 
 simple_plugin(AsciiSimulator "generator"
@@ -22,6 +23,7 @@ simple_plugin(AsciiSimulator "generator"
   artdaq-core_Data
   ${FHICLCPP}
   ${CETLIB}
+  ${CETLIB_EXCEPT}
   )
 
 simple_plugin(UDPReceiver "generator"
@@ -30,11 +32,12 @@ simple_plugin(UDPReceiver "generator"
     artdaq_DAQdata
     artdaq-core_Utilities
     artdaq-core_Data
-  canvas_Utilities
+  ${CANVAS_LIB_LIST}
     ${FHICLCPP}
   ${MF_MESSAGELOGGER}
   ${MF_UTILITIES}
     ${CETLIB}
+ ${CETLIB_EXCEPT}
     )
 
 add_subdirectory(ToyHardwareInterface)

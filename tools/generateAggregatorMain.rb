@@ -135,7 +135,7 @@ process_name: DAQAG"
   # by each AG are unique by including a timestamp in the file name.
   currentTime = Time.now
   fileName = "artdaqdemo_"
-  fileName += "r%06r_sr%02s_%to"
+  fileName += "r%06r_sr%02s_%to_%#"
   if totalAGs > 2
     fileName += "_"
     fileName += String(agIndex)
