@@ -120,7 +120,7 @@ end
 
 currentTime = Time.now
 fileName = "artdaqdemo_eb%02d_" % ebIndex
-fileName += "r%06r_sr%02s_%to"
+fileName += "r%06r_sr%02s_%to_%#"
 fileName += ".root"
 outputFile = File.join(dataDir, fileName)
 ebConfig.gsub!(/\%\{output_file\}/, outputFile)
