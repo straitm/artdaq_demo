@@ -85,3 +85,7 @@ simple_plugin(DemoInput "source"
   MF_MessageLogger
   ${CETLIB_EXCEPT}
 )
+
+install_headers(SUBDIRS detail)
+install_source(SUBDIRS detail)
+install_fhicl(SUBDIRS fcl)
