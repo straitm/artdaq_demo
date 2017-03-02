@@ -45,8 +45,6 @@ simple_plugin(ArtdaqDemoBuildInfo "module"
 
 simple_plugin(NthEvent "module"
   ${CETLIB_EXCEPT})
- simple_plugin(EventDump "module"
-  ${CETLIB_EXCEPT})
 simple_plugin(ToyDump "module" 
               artdaq-core_Data 
 			  artdaq-core-demo_Overlays 
