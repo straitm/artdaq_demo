@@ -31,11 +31,12 @@ prompted for this location.
 --viewer      install and run the artdaq Message Viewer
 --tag         Install a specific tag of artdaq_demo
 --logdir      Set <dir> as the destination for log files
---datafir     Set <dir> as the destination for data files
+--datadir     Set <dir> as the destination for data files
 -e, -s        Use specific qualifiers when building ARTDAQ
 -v            Be more verbose
 -x            set -x this script
 -w            Check out repositories read/write
+--no-extra-products  Skip the automatic use of central product areas, such as CVMFS
 "
 
 # Process script arguments and options
@@ -46,7 +47,7 @@ eval "set -- $env_opts \"\$@\""
 op1chr='rest=`expr "$op" : "[^-]\(.*\)"`   && set -- "-$rest" "$@"'
 op1arg='rest=`expr "$op" : "[^-]\(.*\)"`   && set --  "$rest" "$@"'
 reqarg="$op1arg;"'test -z "${1+1}" &&echo opt -$op requires arg. &&echo "$USAGE" &&exit'
-args= do_help= opt_v=0; opt_w=0; opt_develop=0;
+args= do_help= opt_v=0; opt_w=0; opt_develop=0; opt_skip_extra_products=0;
 while [ -n "${1-}" ];do
     if expr "x${1-}" : 'x-' >/dev/null;then
         op=`expr "x$1" : 'x-\(.*\)'`; shift   # done with $1
@@ -58,14 +59,15 @@ while [ -n "${1-}" ];do
             x*)         eval $op1chr; set -x;;
             s*)         eval $op1arg; squalifier=$1; shift;;
             e*)         eval $op1arg; equalifier=$1; shift;;
-			w*)         eval $op1chr; opt_w=`expr $opt_w + 1`;;
+            w*)         eval $op1chr; opt_w=`expr $opt_w + 1`;;
             -run-demo)  opt_run_demo=--run-demo;;
-	    -debug)     opt_debug=--debug;;
-			-develop) opt_develop=1;;
-			-tag)       eval $reqarg; tag=$1; shift;;
-	    -viewer)    opt_viewer=--viewer;;
-		-logdir)    eval $op1arg; logdir=$1; shift;;
-		-datadir)   eval $op1arg; datadir=$1; shift;;
+            -debug)     opt_debug=--debug;;
+            -develop) opt_develop=1;;
+            -tag)       eval $reqarg; tag=$1; shift;;
+            -viewer)    opt_viewer=--viewer;;
+            -logdir)    eval $op1arg; logdir=$1; shift;;
+            -datadir)   eval $op1arg; datadir=$1; shift;;
+            -no-extra-products)  opt_skip_extra_products=1;;
             *)          echo "Unknown option -$op"; do_help=1;;
         esac
     else
@@ -140,6 +142,47 @@ function detectAndPull() {
 }
 
 cd $Base/download
+
+# 28-Feb-2017, KAB: use central products areas, if available and not skipped
+EXTRA_SETUP_COMMAND1=""
+EXTRA_SETUP_COMMAND2=""
+if [[ $opt_skip_extra_products -eq 0 ]]; then
+  FERMIOSG_ARTDAQ_DIR="/cvmfs/fermilab.opensciencegrid.org/products/artdaq"
+  FERMIAPP_ARTDAQ_DIR="/grid/fermiapp/products/artdaq"
+  for dir in $FERMIOSG_ARTDAQ_DIR $FERMIAPP_ARTDAQ_DIR;
+  do
+    # if one of these areas has already been set up, do no more
+    for prodDir in $(echo ${PRODUCTS:-""} | tr ":" "\n")
+    do
+      if [[ "$dir" == "$prodDir" ]]; then
+        break 2
+      fi
+    done
+    if [[ -f $dir/setup ]]; then
+      echo "Setting up artdaq UPS area... ${dir}"
+      source $dir/setup
+      EXTRA_SETUP_COMMAND1="source $dir/setup"
+      break
+    fi
+  done
+  CENTRAL_PRODUCTS_AREA="/products"
+  for dir in $CENTRAL_PRODUCTS_AREA;
+  do
+    # if one of these areas has already been set up, do no more
+    for prodDir in $(echo ${PRODUCTS:-""} | tr ":" "\n")
+    do
+      if [[ "$dir" == "$prodDir" ]]; then
+        break 2
+      fi
+    done
+    if [[ -f $dir/setup ]]; then
+      echo "Setting up central UPS area... ${dir}"
+      source $dir/setup
+      EXTRA_SETUP_COMMAND2="source $dir/setup"
+      break
+    fi
+  done
+fi
 
 echo "Cloning cetpkgsupport to determine current OS"
 git clone http://cdcvs.fnal.gov/projects/cetpkgsupport
@@ -246,30 +289,32 @@ fi
 ARTDAQ_DEMO_DIR=$Base/srcs/artdaq_demo
 cd $Base
     cat >setupARTDAQDEMO <<-EOF
-	echo # This script is intended to be sourced.
+echo # This script is intended to be sourced.
 
-	sh -c "[ \`ps \$\$ | grep bash | wc -l\` -gt 0 ] || { echo 'Please switch to the bash shell before running the artdaq-demo.'; exit; }" || exit
+sh -c "[ \`ps \$\$ | grep bash | wc -l\` -gt 0 ] || { echo 'Please switch to the bash shell before running the artdaq-demo.'; exit; }" || exit
 
-	source $Base/products/setup
-        setup mrb
-        source $Base/localProducts_artdaq_demo_${demo_version}_${equalifier}_${squalifier}_${build_type}/setup
-        source mrbSetEnv
+${EXTRA_SETUP_COMMAND1}
+${EXTRA_SETUP_COMMAND2}
+source $Base/products/setup
+setup mrb
+source $Base/localProducts_artdaq_demo_${demo_version}_${equalifier}_${squalifier}_${build_type}/setup
+source mrbSetEnv
 
-    export ARTDAQDEMO_REPO=$ARTDAQ_DEMO_DIR
-    export ARTDAQDEMO_BUILD=$MRB_BUILDDIR/artdaq_demo
-	#export ARTDAQDEMO_BASE_PORT=52200
-	export DAQ_INDATA_PATH=$ARTDAQ_DEMO_DIR/test/Generators
+export ARTDAQDEMO_REPO=$ARTDAQ_DEMO_DIR
+export ARTDAQDEMO_BUILD=$MRB_BUILDDIR/artdaq_demo
+#export ARTDAQDEMO_BASE_PORT=52200
+export DAQ_INDATA_PATH=$ARTDAQ_DEMO_DIR/test/Generators
 
-	export ARTDAQDEMO_DATA_DIR=${datadir}
-	export ARTDAQDEMO_LOG_DIR=${logdir}
+export ARTDAQDEMO_DATA_DIR=${datadir}
+export ARTDAQDEMO_LOG_DIR=${logdir}
 
-	export FHICL_FILE_PATH=.:\$ARTDAQ_DEMO_DIR/tools/snippets:\$ARTDAQ_DEMO_DIR/tools/fcl:\$FHICL_FILE_PATH
+export FHICL_FILE_PATH=.:\$ARTDAQ_DEMO_DIR/tools/snippets:\$ARTDAQ_DEMO_DIR/tools/fcl:\$FHICL_FILE_PATH
 
-	alias toy1toy2EventDump="art -c $ARTDAQ_DEMO_DIR/artdaq-demo/ArtModules/fcl/toy1toy2Dump.fcl"
-	alias rawEventDump="art -c $ARTDAQ_DEMO_DIR/artdaq-demo/ArtModules/fcl/rawEventDump.fcl"
+alias toy1toy2EventDump="art -c $ARTDAQ_DEMO_DIR/artdaq-demo/ArtModules/fcl/toy1toy2Dump.fcl"
+alias rawEventDump="art -c $ARTDAQ_DEMO_DIR/artdaq-demo/ArtModules/fcl/rawEventDump.fcl"
 
-	EOF
-    #
+EOF
+#
 
 # Build artdaq_demo
 cd $MRB_BUILDDIR
