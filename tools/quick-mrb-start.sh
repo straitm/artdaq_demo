@@ -79,6 +79,11 @@ set -u   # complain about uninitialed shell variables - helps development
 
 test -n "${do_help-}" -o $# -ge 2 && echo "$USAGE" && exit
 
+if [[ -n "${tag:-}" ]] && [[ $opt_develop -eq 1 ]]; then 
+    echo "The \"--tag\" and \"--develop\" options are incompatible - please specify only one."
+    exit
+fi
+
 # JCF, 1/16/15
 # Save all output from this script (stdout + stderr) in a file with a
 # name that looks like "quick-start.sh_Fri_Jan_16_13:58:27.script" as
@@ -198,9 +203,16 @@ if [ -z "${tag:-}" ]; then
   tag=develop;
   notag=1;
 fi
+if [[ -e product_deps ]]; then mv product_deps product_deps.save; fi
 wget https://cdcvs.fnal.gov/redmine/projects/artdaq-demo/repository/revisions/$tag/raw/ups/product_deps
 demo_version=`grep "parent artdaq_demo" $Base/download/product_deps|awk '{print $3}'`
-if [ $notag -eq 1 ];then
+if [[ $notag -eq 1 ]] && [[ $opt_develop -eq 0 ]]; then
+  tag=$demo_version
+
+  # 06-Mar-2017, KAB: re-fetch the product_deps file based on the tag
+  mv product_deps product_deps.orig
+  wget https://cdcvs.fnal.gov/redmine/projects/artdaq-demo/repository/revisions/$tag/raw/ups/product_deps
+  demo_version=`grep "parent artdaq_demo" $Base/download/product_deps|awk '{print $3}'`
   tag=$demo_version
 fi
 artdaq_version=`grep "^artdaq " $Base/download/product_deps | awk '{print $2}'`
