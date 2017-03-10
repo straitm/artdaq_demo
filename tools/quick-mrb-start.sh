@@ -166,7 +166,6 @@ if [[ $opt_skip_extra_products -eq 0 ]]; then
     if [[ -f $dir/setup ]]; then
       echo "Setting up artdaq UPS area... ${dir}"
       source $dir/setup
-      EXTRA_SETUP_COMMAND1="source $dir/setup"
       break
     fi
   done
@@ -183,7 +182,6 @@ if [[ $opt_skip_extra_products -eq 0 ]]; then
     if [[ -f $dir/setup ]]; then
       echo "Setting up central UPS area... ${dir}"
       source $dir/setup
-      EXTRA_SETUP_COMMAND2="source $dir/setup"
       break
     fi
   done
