@@ -1,4 +1,9 @@
+#!/bin/bash
 
+if [ $# -lt 2 ];then
+ echo "USAGE: $0 base_directory tools_directory"
+ exit
+fi
 basedir=$1
 toolsdir=$2
 
