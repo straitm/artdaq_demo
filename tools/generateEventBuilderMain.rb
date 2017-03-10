@@ -40,6 +40,7 @@ outputs: {
   %{root_output}  fileName: \"%{output_file}\"
   %{root_output}  #SelectEvents: { SelectEvents: [ pmod2,pmod3 ] }
   %{root_output}  %{fileProperties}
+  %{root_output}  compressionLevel: 3
   %{root_output}  fastCloning: false
  %{root_output}}
 }
@@ -119,7 +120,7 @@ end
 
 currentTime = Time.now
 fileName = "artdaqdemo_eb%02d_" % ebIndex
-fileName += "r%06r_sr%02s_%to"
+fileName += "r%06r_sr%02s_%to_%#"
 fileName += ".root"
 outputFile = File.join(dataDir, fileName)
 ebConfig.gsub!(/\%\{output_file\}/, outputFile)

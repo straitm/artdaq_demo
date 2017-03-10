@@ -37,6 +37,7 @@ outputs: {
   %{root_output}  fileName: \"%{output_file}\"
   %{root_output}  %{fileproperties}
   %{root_output}  fastCloning: false
+  %{root_output}  compressionLevel: 3
   %{root_output}}
 
   %{root_output2}normalOutputMod2: {
@@ -45,6 +46,7 @@ outputs: {
   %{root_output2}  SelectEvents: { SelectEvents: [ pmod2 ] }
   %{root_output2}   %{fileproperties}
   %{root_output2}  fastCloning: false
+  %{root_output2}  compressionLevel: 3
   %{root_output2}}
 
   %{root_output2}normalOutputMod3: {
@@ -53,6 +55,7 @@ outputs: {
   %{root_output2}  SelectEvents: { SelectEvents: [ pmod3 ] }
   %{root_output2}   %{fileproperties}
   %{root_output2}  fastCloning: false
+  %{root_output2}  compressionLevel: 3
   %{root_output2}}
 
 }
@@ -132,7 +135,7 @@ process_name: DAQAG"
   # by each AG are unique by including a timestamp in the file name.
   currentTime = Time.now
   fileName = "artdaqdemo_"
-  fileName += "r%06r_sr%02s_%to"
+  fileName += "r%06r_sr%02s_%to_%#"
   if totalAGs > 2
     fileName += "_"
     fileName += String(agIndex)

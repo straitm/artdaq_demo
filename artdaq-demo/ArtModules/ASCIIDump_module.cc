@@ -43,10 +43,10 @@ private:
 demo::ASCIIDump::ASCIIDump(fhicl::ParameterSet const & pset)
 	: EDAnalyzer(pset),
 	raw_data_label_(pset.get<std::string>("raw_data_label", "daq"))
-	{
-	}
+{
+}
 
-	demo::ASCIIDump::~ASCIIDump()
+demo::ASCIIDump::~ASCIIDump()
 {
 }
 
@@ -116,7 +116,10 @@ void demo::ASCIIDump::analyze(art::Event const & evt)
 			std::cout << "Fragment metadata: " << std::endl;
 			AsciiFragment::Metadata const* md =
 				frag.metadata<AsciiFragment::Metadata>();
-			std::cout << "Chars in line: " << md->charsInLine << std::endl;
+			std::cout << "Chars in line: ";
+			auto mdChars = md->charsInLine;
+			std::cout.write(reinterpret_cast<const char*>(&mdChars), sizeof(uint32_t) / sizeof(char));
+			std::cout << std::endl;
 			std::cout << std::endl;
 		}
 

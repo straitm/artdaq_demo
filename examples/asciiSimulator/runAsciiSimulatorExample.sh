@@ -21,7 +21,7 @@ toolsdir=$ARTDAQDEMO_REPO/tools
         -c ':,sleep 60' \
         -c ' $ARTDAQDEMO_REPO/examples/asciiSimulator/manageAsciiSimulatorExample.sh stop' \
         -c ':,sleep 5' \
-        -c 'm $ARTDAQDEMO_REPO/examples/asciiSimulator/anage2x2x2System.sh shutdown' \
+        -c ' $ARTDAQDEMO_REPO/examples/asciiSimulator/manageAsciiSimulatorExample.sh shutdown' \
         -c ': For additional commands, see output from: manageAsciiSimulatorExample.sh --help' \
         -c ':: manageAsciiSimulatorExample.sh --help' \
         -c ':: manageAsciiSimulatorExample.sh exit'

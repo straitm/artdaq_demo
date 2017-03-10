@@ -213,7 +213,7 @@ class CommandLineParser
     @options.eventsInFile = 0
 	@options.runsInFile = 1
 	@options.subrunsInFile = 1
-	@options.eventsInSubrun = -1
+	@options.eventsInSubrun = 0
 	@options.subrunDurationSeconds = -1
 	@options.subrunSizeThreshold = -1
     @options.onmonFileEnabled = 0
