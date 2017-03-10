@@ -149,8 +149,8 @@ function detectAndPull() {
 cd $Base/download
 
 # 28-Feb-2017, KAB: use central products areas, if available and not skipped
-EXTRA_SETUP_COMMAND1=""
-EXTRA_SETUP_COMMAND2=""
+# 10-Mar-2017, ELF: Re-working how this ends up in the setupARTDAQDEMO script
+PRODUCTS_SET=""
 if [[ $opt_skip_extra_products -eq 0 ]]; then
   FERMIOSG_ARTDAQ_DIR="/cvmfs/fermilab.opensciencegrid.org/products/artdaq"
   FERMIAPP_ARTDAQ_DIR="/grid/fermiapp/products/artdaq"
@@ -187,6 +187,7 @@ if [[ $opt_skip_extra_products -eq 0 ]]; then
       break
     fi
   done
+  PRODUCTS_SET="$PRODUCTS"
 fi
 
 echo "Cloning cetpkgsupport to determine current OS"
@@ -244,7 +245,9 @@ chmod +x pullProducts
 	exit 1
     fi
 detectAndPull mrb noarch
+export PRODUCTS=$PRODUCTS_SET
 source $Base/products/setup
+PRODUCTS_SET=$PRODUCTS
 setup mrb
 setup git
 setup gitflow
@@ -305,9 +308,8 @@ echo # This script is intended to be sourced.
 
 sh -c "[ \`ps \$\$ | grep bash | wc -l\` -gt 0 ] || { echo 'Please switch to the bash shell before running the artdaq-demo.'; exit; }" || exit
 
-${EXTRA_SETUP_COMMAND1}
-${EXTRA_SETUP_COMMAND2}
 source $Base/products/setup
+export PRODUCTS=$PRODUCTS_SET
 setup mrb
 source $Base/localProducts_artdaq_demo_${demo_version}_${equalifier}_${squalifier}_${build_type}/setup
 source mrbSetEnv
