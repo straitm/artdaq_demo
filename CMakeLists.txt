@@ -22,6 +22,7 @@ set(CMAKE_MODULE_PATH
   $ENV{ART_DIR}/Modules
   $ENV{CANVAS_DIR}/Modules
 	$ENV{CETBUILDTOOLS_DIR}/Modules
+			  $ENV{ARTDAQ_UTILITIES_DIR}/Modules
 	${CMAKE_MODULE_PATH})
 
 include(CetCMakeEnv)
@@ -84,6 +85,9 @@ add_subdirectory(tools)
 # examples
 FILE(COPY examples DESTINATION .)
 INSTALL(DIRECTORY examples DESTINATION ${product}/${version})
+
+# doc - Documentation
+add_subdirectory(doc)
 
 # ups - table and config files
 add_subdirectory(ups)
