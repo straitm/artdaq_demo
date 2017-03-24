@@ -8,7 +8,7 @@
 #include "artdaq-core-demo/Overlays/AsciiFragmentWriter.hh"
 #include "artdaq-core-demo/Overlays/FragmentType.hh"
 #include "fhiclcpp/ParameterSet.h"
-#include "artdaq-core/Utilities/SimpleLookupPolicy.h"
+#include "artdaq-core/Utilities/SimpleLookupPolicy.hh"
 
 #include <fstream>
 #include <iomanip>
@@ -17,8 +17,9 @@
 
 #include <unistd.h>
 
-namespace {
-	template<typename T>
+namespace
+{
+	template <typename T>
 	T convertToASCII(std::string input)
 	{
 		if (input.size() < sizeof(T) / sizeof(char))
@@ -32,7 +33,8 @@ namespace {
 
 		uint64_t bigOutput = 0ull;
 		//    std::ofstream outputStr ("/tmp/ASCIIConverter.bin", std::ios::out | std::ios::app | std::ios::binary );
-		for (uint i = 0; i < input.length(); ++i) {
+		for (uint i = 0; i < input.length(); ++i)
+		{
 			//outputStr.write((char*)&input[i],sizeof(char));
 			bigOutput *= 0x100;
 			bigOutput += input[input.length() - i - 1];
@@ -43,24 +45,24 @@ namespace {
 	}
 }
 
-demo::AsciiSimulator::AsciiSimulator(fhicl::ParameterSet const & ps)
+demo::AsciiSimulator::AsciiSimulator(fhicl::ParameterSet const& ps)
 	:
-	CommandableFragmentGenerator(ps),
-	fragment_type_(toFragmentType(ps.get<std::string>("fragment_type", "ASCII"))),
-	throttle_usecs_(ps.get<size_t>("throttle_usecs", 100000)),
-	throttle_usecs_check_(ps.get<size_t>("throttle_usecs_check", 10000)),
-	string1_(ps.get<std::string>("string1", "All work and no play makes ARTDAQ a dull library")),
-	string2_(ps.get<std::string>("string2", "Hey, look at what ARTDAQ can do!"))
+	CommandableFragmentGenerator(ps)
+	, fragment_type_(toFragmentType(ps.get<std::string>("fragment_type", "ASCII")))
+	, throttle_usecs_(ps.get<size_t>("throttle_usecs", 100000))
+	, throttle_usecs_check_(ps.get<size_t>("throttle_usecs_check", 10000))
+	, string1_(ps.get<std::string>("string1", "All work and no play makes ARTDAQ a dull library"))
+	, string2_(ps.get<std::string>("string2", "Hey, look at what ARTDAQ can do!"))
 {
 	if (throttle_usecs_ > 0 && (throttle_usecs_check_ >= throttle_usecs_ ||
-		throttle_usecs_ % throttle_usecs_check_ != 0)) {
+	                            throttle_usecs_ % throttle_usecs_check_ != 0))
+	{
 		throw cet::exception("Error in AsciiSimulator: disallowed combination of throttle_usecs and throttle_usecs_check (see AsciiSimulator.hh for rules)");
 	}
-
 }
 
-bool demo::AsciiSimulator::getNext_(artdaq::FragmentPtrs & frags) {
-
+bool demo::AsciiSimulator::getNext_(artdaq::FragmentPtrs& frags)
+{
 	// JCF, 9/23/14
 
 	// If throttle_usecs_ is greater than zero (i.e., user requests a
@@ -71,19 +73,24 @@ bool demo::AsciiSimulator::getNext_(artdaq::FragmentPtrs & frags) {
 	// Values for throttle_usecs_ and throttle_usecs_check_ will have
 	// been tested for validity in constructor
 
-	if (throttle_usecs_ > 0) {
+	if (throttle_usecs_ > 0)
+	{
 		size_t nchecks = throttle_usecs_ / throttle_usecs_check_;
 
-		for (size_t i_c = 0; i_c < nchecks; ++i_c) {
+		for (size_t i_c = 0; i_c < nchecks; ++i_c)
+		{
 			usleep(throttle_usecs_check_);
 
-			if (should_stop()) {
+			if (should_stop())
+			{
 				return false;
 			}
 		}
 	}
-	else {
-		if (should_stop()) {
+	else
+	{
+		if (should_stop())
+		{
 			return false;
 		}
 	}
@@ -115,8 +122,8 @@ bool demo::AsciiSimulator::getNext_(artdaq::FragmentPtrs & frags) {
 	std::size_t initial_payload_size = 0;
 
 	frags.emplace_back(artdaq::Fragment::FragmentBytes(initial_payload_size,
-		ev_counter(), fragment_id(),
-		fragment_type_, metadata));
+	                                                   ev_counter(), fragment_id(),
+	                                                   fragment_type_, metadata));
 
 	// Then any overlay-specific quantities next; will need the
 	// AsciiFragmentWriter class's setter-functions for this
@@ -132,7 +139,8 @@ bool demo::AsciiSimulator::getNext_(artdaq::FragmentPtrs & frags) {
 	string_to_use += "\r\n";
 
 	//  std::ofstream output ("/tmp/ASCIIGenerator.bin", std::ios::out | std::ios::app | std::ios::binary );
-	for (uint i = 0; i < string_to_use.length(); ++i) {
+	for (uint i = 0; i < string_to_use.length(); ++i)
+	{
 		//output.write((char*)&string_to_use[i],sizeof(char));
 		*(newfrag.dataBegin() + i) = string_to_use[i];
 	}

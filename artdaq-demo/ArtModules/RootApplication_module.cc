@@ -18,40 +18,51 @@
 #include <TSystem.h>
 #include <unistd.h>
 
-namespace demo {
-  class RootApplication : public art::EDAnalyzer {
-    public:
-      explicit RootApplication (fhicl::ParameterSet const & p);
-      virtual ~RootApplication ();
+namespace demo
+{
+	class RootApplication : public art::EDAnalyzer
+	{
+	public:
+		explicit RootApplication(fhicl::ParameterSet const& p);
 
-      void beginJob() override;
-      void analyze (art::Event const & e) override;
-      void endJob() override;
+		virtual ~RootApplication();
 
-    private:
-      std::unique_ptr<TApplication> app_;
-      bool force_new_;
-      bool dont_quit_;
-  };
+		void beginJob() override;
+
+		void analyze(art::Event const& e) override;
+
+		void endJob() override;
+
+	private:
+		std::unique_ptr<TApplication> app_;
+		bool force_new_;
+		bool dont_quit_;
+	};
 }
 
-demo::RootApplication::RootApplication (fhicl::ParameterSet const &ps): art::EDAnalyzer(ps), force_new_(ps.get<bool> ("force_new", true)), dont_quit_(ps.get<bool> ("dont_quit", false)) {}
+demo::RootApplication::RootApplication(fhicl::ParameterSet const& ps): art::EDAnalyzer(ps)
+                                                                     , force_new_(ps.get<bool>("force_new", true))
+                                                                     , dont_quit_(ps.get<bool>("dont_quit", false)) {}
 
-demo::RootApplication::~RootApplication () { }
+demo::RootApplication::~RootApplication() { }
 
-void demo::RootApplication::analyze (art::Event const &) {
-  gSystem->ProcessEvents();
+void demo::RootApplication::analyze(art::Event const&)
+{
+	gSystem->ProcessEvents();
 }
 
-void demo::RootApplication::beginJob () { 
-  if (!gApplication || force_new_) {
-    int tmp_argc(0);
-    app_ = std::unique_ptr<TApplication>(new TApplication("noapplication", &tmp_argc, 0));
-  }
+void demo::RootApplication::beginJob()
+{
+	if (!gApplication || force_new_)
+	{
+		int tmp_argc(0);
+		app_ = std::unique_ptr<TApplication>(new TApplication("noapplication", &tmp_argc, 0));
+	}
 }
 
-void demo::RootApplication::endJob() {
-  if (dont_quit_) app_->Run (true);
+void demo::RootApplication::endJob()
+{
+	if (dont_quit_) app_->Run(true);
 }
 
 DEFINE_ART_MODULE(demo::RootApplication)

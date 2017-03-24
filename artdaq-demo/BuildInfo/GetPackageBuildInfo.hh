@@ -5,13 +5,12 @@
 
 #include <string>
 
-namespace demo {
-
-  struct GetPackageBuildInfo {
-
-    static artdaq::PackageBuildInfo getPackageBuildInfo();
-  };
-
+namespace demo
+{
+	struct GetPackageBuildInfo
+	{
+		static artdaq::PackageBuildInfo getPackageBuildInfo();
+	};
 }
 
 #endif /* artdaq_demo_BuildInfo_GetPackageBuildInfo_hh */

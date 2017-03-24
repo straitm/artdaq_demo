@@ -14,7 +14,7 @@
 #include "artdaq-core-demo/Overlays/FragmentType.hh"
 #include "artdaq-core-demo/Overlays/ToyFragment.hh"
 #include "artdaq-core/Data/ContainerFragment.hh"
-#include "artdaq-core/Data/Fragments.hh"
+#include "artdaq-core/Data/Fragment.hh"
 
 #include <algorithm>
 #include <cassert>
@@ -24,16 +24,19 @@
 #include <vector>
 #include <iostream>
 
-namespace demo {
+namespace demo
+{
 	class ToyDump;
 }
 
-class demo::ToyDump : public art::EDAnalyzer {
+class demo::ToyDump : public art::EDAnalyzer
+{
 public:
-	explicit ToyDump(fhicl::ParameterSet const & pset);
+	explicit ToyDump(fhicl::ParameterSet const& pset);
+
 	virtual ~ToyDump();
 
-	virtual void analyze(art::Event const & evt);
+	virtual void analyze(art::Event const& evt);
 
 private:
 	std::string raw_data_label_;
@@ -44,21 +47,17 @@ private:
 };
 
 
-demo::ToyDump::ToyDump(fhicl::ParameterSet const & pset)
-	: EDAnalyzer(pset),
-	raw_data_label_(pset.get<std::string>("raw_data_label", "daq")),
-	num_adcs_to_show_(pset.get<uint32_t>("num_adcs_to_show", 0)),
-	dump_to_file_(pset.get<bool>("dump_to_file", true)),
-	dump_to_screen_(pset.get<bool>("dump_to_screen", false)),
-	columns_to_display_on_screen_(pset.get<uint32_t>("columns_to_display_on_screen", 10))
-{
-}
+demo::ToyDump::ToyDump(fhicl::ParameterSet const& pset)
+	: EDAnalyzer(pset)
+	, raw_data_label_(pset.get<std::string>("raw_data_label", "daq"))
+	, num_adcs_to_show_(pset.get<uint32_t>("num_adcs_to_show", 0))
+	, dump_to_file_(pset.get<bool>("dump_to_file", true))
+	, dump_to_screen_(pset.get<bool>("dump_to_screen", false))
+	, columns_to_display_on_screen_(pset.get<uint32_t>("columns_to_display_on_screen", 10)) {}
 
-demo::ToyDump::~ToyDump()
-{
-}
+demo::ToyDump::~ToyDump() {}
 
-void demo::ToyDump::analyze(art::Event const & evt)
+void demo::ToyDump::analyze(art::Event const& evt)
 {
 	art::EventNumber_t eventNumber = evt.event();
 
@@ -67,10 +66,10 @@ void demo::ToyDump::analyze(art::Event const & evt)
 	// ***********************
 
 	artdaq::Fragments fragments;
-	std::vector<std::string> fragment_type_labels{ "TOY1", "TOY2", "Container" };
+	std::vector<std::string> fragment_type_labels{"TOY1", "TOY2", "Container"};
 
-	for (auto label : fragment_type_labels) {
-
+	for (auto label : fragment_type_labels)
+	{
 		art::Handle<artdaq::Fragments> fragments_with_label;
 
 		evt.getByLabel(raw_data_label_, label, fragments_with_label);
@@ -80,8 +79,10 @@ void demo::ToyDump::analyze(art::Event const & evt)
 		//      fragments.emplace_back( (*fragments_with_label)[i_l] );
 		//    }
 
-		if (label == "Container") {
-			for (auto cont : *fragments_with_label) {
+		if (label == "Container")
+		{
+			for (auto cont : *fragments_with_label)
+			{
 				artdaq::ContainerFragment contf(cont);
 				for (size_t ii = 0; ii < contf.block_count(); ++ii)
 				{
@@ -97,8 +98,10 @@ void demo::ToyDump::analyze(art::Event const & evt)
 				}
 			}
 		}
-		else {
-			for (auto frag : *fragments_with_label) {
+		else
+		{
+			for (auto frag : *fragments_with_label)
+			{
 				fragments.emplace_back(frag);
 			}
 		}
@@ -112,8 +115,8 @@ void demo::ToyDump::analyze(art::Event const & evt)
 		<< ", event " << eventNumber << " has " << fragments.size()
 		<< " fragment(s) of type TOY1 or TOY2" << std::endl;
 
-	for (const auto& frag : fragments) {
-
+	for (const auto& frag : fragments)
+	{
 		ToyFragment bb(frag);
 
 		std::cout << std::endl;
@@ -121,7 +124,8 @@ void demo::ToyDump::analyze(art::Event const & evt)
 			<< bb.total_adc_values() << std::endl;
 		//std::cout << std::endl;
 
-		if (frag.hasMetadata()) {
+		if (frag.hasMetadata())
+		{
 			std::cout << std::endl;
 			std::cout << "Fragment metadata: " << std::endl;
 			ToyFragment::Metadata const* md =
@@ -135,38 +139,46 @@ void demo::ToyDump::analyze(art::Event const & evt)
 			//std::cout << std::endl;
 		}
 
-		if (num_adcs_to_show_ == 0) {
+		if (num_adcs_to_show_ == 0)
+		{
 			num_adcs_to_show_ = bb.total_adc_values();
 		}
 
-		if (num_adcs_to_show_ > 0) {
-
-			if (num_adcs_to_show_ > bb.total_adc_values()) {
+		if (num_adcs_to_show_ > 0)
+		{
+			if (num_adcs_to_show_ > bb.total_adc_values())
+			{
 				throw cet::exception("num_adcs_to_show is larger than total number of adcs in fragment");
 			}
-			else {
+			else
+			{
 				std::cout << std::endl;
 				std::cout << "First " << num_adcs_to_show_
 					<< " ADC values in the fragment: "
 					<< std::endl;
 			}
 
-			if (dump_to_file_) {
+			if (dump_to_file_)
+			{
 				std::ofstream output("out.bin", std::ios::out | std::ios::app | std::ios::binary);
-				for (uint32_t i_adc = 0; i_adc < num_adcs_to_show_; ++i_adc) {
+				for (uint32_t i_adc = 0; i_adc < num_adcs_to_show_; ++i_adc)
+				{
 					output.write((char*)(bb.dataBeginADCs() + i_adc), sizeof(ToyFragment::adc_t));
 				}
 				output.close();
 			}
 
-			if (dump_to_screen_) {
+			if (dump_to_screen_)
+			{
 				std::cout << std::right;
 				int rows = 1 + (int)((num_adcs_to_show_ - 1) / columns_to_display_on_screen_);
 				uint32_t adc_counter = 0;
-				for (int idx = 0; idx < rows; ++idx) {
+				for (int idx = 0; idx < rows; ++idx)
+				{
 					std::cout << std::setw(4) << std::setfill('.');
 					std::cout << (idx * columns_to_display_on_screen_) << ": ";
-					for (uint32_t jdx = 0; jdx < columns_to_display_on_screen_; ++jdx) {
+					for (uint32_t jdx = 0; jdx < columns_to_display_on_screen_; ++jdx)
+					{
 						if (adc_counter >= num_adcs_to_show_) { break; }
 						std::cout << std::setw(6) << std::setfill(' ');
 						std::cout << bb.adc_value(adc_counter);
@@ -180,7 +192,6 @@ void demo::ToyDump::analyze(art::Event const & evt)
 		}
 	}
 	std::cout << std::endl;
-
 }
 
 DEFINE_ART_MODULE(demo::ToyDump)

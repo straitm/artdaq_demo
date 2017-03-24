@@ -5,9 +5,9 @@
 #include <string>
 using std::string;
 
-namespace demo {
-
-  typedef art::Source<detail::RawEventQueueReader> DemoInput;
+namespace demo
+{
+	typedef art::Source<detail::RawEventQueueReader> DemoInput;
 }
 
 DEFINE_ART_INPUT_SOURCE(demo::DemoInput)

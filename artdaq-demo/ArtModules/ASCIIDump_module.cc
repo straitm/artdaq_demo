@@ -14,7 +14,7 @@
 #include "artdaq-core-demo/Overlays/FragmentType.hh"
 #include "artdaq-core-demo/Overlays/AsciiFragment.hh"
 #include "artdaq-core/Data/ContainerFragment.hh"
-#include "artdaq-core/Data/Fragments.hh"
+#include "artdaq-core/Data/Fragment.hh"
 
 #include <algorithm>
 #include <cassert>
@@ -24,33 +24,32 @@
 #include <vector>
 #include <iostream>
 
-namespace demo {
+namespace demo
+{
 	class ASCIIDump;
 }
 
-class demo::ASCIIDump : public art::EDAnalyzer {
+class demo::ASCIIDump : public art::EDAnalyzer
+{
 public:
-	explicit ASCIIDump(fhicl::ParameterSet const & pset);
+	explicit ASCIIDump(fhicl::ParameterSet const& pset);
+
 	virtual ~ASCIIDump();
 
-	virtual void analyze(art::Event const & evt);
+	virtual void analyze(art::Event const& evt);
 
 private:
 	std::string raw_data_label_;
 };
 
 
-demo::ASCIIDump::ASCIIDump(fhicl::ParameterSet const & pset)
-	: EDAnalyzer(pset),
-	raw_data_label_(pset.get<std::string>("raw_data_label", "daq"))
-{
-}
+demo::ASCIIDump::ASCIIDump(fhicl::ParameterSet const& pset)
+	: EDAnalyzer(pset)
+	, raw_data_label_(pset.get<std::string>("raw_data_label", "daq")) {}
 
-demo::ASCIIDump::~ASCIIDump()
-{
-}
+demo::ASCIIDump::~ASCIIDump() {}
 
-void demo::ASCIIDump::analyze(art::Event const & evt)
+void demo::ASCIIDump::analyze(art::Event const& evt)
 {
 	art::EventNumber_t eventNumber = evt.event();
 
@@ -59,10 +58,10 @@ void demo::ASCIIDump::analyze(art::Event const & evt)
 	// ***********************
 
 	artdaq::Fragments fragments;
-	std::vector<std::string> fragment_type_labels{ "ASCII", "Container" };
+	std::vector<std::string> fragment_type_labels{"ASCII", "Container"};
 
-	for (auto label : fragment_type_labels) {
-
+	for (auto label : fragment_type_labels)
+	{
 		art::Handle<artdaq::Fragments> fragments_with_label;
 
 		evt.getByLabel(raw_data_label_, label, fragments_with_label);
@@ -72,8 +71,10 @@ void demo::ASCIIDump::analyze(art::Event const & evt)
 		//      fragments.emplace_back( (*fragments_with_label)[i_l] );
 		//    }
 
-		if (label == "Container") {
-			for (auto cont : *fragments_with_label) {
+		if (label == "Container")
+		{
+			for (auto cont : *fragments_with_label)
+			{
 				artdaq::ContainerFragment contf(cont);
 				for (size_t ii = 0; ii < contf.block_count(); ++ii)
 				{
@@ -89,8 +90,10 @@ void demo::ASCIIDump::analyze(art::Event const & evt)
 				}
 			}
 		}
-		else {
-			for (auto frag : *fragments_with_label) {
+		else
+		{
+			for (auto frag : *fragments_with_label)
+			{
 				fragments.emplace_back(frag);
 			}
 		}
@@ -102,8 +105,8 @@ void demo::ASCIIDump::analyze(art::Event const & evt)
 		<< ", event " << eventNumber << " has " << fragments.size()
 		<< " ASCII fragment(s)" << std::endl;
 
-	for (const auto& frag : fragments) {
-
+	for (const auto& frag : fragments)
+	{
 		AsciiFragment bb(frag);
 
 		std::cout << std::endl;
@@ -111,7 +114,8 @@ void demo::ASCIIDump::analyze(art::Event const & evt)
 			<< bb.total_line_characters() << " characters in the line." << std::endl;
 		std::cout << std::endl;
 
-		if (frag.hasMetadata()) {
+		if (frag.hasMetadata())
+		{
 			std::cout << std::endl;
 			std::cout << "Fragment metadata: " << std::endl;
 			AsciiFragment::Metadata const* md =
@@ -124,7 +128,8 @@ void demo::ASCIIDump::analyze(art::Event const & evt)
 		}
 
 		std::ofstream output("out.bin", std::ios::out | std::ios::app | std::ios::binary);
-		for (uint32_t i_adc = 0; i_adc < bb.total_line_characters(); ++i_adc) {
+		for (uint32_t i_adc = 0; i_adc < bb.total_line_characters(); ++i_adc)
+		{
 			output.write((char*)(bb.dataBegin() + i_adc), sizeof(char));
 		}
 		output.close();
@@ -132,7 +137,6 @@ void demo::ASCIIDump::analyze(art::Event const & evt)
 		std::cout << std::endl;
 	}
 	std::cout << std::endl;
-
 }
 
 DEFINE_ART_MODULE(demo::ASCIIDump)

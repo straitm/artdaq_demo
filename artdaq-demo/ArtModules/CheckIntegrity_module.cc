@@ -12,7 +12,7 @@
 #include "canvas/Utilities/Exception.h"
 
 #include "artdaq-core-demo/Overlays/ToyFragment.hh"
-#include "artdaq-core/Data/Fragments.hh"
+#include "artdaq-core/Data/Fragment.hh"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -24,67 +24,70 @@
 #include <vector>
 #include <iostream>
 
-namespace demo {
-  class CheckIntegrity;
+namespace demo
+{
+	class CheckIntegrity;
 }
 
-class demo::CheckIntegrity : public art::EDAnalyzer {
+class demo::CheckIntegrity : public art::EDAnalyzer
+{
 public:
-  explicit CheckIntegrity(fhicl::ParameterSet const & pset);
-  virtual ~CheckIntegrity() = default;
+	explicit CheckIntegrity(fhicl::ParameterSet const& pset);
 
-  virtual void analyze(art::Event const & evt);
+	virtual ~CheckIntegrity() = default;
+
+	virtual void analyze(art::Event const& evt);
 
 private:
-  std::string raw_data_label_;
-  std::string frag_type_;
+	std::string raw_data_label_;
+	std::string frag_type_;
 };
 
 
-demo::CheckIntegrity::CheckIntegrity(fhicl::ParameterSet const & pset)
-    : EDAnalyzer(pset),
-      raw_data_label_(pset.get<std::string>("raw_data_label")),
-      frag_type_(pset.get<std::string>("frag_type"))
+demo::CheckIntegrity::CheckIntegrity(fhicl::ParameterSet const& pset)
+	: EDAnalyzer(pset)
+	, raw_data_label_(pset.get<std::string>("raw_data_label"))
+	, frag_type_(pset.get<std::string>("frag_type")) {}
+
+void demo::CheckIntegrity::analyze(art::Event const& evt)
 {
-}
+	art::Handle<artdaq::Fragments> raw;
+	evt.getByLabel(raw_data_label_, frag_type_, raw);
 
-void demo::CheckIntegrity::analyze(art::Event const & evt)
-{
+	if (raw.isValid())
+	{
+		for (size_t idx = 0; idx < raw->size(); ++idx)
+		{
+			const auto& frag((*raw)[idx]);
 
-  art::Handle<artdaq::Fragments> raw;
-  evt.getByLabel(raw_data_label_, frag_type_, raw);
+			ToyFragment bb(frag);
 
-  if (raw.isValid()) {
+			{
+				auto adc_iter = bb.dataBeginADCs();
+				ToyFragment::adc_t expected_adc = 1;
 
-    for (size_t idx = 0; idx < raw->size(); ++idx) {
-      const auto& frag((*raw)[idx]);
+				for (; adc_iter != bb.dataEndADCs(); adc_iter++ , expected_adc++)
+				{
+					if (*adc_iter != expected_adc)
+					{
+						mf::LogError("CheckIntegrity") << "Error: in run " << evt.run() << ", subrun " << evt.subRun() <<
+							", event " << evt.event() << ", seqID " << frag.sequenceID() <<
+							", fragID " << frag.fragmentID() << ": expected an ADC value of " << expected_adc <<
+							", got " << *adc_iter;
+						return;
+					}
+				}
 
-      ToyFragment bb(frag);
-
-      {
-	auto adc_iter = bb.dataBeginADCs();
-	ToyFragment::adc_t expected_adc = 1; 
-
-	for ( ; adc_iter != bb.dataEndADCs(); adc_iter++, expected_adc++) {
-	  if (*adc_iter != expected_adc) {
-	    mf::LogError("CheckIntegrity") << "Error: in run " << evt.run() << ", subrun " << evt.subRun() <<
-	      ", event " << evt.event() << ", seqID " << frag.sequenceID() <<
-	      ", fragID " << frag.fragmentID() << ": expected an ADC value of " << expected_adc << 
-	      ", got " << *adc_iter;
-	    return;
-	  }
+				mf::LogDebug("CheckIntegrity") << "In run " << evt.run() << ", subrun " << evt.subRun() <<
+					", event " << evt.event() << ", everything is fine";
+			}
+		}
 	}
-
-	mf::LogDebug("CheckIntegrity") << "In run " << evt.run() << ", subrun " << evt.subRun() <<
-	  ", event " << evt.event() << ", everything is fine";
-      }
-    }
-  }
-  else {
-    mf::LogError("CheckIntegrity") << "In run " << evt.run() << ", subrun " << evt.subRun() <<
-      ", event " << evt.event() << ", raw.isValid() returned false";
-  }
-
+	else
+	{
+		mf::LogError("CheckIntegrity") << "In run " << evt.run() << ", subrun " << evt.subRun() <<
+			", event " << evt.event() << ", raw.isValid() returned false";
+	}
 }
 
 DEFINE_ART_MODULE(demo::CheckIntegrity)
