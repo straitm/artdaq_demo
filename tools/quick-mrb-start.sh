@@ -300,6 +300,7 @@ if [[ "x${opt_viewer-}" != "x" ]] && [[ $opt_develop -eq 1 ]]; then
 fi
 
 ARTDAQ_DEMO_DIR=$Base/srcs/artdaq_demo
+ARTDAQ_DIR=$Base/srcs/artdaq
 cd $Base
     cat >setupARTDAQDEMO <<-EOF
 echo # This script is intended to be sourced.
@@ -323,7 +324,7 @@ export ARTDAQDEMO_LOG_DIR=${logdir}
 export FHICL_FILE_PATH=.:\$ARTDAQ_DEMO_DIR/tools/snippets:\$ARTDAQ_DEMO_DIR/tools/fcl:\$FHICL_FILE_PATH
 
 alias toy1toy2EventDump="art -c $ARTDAQ_DEMO_DIR/artdaq-demo/ArtModules/fcl/toy1toy2Dump.fcl"
-alias rawEventDump="art -c $ARTDAQ_DEMO_DIR/artdaq-demo/ArtModules/fcl/rawEventDump.fcl"
+alias rawEventDump="art -c $ARTDAQ_DIR/artdaq/ArtModules/fcl/rawEventDump.fcl"
 
 EOF
 #
