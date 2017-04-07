@@ -5,10 +5,21 @@
 
 #include <string>
 
+/**
+* \brief Namespace used to differentiate the artdaq_demo version of GetPackageBuildInfo
+* from other versions present in the system.
+*/
 namespace demo
 {
+	/**
+	* \brief Wrapper around the demo::GetPackageBuildInfo::getPackageBuildInfo function
+	*/
 	struct GetPackageBuildInfo
 	{
+		/**
+		* \brief Gets the version number and build timestmap for artdaq_demo
+		* \return An artdaq::PackageBuildInfo object containing the version number and build timestamp for artdaq_demo
+		*/
 		static artdaq::PackageBuildInfo getPackageBuildInfo();
 	};
 }
