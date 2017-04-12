@@ -29,6 +29,9 @@ namespace demo
 	class CheckIntegrity;
 }
 
+/**
+ * \brief Demonstration art::EDAnalyzer which checks that all ToyFragment ADC counts are in the defined range
+ */
 class demo::CheckIntegrity : public art::EDAnalyzer
 {
 public:

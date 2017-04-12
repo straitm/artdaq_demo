@@ -36,7 +36,7 @@ public:
 
 	virtual ~ASCIIDump();
 
-	virtual void analyze(art::Event const& evt);
+	void analyze(art::Event const& evt) override;
 
 private:
 	std::string raw_data_label_;
@@ -110,6 +110,7 @@ void demo::ASCIIDump::analyze(art::Event const& evt)
 		AsciiFragment bb(frag);
 
 		std::cout << std::endl;
+		std::cout << "Ascii fragment " << frag.fragmentID() << " is version " << frag.version() << std::endl;
 		std::cout << "Ascii fragment " << frag.fragmentID() << " has "
 			<< bb.total_line_characters() << " characters in the line." << std::endl;
 		std::cout << std::endl;

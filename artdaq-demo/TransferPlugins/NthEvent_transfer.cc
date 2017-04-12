@@ -16,24 +16,57 @@
 #include <limits>
 #include <sstream>
 
+/**
+ * \brief The artdaq namespace
+ */
 namespace artdaq
 {
+	/**
+	 * \brief Demonstration TransferInterface plugin showing how to discard events
+	 * Intended for use in the transfer_to_dispatcher case, NOT for primary data stream!
+	 */
 	class NthEventTransfer : public TransferInterface
 	{
 	public:
+		/**
+		 * \brief NthEventTransfer Constructor
+		 * \param ps fhicl::ParameterSet used to configure TransferInterface. Contains "nth", the
+		 * interval at which events will be transferred, and "physical_transfer_plugin", a table
+		 * configuring the TransferInterface plugin used for those transfers
+		 * \param role Either kSend or kReceive, see TransferInterface constructor
+		 */
 		NthEventTransfer(fhicl::ParameterSet const& ps, artdaq::TransferInterface::Role role);
 
+		/**
+		 * \brief Copy a fragment, using the non-reliable channel
+		 * \param fragment Fragment to copy
+		 * \param send_timeout_usec Timeout before aborting
+		 * \return CopyStatus (either kSuccess, kTimeout, kErrorNotRequiringException or an exception)
+		 */
 		TransferInterface::CopyStatus
 		copyFragment(artdaq::Fragment& fragment,
-		             size_t send_timeout_usec = std::numeric_limits<size_t>::max());
+		             size_t send_timeout_usec = std::numeric_limits<size_t>::max()) override;
 
+		/**
+		 * \brief Copy a fragment, using the reliable channel. moveFragment assumes ownership of the fragment
+		 * \param fragment Fragment to copy
+		 * \param send_timeout_usec Timeout before aborting
+		 * \return CopyStatus (either kSuccess, kTimeout, kErrorNotRequiringException or an exception)
+		 */
 		TransferInterface::CopyStatus
 		moveFragment(artdaq::Fragment&& fragment,
-		             size_t send_timeout_usec = std::numeric_limits<size_t>::max());
+		             size_t send_timeout_usec = std::numeric_limits<size_t>::max()) override;
 
+		/**
+		 * \brief Receive a fragment from the transfer plugin
+		 * \param fragment Reference to output Fragment object
+		 * \param receiveTimeout Timeout before aborting receive
+		 * \return Rank of sender or RECV_TIMEOUT
+		 */
 		int receiveFragment(artdaq::Fragment& fragment,
-		                    size_t receiveTimeout)
+		                    size_t receiveTimeout) override
 		{
+			// nth-event discarding is done at the send side. Pass receive calls through to underlying transfer
 			return physical_transfer_->receiveFragment(fragment, receiveTimeout);
 		}
 
@@ -48,6 +81,13 @@ namespace artdaq
 	                                                                                                          TransferInterface(pset, role)
 	                                                                                                          , nth_(pset.get<size_t>("nth"))
 	{
+		// nth_ may NOT be 0
+		if(nth_ == 0)
+		{
+			mf::LogWarning("NthEventTransfer") << "0 was passed as the nth parameter to NthEventTransfer. Will change to 1 (0 is undefined behavior)";
+			nth_ = 1;
+		}
+		// Instantiate the TransferInterface plugin used to effect transfers
 		physical_transfer_ = MakeTransferPlugin(pset, "physical_transfer_plugin", role);
 	}
 
@@ -58,9 +98,11 @@ namespace artdaq
 	{
 		if (fragment.sequenceID() % nth_ != 0)
 		{
+			// Do not transfer but return success. Fragment is discarded
 			return TransferInterface::CopyStatus::kSuccess;
 		}
 
+		// This is the nth Fragment, transfer
 		return physical_transfer_->copyFragment(fragment, send_timeout_usec);
 	}
 
@@ -70,9 +112,11 @@ namespace artdaq
 	{
 		if (fragment.sequenceID() % nth_ != 0)
 		{
+			// Do not transfer but return success. Fragment is discarded
 			return TransferInterface::CopyStatus::kSuccess;
 		}
 
+		// This is the nth Fragment, transfer
 		return physical_transfer_->moveFragment(std::move(fragment), send_timeout_usec);
 	}
 }

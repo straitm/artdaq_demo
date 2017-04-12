@@ -19,30 +19,31 @@
 // based in C++11 capable of taking advantage of smart pointers, etc.
 
 ToyHardwareInterface::ToyHardwareInterface(fhicl::ParameterSet const& ps) :
-                                                                          taking_data_(false)
-                                                                          , nADCcounts_(ps.get<size_t>("nADCcounts", 40))
-                                                                          , maxADCcounts_(ps.get<size_t>("maxADCcounts", 50000000))
-                                                                          , change_after_N_seconds_(ps.get<size_t>("change_after_N_seconds",
-                                                                                                                   std::numeric_limits<size_t>::max()))
-                                                                          , nADCcounts_after_N_seconds_(ps.get<int>("nADCcounts_after_N_seconds",
-                                                                                                                    nADCcounts_))
-                                                                          , exception_after_N_seconds_(ps.get<bool>("exception_after_N_seconds",
-                                                                                                                    false))
-                                                                          , exit_after_N_seconds_(ps.get<bool>("exit_after_N_seconds",
-                                                                                                               false))
-                                                                          , abort_after_N_seconds_(ps.get<bool>("abort_after_N_seconds",
-                                                                                                                false))
-                                                                          , fragment_type_(demo::toFragmentType(ps.get<std::string>("fragment_type")))
-                                                                          , maxADCvalue_(pow(2, NumADCBits()) - 1)
-                                                                          , // MUST be after "fragment_type"
-                                                                          throttle_usecs_(ps.get<size_t>("throttle_usecs", 100000))
-                                                                          , usecs_between_sends_(ps.get<size_t>("usecs_between_sends", 0))
-                                                                          , distribution_type_(static_cast<DistributionType>(ps.get<int>("distribution_type")))
-                                                                          , engine_(ps.get<int64_t>("random_seed", 314159))
-                                                                          , uniform_distn_(new std::uniform_int_distribution<data_t>(0, maxADCvalue_))
-                                                                          , gaussian_distn_(new std::normal_distribution<double>(0.5 * maxADCvalue_, 0.1 * maxADCvalue_))
-                                                                          , start_time_(fake_time_)
-                                                                          , send_calls_(0)
+	taking_data_(false)
+	, nADCcounts_(ps.get<size_t>("nADCcounts", 40))
+	, maxADCcounts_(ps.get<size_t>("maxADCcounts", 50000000))
+	, change_after_N_seconds_(ps.get<size_t>("change_after_N_seconds",
+											 std::numeric_limits<size_t>::max()))
+	, nADCcounts_after_N_seconds_(ps.get<int>("nADCcounts_after_N_seconds",
+											  nADCcounts_))
+	, exception_after_N_seconds_(ps.get<bool>("exception_after_N_seconds",
+											  false))
+	, exit_after_N_seconds_(ps.get<bool>("exit_after_N_seconds",
+										 false))
+	, abort_after_N_seconds_(ps.get<bool>("abort_after_N_seconds",
+										  false))
+	, fragment_type_(demo::toFragmentType(ps.get<std::string>("fragment_type")))
+	, maxADCvalue_(pow(2, NumADCBits()) - 1)
+	, // MUST be after "fragment_type"
+	throttle_usecs_(ps.get<size_t>("throttle_usecs", 100000))
+	, usecs_between_sends_(ps.get<size_t>("usecs_between_sends", 0))
+	, distribution_type_(static_cast<DistributionType>(ps.get<int>("distribution_type")))
+	, engine_(ps.get<int64_t>("random_seed", 314159))
+	, uniform_distn_(new std::uniform_int_distribution<data_t>(0, maxADCvalue_))
+	, gaussian_distn_(new std::normal_distribution<double>(0.5 * maxADCvalue_, 0.1 * maxADCvalue_))
+	, start_time_(fake_time_)
+	, send_calls_(0)
+	, serial_number_((*uniform_distn_)(engine_))
 {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-compare"
@@ -54,19 +55,19 @@ ToyHardwareInterface::ToyHardwareInterface(fhicl::ParameterSet const& ps) :
 	// you want it to do if nADCcounts_after_N_seconds_ is negative
 
 	if (nADCcounts_ > maxADCcounts_ ||
-	    (nADCcounts_after_N_seconds_ >= 0 && nADCcounts_after_N_seconds_ > maxADCcounts_))
+		(nADCcounts_after_N_seconds_ >= 0 && nADCcounts_after_N_seconds_ > maxADCcounts_))
 	{
 		throw cet::exception("HardwareInterface") << "Either (or both) of \"nADCcounts\" and \"nADCcounts_after_N_seconds\"" <<
-		      " is larger than the \"maxADCcounts\" setting (currently at " << maxADCcounts_ << ")";
+			" is larger than the \"maxADCcounts\" setting (currently at " << maxADCcounts_ << ")";
 	}
 
 	bool planned_disruption = nADCcounts_after_N_seconds_ != nADCcounts_ ||
-	                          exception_after_N_seconds_ ||
-	                          exit_after_N_seconds_ ||
-	                          abort_after_N_seconds_;
+		exception_after_N_seconds_ ||
+		exit_after_N_seconds_ ||
+		abort_after_N_seconds_;
 
 	if (planned_disruption &&
-	    change_after_N_seconds_ == std::numeric_limits<size_t>::max())
+		change_after_N_seconds_ == std::numeric_limits<size_t>::max())
 	{
 		throw cet::exception("HardwareInterface") << "A FHiCL parameter designed to create a disruption has been set, so \"change_after_N_seconds\" should be set as well";
 #pragma GCC diagnostic pop
@@ -101,7 +102,7 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read)
 
 		auto elapsed_secs_since_datataking_start =
 			std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now()
-			                                                 - start_time_).count();
+															 - start_time_).count();
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-compare"
@@ -132,7 +133,7 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read)
 			else
 			{
 				// Pretend the hardware hangs
-				while (true) { }
+				while (true) {}
 			}
 		}
 
@@ -141,7 +142,7 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read)
 		// Can't handle a fragment whose size isn't evenly divisible by
 		// the demo::ToyFragment::Header::data_t type size in bytes
 		//std::cout << "Bytes to read: " << *bytes_read << ", sizeof(data_t): " << sizeof(demo::ToyFragment::Header::data_t) << std::endl;
-		assert( *bytes_read % sizeof(demo::ToyFragment::Header::data_t) == 0 );
+		assert(*bytes_read % sizeof(demo::ToyFragment::Header::data_t) == 0);
 
 		demo::ToyFragment::Header* header = reinterpret_cast<demo::ToyFragment::Header*>(buffer);
 
@@ -157,56 +158,55 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read)
 		{
 		case DistributionType::uniform:
 			generator = [&]()
-				{
-					return static_cast<data_t>
-						((*uniform_distn_)(engine_));
-				};
+			{
+				return static_cast<data_t>
+					((*uniform_distn_)(engine_));
+			};
 			break;
 
 		case DistributionType::gaussian:
 			generator = [&]()
+			{
+				data_t gen(0);
+				do
 				{
-					data_t gen(0);
-					do
-					{
-						gen = static_cast<data_t>(std::round((*gaussian_distn_)(engine_)));
-					}
-					while (gen > maxADCvalue_);
-					return gen;
-				};
+					gen = static_cast<data_t>(std::round((*gaussian_distn_)(engine_)));
+				} while (gen > maxADCvalue_);
+				return gen;
+			};
 			break;
 
 		case DistributionType::monotonic:
+		{
+			data_t increasing_integer = 0;
+			generator = [&]()
 			{
-				data_t increasing_integer = 0;
-				generator = [&]()
-					{
-						increasing_integer++;
-						return increasing_integer > maxADCvalue_ ? 999 : increasing_integer;
-					};
-			}
-			break;
+				increasing_integer++;
+				return increasing_integer > maxADCvalue_ ? 999 : increasing_integer;
+			};
+		}
+		break;
 
 		case DistributionType::uninitialized:
 			break;
 
 		default:
 			throw cet::exception("HardwareInterface") <<
-			      "Unknown distribution type specified";
+				"Unknown distribution type specified";
 		}
 
 		if (distribution_type_ != DistributionType::uninitialized)
 		{
 			std::generate_n(reinterpret_cast<data_t*>(reinterpret_cast<demo::ToyFragment::Header*>(buffer) + 1),
-			                nADCcounts_,
-			                generator
+							nADCcounts_,
+							generator
 			);
 		}
 	}
 	else
 	{
 		throw cet::exception("ToyHardwareInterface") <<
-		      "Attempt to call FillBuffer when not sending data";
+			"Attempt to call FillBuffer when not sending data";
 	}
 
 	if (usecs_between_sends_ != 0 && send_calls_ != 0)
@@ -216,11 +216,11 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read)
 
 		auto usecs_since_start =
 			std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now()
-			                                                      - start_time_).count();
+																  - start_time_).count();
 
 		long delta = (long)(usecs_between_sends_ * send_calls_) - usecs_since_start;
-		TRACE( 15, "ToyHardwareInterface::FillBuffer send_calls=%d usecs_since_start=%ld delta=%ld"
-			, send_calls_, usecs_since_start, delta );
+		TRACE(15, "ToyHardwareInterface::FillBuffer send_calls=%d usecs_since_start=%ld delta=%ld"
+			  , send_calls_, usecs_since_start, delta);
 		if (delta > 0)
 			usleep(delta);
 
@@ -231,20 +231,20 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read)
 
 void ToyHardwareInterface::AllocateReadoutBuffer(char** buffer)
 {
-	*buffer = reinterpret_cast<char*>(new uint8_t[ sizeof(demo::ToyFragment::Header) + maxADCcounts_ * sizeof(data_t) ]);
+	*buffer = reinterpret_cast<char*>(new uint8_t[sizeof(demo::ToyFragment::Header) + maxADCcounts_ * sizeof(data_t)]);
 }
 
 void ToyHardwareInterface::FreeReadoutBuffer(char* buffer)
 {
-	delete [] buffer;
+	delete[] buffer;
 }
 
-// Pretend that the "BoardType" is some vendor-defined integer which
-// differs from the fragment_type_ we want to use as developers (and
-// which must be between 1 and 224, inclusive) so add an offset
 
 int ToyHardwareInterface::BoardType() const
 {
+	// Pretend that the "BoardType" is some vendor-defined integer which
+	// differs from the fragment_type_ we want to use as developers (and
+	// which must be between 1 and 224, inclusive) so add an offset
 	return static_cast<int>(fragment_type_) + 1000;
 }
 
@@ -260,15 +260,16 @@ int ToyHardwareInterface::NumADCBits() const
 		break;
 	default:
 		throw cet::exception("ToyHardwareInterface")
-		      << "Unknown board type "
-		      << fragment_type_
-		      << " ("
-		      << demo::fragmentTypeToString(fragment_type_)
-		      << ").\n";
+			<< "Unknown board type "
+			<< fragment_type_
+			<< " ("
+			<< demo::fragmentTypeToString(fragment_type_)
+			<< ").\n";
 	};
 }
 
 int ToyHardwareInterface::SerialNumber() const
 {
-	return 999;
+	// Serial number is generated from the uniform distribution on initialization of the class
+	return serial_number_;
 }

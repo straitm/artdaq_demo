@@ -48,17 +48,10 @@ namespace
 demo::AsciiSimulator::AsciiSimulator(fhicl::ParameterSet const& ps)
 	:
 	CommandableFragmentGenerator(ps)
-	, fragment_type_(toFragmentType(ps.get<std::string>("fragment_type", "ASCII")))
 	, throttle_usecs_(ps.get<size_t>("throttle_usecs", 100000))
-	, throttle_usecs_check_(ps.get<size_t>("throttle_usecs_check", 10000))
 	, string1_(ps.get<std::string>("string1", "All work and no play makes ARTDAQ a dull library"))
 	, string2_(ps.get<std::string>("string2", "Hey, look at what ARTDAQ can do!"))
 {
-	if (throttle_usecs_ > 0 && (throttle_usecs_check_ >= throttle_usecs_ ||
-	                            throttle_usecs_ % throttle_usecs_check_ != 0))
-	{
-		throw cet::exception("Error in AsciiSimulator: disallowed combination of throttle_usecs and throttle_usecs_check (see AsciiSimulator.hh for rules)");
-	}
 }
 
 bool demo::AsciiSimulator::getNext_(artdaq::FragmentPtrs& frags)
@@ -75,11 +68,11 @@ bool demo::AsciiSimulator::getNext_(artdaq::FragmentPtrs& frags)
 
 	if (throttle_usecs_ > 0)
 	{
-		size_t nchecks = throttle_usecs_ / throttle_usecs_check_;
+		size_t nchecks = throttle_usecs_ / 10000;
 
 		for (size_t i_c = 0; i_c < nchecks; ++i_c)
 		{
-			usleep(throttle_usecs_check_);
+			usleep(throttle_usecs_ / 10000);
 
 			if (should_stop())
 			{
@@ -123,7 +116,7 @@ bool demo::AsciiSimulator::getNext_(artdaq::FragmentPtrs& frags)
 
 	frags.emplace_back(artdaq::Fragment::FragmentBytes(initial_payload_size,
 	                                                   ev_counter(), fragment_id(),
-	                                                   fragment_type_, metadata));
+	                                                   FragmentType::ASCII, metadata));
 
 	// Then any overlay-specific quantities next; will need the
 	// AsciiFragmentWriter class's setter-functions for this
