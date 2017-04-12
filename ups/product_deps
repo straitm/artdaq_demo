@@ -1,7 +1,7 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
 parent artdaq_demo	v2_09_02
-defaultqual	e10:s41
+defaultqual	e10:s46
 
 # These optional lines define the installed directories where
 # headers, libraries, and executables will be found
@@ -19,26 +19,41 @@ bindir      fq_dir      bin
 product		 version	optional
 artdaq           v2_02_01
 artdaq_core_demo v1_06_02
-cetbuildtools    v5_06_06        -       only_for_build
+cetbuildtools    v5_06_07       -       only_for_build
 end_product_list
 
-# e6 - with gcc 4.9.1 and -std=c++1y
-# e7 - with gcc 4.9.2 and -std=c++1y
-# e9 - with gcc 4.9.3 and -std=c++14
-# s* - see artdaq-core's product_deps
+# See https://cdcvs.fnal.gov/redmine/projects/cet-is-public/wiki/AboutQualifiers for information about the qualifiers used
 # -nq- here means there is no qualifier
 # a "-" here means the dependent product is not required by the parent and will not be setup
 qualifier	   artdaq	 	 artdaq_core_demo
+e14:s48:prof   e14:s48:prof  	 e14:s48:prof
+e14:s48:debug  e14:s48:debug 	 e14:s48:debug
+e10:s48:prof   e10:s48:prof  	 e10:s48:prof
+e10:s48:debug  e10:s48:debug 	 e10:s48:debug
+e14:s47:prof   e14:s47:prof  	 e14:s47:prof
+e14:s47:debug  e14:s47:debug 	 e14:s47:debug
+e10:s47:prof   e10:s47:prof  	 e10:s47:prof
+e10:s47:debug  e10:s47:debug 	 e10:s47:debug
 e14:s46:prof   e14:s46:prof  	 e14:s46:prof
 e14:s46:debug  e14:s46:debug 	 e14:s46:debug
 e10:s46:prof   e10:s46:prof  	 e10:s46:prof
 e10:s46:debug  e10:s46:debug 	 e10:s46:debug
-e10:s44:prof   e10:s44:prof  	 e10:s44:prof
-e10:s44:debug  e10:s44:debug 	 e10:s44:debug
-e10:s43:prof   e10:s43:prof  	 e10:s43:prof
-e10:s43:debug  e10:s43:debug 	 e10:s43:debug
-e10:s41:prof   e10:s41:prof  	 e10:s41:prof
-e10:s41:debug  e10:s41:debug 	 e10:s41:debug
+e14:s48:eth:prof   e14:s48:eth:prof  	 e14:s48:prof
+e14:s48:eth:debug  e14:s48:eth:debug 	 e14:s48:debug
+e14:s48:ib:prof    e14:s48:ib:prof   	 e14:s48:prof
+e14:s48:ib:debug   e14:s48:ib:debug  	 e14:s48:debug
+e10:s48:eth:prof   e10:s48:eth:prof  	 e10:s48:prof
+e10:s48:eth:debug  e10:s48:eth:debug 	 e10:s48:debug
+e10:s48:ib:prof    e10:s48:ib:prof   	 e10:s48:prof
+e10:s48:ib:debug   e10:s48:ib:debug  	 e10:s48:debug
+e14:s47:eth:prof   e14:s47:eth:prof  	 e14:s47:prof
+e14:s47:eth:debug  e14:s47:eth:debug 	 e14:s47:debug
+e14:s47:ib:prof    e14:s47:ib:prof   	 e14:s47:prof
+e14:s47:ib:debug   e14:s47:ib:debug  	 e14:s47:debug
+e10:s47:eth:prof   e10:s47:eth:prof  	 e10:s47:prof
+e10:s47:eth:debug  e10:s47:eth:debug 	 e10:s47:debug
+e10:s47:ib:prof    e10:s47:ib:prof   	 e10:s47:prof
+e10:s47:ib:debug   e10:s47:ib:debug  	 e10:s47:debug
 e14:s46:eth:prof   e14:s46:eth:prof  	 e14:s46:prof
 e14:s46:eth:debug  e14:s46:eth:debug 	 e14:s46:debug
 e14:s46:ib:prof    e14:s46:ib:prof   	 e14:s46:prof
@@ -47,18 +62,6 @@ e10:s46:eth:prof   e10:s46:eth:prof  	 e10:s46:prof
 e10:s46:eth:debug  e10:s46:eth:debug 	 e10:s46:debug
 e10:s46:ib:prof    e10:s46:ib:prof   	 e10:s46:prof
 e10:s46:ib:debug   e10:s46:ib:debug  	 e10:s46:debug
-e10:s44:eth:prof   e10:s44:eth:prof  	 e10:s44:prof
-e10:s44:eth:debug  e10:s44:eth:debug 	 e10:s44:debug
-e10:s44:ib:prof    e10:s44:ib:prof   	 e10:s44:prof
-e10:s44:ib:debug   e10:s44:ib:debug  	 e10:s44:debug
-e10:s43:eth:prof   e10:s43:eth:prof  	 e10:s43:prof
-e10:s43:eth:debug  e10:s43:eth:debug 	 e10:s43:debug
-e10:s43:ib:prof    e10:s43:ib:prof   	 e10:s43:prof
-e10:s43:ib:debug   e10:s43:ib:debug  	 e10:s43:debug
-e10:s41:eth:prof   e10:s41:eth:prof  	 e10:s41:prof
-e10:s41:eth:debug  e10:s41:eth:debug 	 e10:s41:debug
-e10:s41:ib:prof    e10:s41:ib:prof   	 e10:s41:prof
-e10:s41:ib:debug   e10:s41:ib:debug  	 e10:s41:debug
 end_qualifier_list
 
 # Preserve tabs and formatting in emacs and vi / vim:
