@@ -29,6 +29,7 @@ require File.join( File.dirname(__FILE__), 'generateWFViewer' )
 require File.join( File.dirname(__FILE__), 'generateBoardReaderMain' )
 require File.join( File.dirname(__FILE__), 'generateEventBuilderMain' )
 require File.join( File.dirname(__FILE__), 'generateAggregatorMain' )
+require File.join( File.dirname(__FILE__), 'generateRoutingMasterMain' )
 
 
 
@@ -189,6 +190,7 @@ class CommandLineParser
 	@configGen = configGen
 	@options = OpenStruct.new
 	@options.aggregators = []
+	@options.routingmasters = []
 	@options.eventBuilders = []
 	@options.toys = []
 	@options.asciis = []
@@ -203,6 +205,7 @@ class CommandLineParser
 	@options.transferType = "MPI"
 	@options.transferBasePort = 5300
 	@options.runOnmon = 0
+	@options.useRoutingMaster = 0
 	@options.onmonFile = nil
 	@options.onmon_modules = nil
 	@options.writeData = 1
@@ -393,6 +396,29 @@ end
 		agConfig.index = @options.aggregators.length
 		@options.aggregators << agConfig
 	  end
+
+	  opts.on("--rm [host,xmlrpc_port,table_interval,token_port,table_port,ack_port,table_address]", Array,
+		"Add a Routing Master that runs on the specified host and ports.") do |rm|
+		@options.useRoutingMaster = 1
+		if rm.length < 3 || rm.length > 3 && rm.length < 7
+			puts "You must specify a host, XMLRPC port, table interval, token port, table port, ack port and table address or just the host, XMLRPC port and table interval"
+			exit
+		end
+		rmConfig = OpenStruct.new
+		rmConfig.host = rm[0]
+		rmConfig.port = Integer(rm[1])
+		rmConfig.table_interval = Integer(rm[2])
+		if rm.length > 3
+		rmConfig.token_port = Integer(rm[3])
+		rmConfig.table_port = Integer(rm[4])
+		rmConfig.ack_port = Integer(rm[5])
+		rmConfig.table_address = Integer(rm[6])
+		end
+		rmConfig.kind = "rm"
+		rmConfig.index = @options.routingmasters.length
+		@options.routingmasters << rmConfig
+		end
+
 	
 	  opts.on("--ascii [host,port,board_id,config_file]", Array, 
 			  "Add a ASCII fragment receiver that runs on the specified host, port, ",
@@ -672,7 +698,7 @@ end
 	# is running on which host.
 	puts "Configuration Summary:"
 	hostMap = {}
-	(@options.eventBuilders + @options.toys + @options.aggregators + @options.asciis + @options.udps + @options.pbrs).each do |proc|
+	(@options.eventBuilders + @options.toys + @options.aggregators + @options.asciis + @options.udps + @options.pbrs + @options.routingmasters).each do |proc|
 	  if not hostMap.keys.include?(proc.host)
 		hostMap[proc.host] = []
 	  end
@@ -687,6 +713,7 @@ end
 
 	  totalEBs = @options.eventBuilders.length
 	  totalFRs = @options.boardReaders.length
+	  totalAGs = @options.aggregators.length
 	  hostMap[host].each do |item|
 		case item.kind
 		when "eb"
@@ -705,6 +732,8 @@ end
 		when "UDP"
 		  puts "    FragmentReceiver, UDPReceiver, port %d, rank %d, board_id %d, config_file %s" %
 			 [ item.port, item.index, item.board_id, item.configFile ]
+	    when "rm"
+		  puts "    RoutingMaster, port %d, rank %d" % [item.port,  totalEBs + totalFRs + totalAGs + item.index]
 		end
 	  end
 	  puts ""
@@ -768,10 +797,13 @@ class SystemControl
 	eb_destinations_fhicl = ""
 	ag_sources_fhicl = ""
 	host_map = "["
+	br_ranks = []
+	eb_ranks = []
 	# BoardReaders are EventBuilder sources
 	(@options.toys + @options.asciis + @options.udps + @options.pbrs).each { |boardreaderOptions|
 		eb_sources_fhicl += ("s%s: { transferPluginType: %s source_rank: %s max_fragment_size_words: %s host_map: {{host_map}}}\n" % [current_rank, @options.transferType,current_rank, fullEventBuffSizeWords])
 		host_map += ("{rank: %s host: \"%s\" portOffset: %s}," % [ current_rank, boardreaderOptions.host,(current_rank * 10) + @options.transferBasePort ] )
+		br_ranks << current_rank
 		current_rank += 1
 	}
 
@@ -780,6 +812,7 @@ class SystemControl
 		br_destinations_fhicl += ("d%s: { transferPluginType: %s destination_rank: %s max_fragment_size_words: %s host_map: {{host_map}}}\n" % [current_rank, @options.transferType,current_rank, fullEventBuffSizeWords])
 		ag_sources_fhicl += ("s%s: { transferPluginType: %s source_rank: %s max_fragment_size_words: %s host_map: {{host_map}}}\n" % [current_rank, @options.transferType,current_rank, fullEventBuffSizeWords])
 		host_map += ("{rank: %s host: \"%s\" portOffset: %s}," % [ current_rank, ebOptions.host,(current_rank * 10) + @options.transferBasePort ] )
+		eb_ranks << current_rank
 	  current_rank += 1
 	}
 	
@@ -800,6 +833,47 @@ class SystemControl
 	eb_sources_fhicl.gsub!(/\{\{host_map\}\}/, host_map)
 	eb_destinations_fhicl.gsub!(/\{\{host_map\}\}/, host_map)
 	ag_sources_fhicl.gsub!(/\{\{host_map\}\}/, host_map)
+
+	routing_fhicl = ""
+	if @options.useRoutingMaster >= 1
+	rmConfig = @options.routingmasters[0]
+	routing_fhicl = "\
+	use_routing_master: &{use_routing_master}
+	send_tokens: true
+	routing_master_hostname: \"%s\"
+	routing_timeout_ms: %s
+	table_update_interval_ms: %s
+	table_ack_wait_time: %s
+
+	&{table_update_port}
+	&{table_update_address}
+	&{routing_token_port}
+	&{table_acknowledge_port}
+	" % [rmConfig.host, rmConfig.table_interval / 2, rmConfig.table_interval, rmConfig.table_interval / 5]
+
+	if rmConfig.table_port != nil
+	routing_fhicl.gsub!(/&\{table_update_port\}/,"table_update_port: %s" % [rmConfig.table_port])
+	else
+	routing_fhicl.gsub!(/&\{table_update_port\}/,"")
+	end
+	if rmConfig.table_address != nil
+	routing_fhicl.gsub!(/&\{table_update_address\}/,"table_update_address: \"%s\"" % [rmConfig.table_address])
+	else
+	routing_fhicl.gsub!(/&\{table_update_address\}/,"")
+	end
+	if rmConfig.token_port != nil
+	routing_fhicl.gsub!(/&\{routing_token_port\}/,"routing_token_port: %s" % [rmConfig.token_port])
+	else
+	routing_fhicl.gsub!(/&\{routing_token_port\}/,"")
+	end
+	if rmConfig.ack_port != nil
+	routing_fhicl.gsub!(/&\{table_acknowledge_port\}/,"table_acknowledge_port: %s" % [rmConfig.ack_port])
+	else
+	routing_fhicl.gsub!(/&\{table_acknowledge_port\}/,"")
+	end
+	else
+	routing_fhicl = "use_routing_master: false"
+	end
 
 	# 02-Dec-2013, KAB - loop over the front-end boards and build the configurations
 	# that we will send to them.  These configurations are stored in the associated
@@ -829,7 +903,9 @@ class SystemControl
 			# 16-Feb-2016, KAB: Here in the Demo, we don't know whether the data is equally
 			# split between the BoardReaders or mainly concentrated in a single BoardReader, so
 			# we do the safest thing and make all of the BoardReader MPI buffers the maximum size.
-			cfg = generateBoardReaderMain(generatorCode, br_destinations_fhicl, @options.dataDir,
+			br_routing_fhicl = routing_fhicl
+			br_routing_fhicl.gsub!(/&\{use_routing_master\}/,"true")
+			cfg = generateBoardReaderMain(generatorCode, br_destinations_fhicl, @options.dataDir, br_routing_fhicl,
 										  @options.gangliaMetric, @options.msgFacilityMetric, @options.graphiteMetric)
 
 			br.cfgList[listIndex] = cfg
@@ -893,9 +969,11 @@ class SystemControl
 		puts "Generating %s" % [fileName]
 		fclWFViewer = generateWFViewer( (@options.toys + @options.asciis + @options.udps + @options.pbrs).map { |board| board.board_id } )
 										
+			eb_routing_fhicl = routing_fhicl
+			eb_routing_fhicl.gsub!(/&\{use_routing_master\}/,"false")
 		ebOptions.cfg = generateEventBuilderMain(ebIndex, totalAGs,  @options.dataDir, @options.runOnmon,
 												 @options.writeData, totalBoards, fileProperties,
-												 fclWFViewer, eb_sources_fhicl, eb_destinations_fhicl,
+												 fclWFViewer, eb_sources_fhicl, eb_destinations_fhicl, eb_routing_fhicl,
 												 ebOptions.sendRequests,
 												 @options.gangliaMetric, @options.msgFacilityMetric, @options.graphiteMetric
 												 )
@@ -939,6 +1017,25 @@ class SystemControl
   else
 	  agOptions.cfg = File.read(fileName)
   end
+
+  if @options.useRoutingMaster >= 1
+  fileName = "RoutingMaster_%s_%d.fcl" % [rmConfig.host, rmConfig.port]
+  if forceRegen || !File.file?(fileName)
+    puts "Generating %s" % [fileName]
+	
+			rm_routing_fhicl = routing_fhicl
+			rm_routing_fhicl.gsub!(/&\{use_routing_master\}/,"true")
+	# Default event_queue_depth is 50 or 20 depending on EventStore constructor...
+	@options.routingmasters[0].cfg = generateRoutingMasterMain( rm_routing_fhicl, eb_ranks, br_ranks, 20, @options.gangliaMetric, @options.msgFacilityMetric, @options.graphiteMetric)
+		  puts "  writing %s..." % fileName
+	  handle = File.open(fileName, "w")
+	  handle.write(@options.routingmasters[0].cfg)
+	  handle.close()
+	  STDOUT.flush
+	  else 
+	  @options.routingmasters[0].cfg = File.read(fileName)
+	end
+	end
 }
 
 	STDOUT.flush
@@ -1053,6 +1150,24 @@ class SystemControl
 
 	  agIndex += 1
 	}
+
+	rmOptions = @options.routingmasters[0]
+	  currentTime = DateTime.now.strftime("%Y/%m/%d %H:%M:%S")
+	  puts "%s: Sending the INIT command to %s:%d" %
+		[currentTime, rmOptions.host, rmOptions.port, 0]
+	  threads << Thread.new( 0 ) do |rmIndexThread|
+		xmlrpcClient = XMLRPC::Client.new(rmOptions.host, "/RPC2", 
+										  rmOptions.port)
+
+		cfg = rmOptions.cfg
+		#puts "Calling daq.init with configuration %s" % [cfg]
+		result = xmlrpcClient.call("daq.init", cfg)
+		currentTime = DateTime.now.strftime("%Y/%m/%d %H:%M:%S")
+		puts "%s: RoutingMaster on %s:%d result: %s" %
+		  [currentTime, rmOptions.host, rmOptions.port, result]
+		STDOUT.flush
+	  end
+
 	
 	STDOUT.flush
 	threads.each { |aThread|
@@ -1061,6 +1176,7 @@ class SystemControl
   end
 
   def start(runNumber)
+	self.sendCommandSet("start", @options.routingmasters, runNumber)
 	self.sendCommandSet("start", @options.aggregators, runNumber)
 	self.sendCommandSet("start", @options.eventBuilders, runNumber)
 	self.sendCommandSet("start", @options.pbrs, runNumber)
@@ -1119,6 +1235,9 @@ class SystemControl
 		when "ag"
 		  puts "%s: Aggregator on %s:%d result: %s" %
 			[currentTime, proc.host, proc.port, result]
+			when "rm"
+		  puts "%s: RoutingMaster on %s:%d result: %s" %
+			[currentTime, proc.host, proc.port, result]
 		when "TOY1"
 		  puts "%s: TOY1 FragmentReceiver on %s:%d result: %s" %
 			[currentTime, proc.host, proc.port, result]
@@ -1147,6 +1266,7 @@ class SystemControl
   end
 
   def shutdown()
+	self.sendCommandSet("shutdown", @options.routingmasters)
 	self.sendCommandSet("shutdown", @options.toys)
 	self.sendCommandSet("shutdown", @options.asciis)
 	self.sendCommandSet("shutdown", @options.pbrs)
@@ -1161,6 +1281,7 @@ class SystemControl
 	self.sendCommandSet("pause", @options.pbrs)
 	self.sendCommandSet("pause", @options.udps)
 	self.sendCommandSet("pause", @options.eventBuilders)
+	self.sendCommandSet("pause", @options.routingmasters)
 	self.sendCommandSet("pause", @options.aggregators)
   end
 
@@ -1298,6 +1419,7 @@ class SystemControl
 	self.sendCommandSet("stop", @options.pbrs)
 	self.sendCommandSet("stop", @options.udps)
 	self.sendCommandSet("stop", @options.eventBuilders)
+	self.sendCommandSet("stop", @options.routingmasters)
 	@options.aggregators.each do |proc|
 	  tmpList = []
 	  tmpList << proc
@@ -1307,6 +1429,7 @@ class SystemControl
 
   def resume()
 	self.sendCommandSet("resume", @options.aggregators)
+	self.sendCommandSet("resume", @options.routingmasters)
 	self.sendCommandSet("resume", @options.eventBuilders)
 	self.sendCommandSet("resume", @options.toys)
 	self.sendCommandSet("resume", @options.asciis)
@@ -1316,6 +1439,7 @@ class SystemControl
 
   def checkStatus()
 	self.sendCommandSet("status", @options.aggregators)
+	self.sendCommandSet("status", @options.routingmasters)
 	self.sendCommandSet("status", @options.eventBuilders)
 	self.sendCommandSet("status", @options.toys)
 	self.sendCommandSet("status", @options.asciis)
@@ -1325,6 +1449,7 @@ class SystemControl
 
   def getLegalCommands()
 	self.sendCommandSet("legal_commands", @options.aggregators)
+	self.sendCommandSet("legal_commands", @options.routingmasters)
 	self.sendCommandSet("legal_commands", @options.eventBuilders)
 	self.sendCommandSet("legal_commands", @options.toys)
 	self.sendCommandSet("legal_commands", @options.asciis)
