@@ -276,6 +276,7 @@ fi
 else
 if [ $opt_w -gt 0 ];then
 
+mrb gitCheckout -t v1_07_03 ssh://p-artdaq@cdcvs.fnal.gov/cvs/projects/artdaq-core
 mrb gitCheckout -t ${coredemo_version} -d artdaq_core_demo ssh://p-artdaq-core-demo@cdcvs.fnal.gov/cvs/projects/artdaq-core-demo
 mrb gitCheckout -b "feature/multiple_dispatchers" -d artdaq_demo ssh://p-artdaq-demo@cdcvs.fnal.gov/cvs/projects/artdaq-demo
 mrb gitCheckout -t "feature/multiple_dispatchers" ssh://p-artdaq@cdcvs.fnal.gov/cvs/projects/artdaq
