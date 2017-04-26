@@ -277,7 +277,7 @@ else
 if [ $opt_w -gt 0 ];then
 
 mrb gitCheckout -t ${coredemo_version} -d artdaq_core_demo ssh://p-artdaq-core-demo@cdcvs.fnal.gov/cvs/projects/artdaq-core-demo
-mrb gitCheckout -t ${tag} -d artdaq_demo ssh://p-artdaq-demo@cdcvs.fnal.gov/cvs/projects/artdaq-demo
+mrb gitCheckout -b "feature/multiple_dispatchers" -d artdaq_demo ssh://p-artdaq-demo@cdcvs.fnal.gov/cvs/projects/artdaq-demo
 mrb gitCheckout -t ${artdaq_version} ssh://p-artdaq@cdcvs.fnal.gov/cvs/projects/artdaq
 else
 mrb gitCheckout -t ${coredemo_version} -d artdaq_core_demo http://cdcvs.fnal.gov/projects/artdaq-core-demo
@@ -361,5 +361,5 @@ endtime=`date`
 
 echo "Build start time: $starttime"
 echo "Build end time:   $endtime"
-
+echo
 echo "JCF: YOU SHOULD NOT BE ABLE TO SEE THIS. This is a special feature branch version of the quick-mrb-start.sh script which checks out a special feature branch version of artdaq-demo. Please contact John Freeman at jcfree@fnal.gov if you see this message" >&2
