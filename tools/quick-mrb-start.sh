@@ -278,7 +278,7 @@ if [ $opt_w -gt 0 ];then
 
 mrb gitCheckout -t ${coredemo_version} -d artdaq_core_demo ssh://p-artdaq-core-demo@cdcvs.fnal.gov/cvs/projects/artdaq-core-demo
 mrb gitCheckout -b "feature/multiple_dispatchers" -d artdaq_demo ssh://p-artdaq-demo@cdcvs.fnal.gov/cvs/projects/artdaq-demo
-mrb gitCheckout -t "feature/multiple_dispatchers" ssh://p-artdaq@cdcvs.fnal.gov/cvs/projects/artdaq
+mrb gitCheckout -b "feature/multiple_dispatchers" -d artdaq ssh://p-artdaq@cdcvs.fnal.gov/cvs/projects/artdaq
 else
 echo "Error: need to supply the -w option"
 exit 1
