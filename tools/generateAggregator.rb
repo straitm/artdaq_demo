@@ -3,7 +3,7 @@ def generateAggregator(bunchSize, fragSizeWords, sources_fhicl,
                        xmlrpcClientList,
 					   subrunSizeThreshold, subrunDuration, subrunEventCount, 
 					   queueDepth, queueTimeout, onmonEventPrescale,
-                       agType, logger_rank, dispatcher_rank, dataDir,
+                       agType, logger_rank, dispatcher_rank, dataDir, tokenConfig,
 					   withGanglia = 0, withMsgFacility = 0, withGraphite = 0)
 
 agConfig = String.new( "\
@@ -19,6 +19,10 @@ daq: {
     subrun_duration: %{subrun_duration}
     subrun_event_count: %{subrun_event_count}
     %{ag_type_param_name}: true
+
+	routing_token_config: {
+		%{token_config}
+	}
 
 	sources: {
 		%{sources_fhicl}
@@ -74,6 +78,7 @@ agConfig.gsub!(/\%\{sources_fhicl\}/, sources_fhicl)
   agConfig.gsub!(/\%\{subrun_size\}/, String(subrunSizeThreshold))
   agConfig.gsub!(/\%\{subrun_duration\}/, String(subrunDuration))
   agConfig.gsub!(/\%\{subrun_event_count\}/, String(subrunEventCount))
+  agConfig.gsub!(/\%\{token_config\}/, tokenConfig)
   if agType == "online_monitor"
     #agConfig.gsub!(/\%\{ag_type_param_name\}/, "is_online_monitor")
     agConfig.gsub!(/\%\{ag_type_param_name\}/, "is_dispatcher")
@@ -87,19 +92,19 @@ agConfig.gsub!(/\%\{sources_fhicl\}/, sources_fhicl)
   agConfig.gsub!(/\%\{datadir\}/, dataDir)
   if Integer(withGanglia) > 0
     agConfig.gsub!(/\%\{ganglia_metric\}/, "")
-    agConfig.gsub!(/\%\{ganglia_level\}/, Integer(withGanglia))
+    agConfig.gsub!(/\%\{ganglia_level\}/, String(withGanglia))
   else
     agConfig.gsub!(/\%\{ganglia_metric\}/, "#")
   end
   if Integer(withMsgFacility) > 0
     agConfig.gsub!(/\%\{mf_metric\}/, "")
-    agConfig.gsub!(/\%\{mf_level\}/, Integer(withMsgFacility))
+    agConfig.gsub!(/\%\{mf_level\}/, String(withMsgFacility))
   else
     agConfig.gsub!(/\%\{mf_metric\}/, "#")
   end
   if Integer(withGraphite) > 0
     agConfig.gsub!(/\%\{graphite_metric\}/, "")
-    agConfig.gsub!(/\%\{graphite_level\}/, Integer(withGraphite))
+    agConfig.gsub!(/\%\{graphite_level\}/, String(withGraphite))
   else
     agConfig.gsub!(/\%\{graphite_metric\}/, "#")
   end

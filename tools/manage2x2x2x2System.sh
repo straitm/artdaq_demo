@@ -48,13 +48,15 @@ function launch() {
 	--toy2 `hostname`,${ARTDAQDEMO_BR_PORT[1]},1,${15} \
 	--eb `hostname`,${ARTDAQDEMO_EB_PORT[0]},$ebComp \
 	--eb `hostname`,${ARTDAQDEMO_EB_PORT[1]},$ebComp \
-	--ag `hostname`,${ARTDAQDEMO_AG_PORT[0]},1,$agComp \
+	--ag `hostname`,${ARTDAQDEMO_AG_PORT[0]},1,1,$agComp \
 	--ag `hostname`,${ARTDAQDEMO_AG_PORT[1]},1,$agComp \
 	--rm `hostname`,${ARTDAQDEMO_AG_PORT[2]},1000 \
+	--rm `hostname`,${ARTDAQDEMO_AG_PORT[3]},1000,36555,36556,36557,"227.128.12.29" \
 	--data-dir ${5} --online-monitoring ${4},${onmonFile},${onmonPath} \
 	--write-data ${7} --run-event-count ${8} \
 	--run-duration ${9} --file-size ${10} \
 	--file-event-count ${11} --file-duration ${12} \
+	--enable-ganglia-metric \
 	--run-number $2  2>&1 | tee -a ${6}
 }
 

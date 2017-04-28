@@ -1,10 +1,10 @@
 #include "artdaq-demo/Generators/ToyHardwareInterface/ToyHardwareInterface.hh"
+#include "artdaq/DAQdata/Globals.hh"
 #include "artdaq-core-demo/Overlays/ToyFragment.hh"
 #include "artdaq-core-demo/Overlays/FragmentType.hh"
 
 #include "fhiclcpp/ParameterSet.h"
 #include "cetlib/exception.h"
-#include "trace.h"				// TRACE
 
 #include <random>
 #include <unistd.h>

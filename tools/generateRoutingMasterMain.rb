@@ -2,17 +2,17 @@
 # RoutingMasterMain application by configuring its
 # artdaq::RoutingMasterCore object
   
-def generateRoutingMasterMain( routingCode, evb_ranks, br_ranks, buffer_count = 10, withGanglia = 0, withMsgFacility = 0, withGraphite = 0)
+def generateRoutingMasterMain( routingCode, receiver_ranks, sender_ranks,dataDir, buffer_count = 10, withGanglia = 0, withMsgFacility = 0, withGraphite = 0)
 
   rmConfig = String.new( "\
   daq: {
   policy: {
   	  policy: \"NoOp\"
-	  event_builder_ranks: %{evb_ranks_list}
-	  event_builder_buffer_count: %{buffer_count}
+	  receiver_ranks: %{receiver_ranks_list}
+	  receiver_buffer_count: %{buffer_count}
   }
 
-  boardreader_ranks: %{br_ranks_list}
+  sender_ranks: %{sender_ranks_list}
 
   %{routing_code}
 
@@ -50,20 +50,21 @@ def generateRoutingMasterMain( routingCode, evb_ranks, br_ranks, buffer_count = 
   
   rmConfig.gsub!(/\%\{routing_code\}/, routingCode )
   rmConfig.gsub!(/\%\{buffer_count\}/, String(buffer_count))
+  rmConfig.gsub!(/\%\{datadir\}/, dataDir)
 
-  evb_ranks_list = String.new("[")
-  evb_ranks.each do |rank|
-	evb_ranks_list << String(rank) << ","
+  receiver_ranks_list = String.new("[")
+  receiver_ranks.each do |rank|
+	receiver_ranks_list << String(rank) << ","
   end
-  evb_ranks_list.gsub!(/,$/,"]")
-  rmConfig.gsub!(/\%\{evb_ranks_list\}/, evb_ranks_list)	
+  receiver_ranks_list.gsub!(/,$/,"]")
+  rmConfig.gsub!(/\%\{receiver_ranks_list\}/, receiver_ranks_list)	
 
-  br_ranks_list = String.new("[")
-  br_ranks.each do |rank|
-	br_ranks_list << String(rank) << ","
+  sender_ranks_list = String.new("[")
+  sender_ranks.each do |rank|
+	sender_ranks_list << String(rank) << ","
   end
-  br_ranks_list.gsub!(/,$/,"]")
-  rmConfig.gsub!(/\%\{br_ranks_list\}/, br_ranks_list)
+  sender_ranks_list.gsub!(/,$/,"]")
+  rmConfig.gsub!(/\%\{sender_ranks_list\}/, sender_ranks_list)
 
   if Integer(withGanglia) > 0
 	rmConfig.gsub!(/\%\{ganglia_metric\}/, "")

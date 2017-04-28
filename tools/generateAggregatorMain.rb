@@ -10,7 +10,7 @@ def generateAggregatorMain(dataDir, bunchSize, onmonEnable,
                            xmlrpcClientList, filePropertiesFhicl,
 						    subrunSizeThreshold, subrunDuration, subrunEventCount,
 							fclWFViewer, onmonEventPrescale, 
-                           onmon_modules, onmonFileEnable, onmonFileName,
+                           onmon_modules, onmonFileEnable, onmonFileName, tokenConfig,
                            withGanglia, withMsgFacility, withGraphite)
 
 agConfig = String.new( "\
@@ -124,7 +124,7 @@ process_name: DAQAG"
   aggregator_code = generateAggregator( bunchSize, fragSizeWords, sources_fhicl,
                                         xmlrpcClientList, subrunSizeThreshold, subrunDuration, 
 										subrunEventCount, queueDepth, queueTimeout, onmonEventPrescale,
-										agType, logger_rank, dispatcher_rank, dataDir,
+										agType, logger_rank, dispatcher_rank, dataDir, tokenConfig,
 										withGanglia, withMsgFacility, withGraphite )
   agConfig.gsub!(/\%\{aggregator_code\}/, aggregator_code)
 

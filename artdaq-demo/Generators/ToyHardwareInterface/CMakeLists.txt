@@ -4,6 +4,7 @@ art_make(
         ${FHICLCPP}
         ${CETLIB}
         ${CETLIB_EXCEPT}
+  ${MF_MESSAGELOGGER}
 	artdaq-core_Data
 	artdaq-core-demo_Overlays
         )
