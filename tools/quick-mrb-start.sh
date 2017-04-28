@@ -239,7 +239,7 @@ wget http://scisoft.fnal.gov/scisoft/bundles/tools/pullProducts
 chmod +x pullProducts
 ./pullProducts $Base/products ${os} artdaq_demo-${demo_version} ${squalifier}-${equalifier} ${build_type}
     if [ $? -ne 0 ]; then
-	echo "Error in pullProducts. Please go to http://scisoft.fnal.gov/scisoft/bundles/artdaq_demo/${demo_version}/manifest and make sure that a manifest for the specified qualifiers ($defaultqualWithS) exists."
+	echo "Error in pullProducts. Please go to http://scisoft.fnal.gov/scisoft/bundles/artdaq_demo/${demo_version}/manifest and make sure that a manifest for the specified qualifiers (${squalifier}-${equalifier}) exists."
 	exit 1
     fi
 detectAndPull mrb noarch
