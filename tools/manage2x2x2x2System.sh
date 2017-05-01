@@ -49,7 +49,7 @@ function launch() {
 	--eb `hostname`,${ARTDAQDEMO_EB_PORT[0]},$ebComp \
 	--eb `hostname`,${ARTDAQDEMO_EB_PORT[1]},$ebComp \
 	--ag `hostname`,${ARTDAQDEMO_AG_PORT[0]},1,1,$agComp \
-	--ag `hostname`,${ARTDAQDEMO_AG_PORT[1]},1,$agComp \
+	--ag `hostname`,${ARTDAQDEMO_AG_PORT[1]},1,1,$agComp \
 	--rm `hostname`,${ARTDAQDEMO_AG_PORT[2]},1000 \
 	--rm `hostname`,${ARTDAQDEMO_AG_PORT[3]},1000,36555,36556,36557,"227.128.12.29" \
 	--data-dir ${5} --online-monitoring ${4},${onmonFile},${onmonPath} \

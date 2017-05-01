@@ -4,7 +4,7 @@
 
 require File.join( File.dirname(__FILE__), 'generateAggregator' )
 
-def generateAggregatorMain(dataDir, bunchSize, onmonEnable,
+def generateAggregatorMain(dataDir, bunchSize, is_data_logger, onmonEnable,
                            diskWritingEnable, demoPrescale, agIndex, totalAGs, fragSizeWords,
 						   sources_fhicl, logger_rank, dispatcher_rank,
                            xmlrpcClientList, filePropertiesFhicl,
@@ -107,7 +107,7 @@ process_name: DAQAG"
 
   queueDepth, queueTimeout = -999, -999
 
-  if agIndex < (totalAGs - 1)
+  if is_data_logger > 0
     if totalAGs > 1
       onmonEnable = 0
     end

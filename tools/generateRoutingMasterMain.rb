@@ -9,7 +9,6 @@ def generateRoutingMasterMain( routingCode, receiver_ranks, sender_ranks,dataDir
   policy: {
   	  policy: \"NoOp\"
 	  receiver_ranks: %{receiver_ranks_list}
-	  receiver_buffer_count: %{buffer_count}
   }
 
   sender_ranks: %{sender_ranks_list}

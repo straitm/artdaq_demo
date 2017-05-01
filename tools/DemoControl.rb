@@ -788,7 +788,7 @@ class SystemControl
 	totalEBs = @options.eventBuilders.length
 	totalAGs = @options.aggregators.length
 	logger_rank = totalFRs + totalEBs
-	dispatcher_rank = logger_rank + 1
+	dispatcher_rank = totalFRs + totalEBs + totalAGs + @options.routingmasters.length
 	fullEventBuffSizeWords = 2097152
 	
 	xmlrpcClients = @configGen.generateXmlRpcClientList(@options)
@@ -825,13 +825,12 @@ class SystemControl
 	# The first aggregator is the destination for the EventBuilders
 	first = true
 	@options.aggregators.each { |agOptions|
-	  if first
-		eb_destinations_fhicl += ("d%s: { transferPluginType: %s destination_rank: %s max_fragment_size_words: %s host_map: {{host_map}}}\n" % [current_rank, @options.transferType,current_rank, fullEventBuffSizeWords])
-		first = false
-	  end
 	  host_map += ("{rank: %s host: \"%s\" portOffset: %s}," % [ current_rank, agOptions.host,(current_rank * 10) + @options.transferBasePort ] )
 	  if agOptions.is_data_logger == 1
+		eb_destinations_fhicl += ("d%s: { transferPluginType: %s destination_rank: %s max_fragment_size_words: %s host_map: {{host_map}}}\n" % [current_rank, @options.transferType,current_rank, fullEventBuffSizeWords])
 		ag_ranks << current_rank
+      else
+	    dispatcher_rank = current_rank
 	  end
 	  current_rank += 1
 	}
@@ -1038,7 +1037,7 @@ class SystemControl
 		if @options.onmon_modules = "" || @options.onmon_modules = nil
 		  @options.onmon_modules = ONMON_MODULES 
 		end
-		agOptions.cfg = generateAggregatorMain(@options.dataDir, agOptions.bunch_size,
+		agOptions.cfg = generateAggregatorMain(@options.dataDir, agOptions.bunch_size, agOptions.is_data_logger,
 											   @options.runOnmon, @options.writeData, agOptions.demoPrescale,
 											   agIndex, totalAGs, fullEventBuffSizeWords,
 											   ag_sources_fhicl, logger_rank, dispatcher_rank,
@@ -1239,9 +1238,9 @@ class SystemControl
   end
 
   def start(runNumber)
-	self.sendCommandSet("start", @options.routingmasters, runNumber)
 	self.sendCommandSet("start", @options.aggregators, runNumber)
 	self.sendCommandSet("start", @options.eventBuilders, runNumber)
+	self.sendCommandSet("start", @options.routingmasters, runNumber)
 	self.sendCommandSet("start", @options.pbrs, runNumber)
 	self.sendCommandSet("start", @options.toys, runNumber)
 	self.sendCommandSet("start", @options.asciis, runNumber)
@@ -1329,13 +1328,13 @@ class SystemControl
   end
 
   def shutdown()
-	self.sendCommandSet("shutdown", @options.routingmasters)
 	self.sendCommandSet("shutdown", @options.toys)
 	self.sendCommandSet("shutdown", @options.asciis)
 	self.sendCommandSet("shutdown", @options.pbrs)
 	self.sendCommandSet("shutdown", @options.udps)
 	self.sendCommandSet("shutdown", @options.eventBuilders)
 	self.sendCommandSet("shutdown", @options.aggregators)
+	self.sendCommandSet("shutdown", @options.routingmasters)
   end
 
   def pause()
@@ -1344,8 +1343,8 @@ class SystemControl
 	self.sendCommandSet("pause", @options.pbrs)
 	self.sendCommandSet("pause", @options.udps)
 	self.sendCommandSet("pause", @options.eventBuilders)
-	self.sendCommandSet("pause", @options.routingmasters)
 	self.sendCommandSet("pause", @options.aggregators)
+	self.sendCommandSet("pause", @options.routingmasters)
   end
 
   def stop()
@@ -1482,18 +1481,18 @@ class SystemControl
 	self.sendCommandSet("stop", @options.pbrs)
 	self.sendCommandSet("stop", @options.udps)
 	self.sendCommandSet("stop", @options.eventBuilders)
-	self.sendCommandSet("stop", @options.routingmasters)
 	@options.aggregators.each do |proc|
 	  tmpList = []
 	  tmpList << proc
 	  self.sendCommandSet("stop", tmpList)
 	end
+	self.sendCommandSet("stop", @options.routingmasters)
   end
 
   def resume()
 	self.sendCommandSet("resume", @options.aggregators)
-	self.sendCommandSet("resume", @options.routingmasters)
 	self.sendCommandSet("resume", @options.eventBuilders)
+	self.sendCommandSet("resume", @options.routingmasters)
 	self.sendCommandSet("resume", @options.toys)
 	self.sendCommandSet("resume", @options.asciis)
 	self.sendCommandSet("resume", @options.pbrs)
@@ -1501,8 +1500,8 @@ class SystemControl
   end
 
   def checkStatus()
-	self.sendCommandSet("status", @options.aggregators)
 	self.sendCommandSet("status", @options.routingmasters)
+	self.sendCommandSet("status", @options.aggregators)
 	self.sendCommandSet("status", @options.eventBuilders)
 	self.sendCommandSet("status", @options.toys)
 	self.sendCommandSet("status", @options.asciis)
@@ -1510,9 +1509,8 @@ class SystemControl
 	self.sendCommandSet("status", @options.udps)
   end
 
-  def getLegalCommands()
+  def getLegalCommands()mrb b
 	self.sendCommandSet("legal_commands", @options.aggregators)
-	self.sendCommandSet("legal_commands", @options.routingmasters)
 	self.sendCommandSet("legal_commands", @options.eventBuilders)
 	self.sendCommandSet("legal_commands", @options.toys)
 	self.sendCommandSet("legal_commands", @options.asciis)
