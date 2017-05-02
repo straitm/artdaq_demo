@@ -4,7 +4,7 @@
 
 require File.join( File.dirname(__FILE__), 'generateAggregator' )
 
-def generateAggregatorMain(dataDir, bunchSize, is_data_logger, onmonEnable,
+def generateAggregatorMain(dataDir, bunchSize, is_data_logger, has_dispatcher, onmonEnable,
                            diskWritingEnable, demoPrescale, agIndex, totalAGs, fragSizeWords,
 						   sources_fhicl, logger_rank, dispatcher_rank,
                            xmlrpcClientList, filePropertiesFhicl,
@@ -124,7 +124,7 @@ process_name: DAQAG"
   aggregator_code = generateAggregator( bunchSize, fragSizeWords, sources_fhicl,
                                         xmlrpcClientList, subrunSizeThreshold, subrunDuration, 
 										subrunEventCount, queueDepth, queueTimeout, onmonEventPrescale,
-										agType, logger_rank, dispatcher_rank, dataDir, tokenConfig,
+										agType, logger_rank, has_dispatcher, dispatcher_rank, dataDir, tokenConfig,
 										withGanglia, withMsgFacility, withGraphite )
   agConfig.gsub!(/\%\{aggregator_code\}/, aggregator_code)
 
@@ -136,7 +136,8 @@ process_name: DAQAG"
   currentTime = Time.now
   fileName = "artdaqdemo_"
   fileName += "r%06r_sr%02s_%to_%#"
-  if totalAGs > 2
+  need_index = totalAGs > 1 + (has_dispatcher ? 1 : 0)
+  if need_index
     fileName += "_"
     fileName += String(agIndex)
   end

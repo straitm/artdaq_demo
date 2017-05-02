@@ -3,7 +3,7 @@ def generateAggregator(bunchSize, fragSizeWords, sources_fhicl,
                        xmlrpcClientList,
 					   subrunSizeThreshold, subrunDuration, subrunEventCount, 
 					   queueDepth, queueTimeout, onmonEventPrescale,
-                       agType, logger_rank, dispatcher_rank, dataDir, tokenConfig,
+                       agType, logger_rank,has_dispatcher, dispatcher_rank, dataDir, tokenConfig,
 					   withGanglia = 0, withMsgFacility = 0, withGraphite = 0)
 
 agConfig = String.new( "\
@@ -59,12 +59,12 @@ daq: {
     %{graphite_metric} }
   }
 
-  transfer_to_dispatcher: {
-    transferPluginType: Shmem
-	source_rank: %{logger_rank}
-	destination_rank: %{dispatcher_rank}
-    max_fragment_size_words: %{size_words}
-  }
+  %{TtoD} transfer_to_dispatcher: {
+  %{TtoD}   transferPluginType: Shmem
+  %{TtoD} 	source_rank: %{logger_rank}
+  %{TtoD} 	destination_rank: %{dispatcher_rank}
+  %{TtoD}     max_fragment_size_words: %{size_words}
+  %{TtoD}   }
 
 }" )
 
@@ -87,8 +87,13 @@ agConfig.gsub!(/\%\{sources_fhicl\}/, sources_fhicl)
   end
   agConfig.gsub!(/\%\{logger_rank\}/, String(logger_rank))
   agConfig.gsub!(/\%\{dispatcher_rank\}/, String(dispatcher_rank))
-
+  if has_dispatcher
+  agConfig.gsub!(/\%\{TtoD\}/,"")
+  else
+  agConfig.gsub!(/\%\{TtoD\}/,"#")
+  end
   
+
   agConfig.gsub!(/\%\{datadir\}/, dataDir)
   if Integer(withGanglia) > 0
     agConfig.gsub!(/\%\{ganglia_metric\}/, "")

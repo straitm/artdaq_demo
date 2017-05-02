@@ -823,14 +823,15 @@ class SystemControl
 	}
 	
 	# The first aggregator is the destination for the EventBuilders
-	first = true
+	has_dispatcher = false
 	@options.aggregators.each { |agOptions|
 	  host_map += ("{rank: %s host: \"%s\" portOffset: %s}," % [ current_rank, agOptions.host,(current_rank * 10) + @options.transferBasePort ] )
 	  if agOptions.is_data_logger == 1
 		eb_destinations_fhicl += ("d%s: { transferPluginType: %s destination_rank: %s max_fragment_size_words: %s host_map: {{host_map}}}\n" % [current_rank, @options.transferType,current_rank, fullEventBuffSizeWords])
 		ag_ranks << current_rank
-      else
-	    dispatcher_rank = current_rank
+	  else
+	  has_dispatcher = true
+		dispatcher_rank = current_rank
 	  end
 	  current_rank += 1
 	}
@@ -1037,7 +1038,7 @@ class SystemControl
 		if @options.onmon_modules = "" || @options.onmon_modules = nil
 		  @options.onmon_modules = ONMON_MODULES 
 		end
-		agOptions.cfg = generateAggregatorMain(@options.dataDir, agOptions.bunch_size, agOptions.is_data_logger,
+		agOptions.cfg = generateAggregatorMain(@options.dataDir, agOptions.bunch_size, agOptions.is_data_logger, has_dispatcher,
 											   @options.runOnmon, @options.writeData, agOptions.demoPrescale,
 											   agIndex, totalAGs, fullEventBuffSizeWords,
 											   ag_sources_fhicl, logger_rank, dispatcher_rank,
