@@ -73,15 +73,23 @@ namespace artdaq
 
 	private:
 
-		std::unique_ptr<TransferInterface> physical_transfer_;
-		size_t nth_;
+	  bool pass(const artdaq::Fragment& ) const;
+
+	  std::unique_ptr<TransferInterface> physical_transfer_;
+	  size_t nth_;
+	  size_t offset_;  
 	};
 
 	NthEventTransfer::NthEventTransfer(fhicl::ParameterSet const& pset, artdaq::TransferInterface::Role role) :
 	                                                                                                          TransferInterface(pset, role)
-	                                                                                                          , nth_(pset.get<size_t>("nth"))
+	                                                                                                          , nth_(pset.get<size_t>("nth")),
+														  offset_(pset.get<size_t>("offset",0))
 	{
-		// nth_ may NOT be 0
+	        if (offset_ >= nth_) {
+		  throw cet::exception("NthEvent") << "Offset value of " << offset_ << 
+		    " must not be larger than the modulus value of " << nth_;
+		}
+	  
 		if(nth_ == 0)
 		{
 			mf::LogWarning("NthEventTransfer") << "0 was passed as the nth parameter to NthEventTransfer. Will change to 1 (0 is undefined behavior)";
@@ -96,7 +104,7 @@ namespace artdaq
 	NthEventTransfer::copyFragment(artdaq::Fragment& fragment,
 	                               size_t send_timeout_usec)
 	{
-		if (fragment.sequenceID() % nth_ != 0)
+	        if (!pass(fragment))
 		{
 			// Do not transfer but return success. Fragment is discarded
 			return TransferInterface::CopyStatus::kSuccess;
@@ -110,7 +118,7 @@ namespace artdaq
 	NthEventTransfer::moveFragment(artdaq::Fragment&& fragment,
 	                               size_t send_timeout_usec)
 	{
-		if (fragment.sequenceID() % nth_ != 0)
+	        if (!pass(fragment))
 		{
 			// Do not transfer but return success. Fragment is discarded
 			return TransferInterface::CopyStatus::kSuccess;
@@ -118,6 +126,20 @@ namespace artdaq
 
 		// This is the nth Fragment, transfer
 		return physical_transfer_->moveFragment(std::move(fragment), send_timeout_usec);
+	}
+
+        bool
+	NthEventTransfer::pass(const artdaq::Fragment& fragment) const 
+	{
+	  bool passed = false;
+
+	  if (fragment.type() == artdaq::Fragment::DataFragmentType) {
+	    passed = (fragment.sequenceID() + nth_ - offset_) % nth_ == 0 ? true: false;
+	  } else {
+	    passed = true;
+	  }
+ 
+	  return passed;
 	}
 }
 
