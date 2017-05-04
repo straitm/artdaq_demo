@@ -24,6 +24,7 @@ daq: {
 		%{token_config}
 	}
 
+	auto_suppression_enabled: false
 	sources: {
 		%{sources_fhicl}
 	}
