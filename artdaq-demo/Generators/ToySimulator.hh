@@ -71,6 +71,7 @@ namespace demo
 		char* readout_buffer_;
 
 		FragmentType fragment_type_;
+		ToyHardwareInterface::DistributionType distribution_type_;
 	};
 }
 
