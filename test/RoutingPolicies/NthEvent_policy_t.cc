@@ -11,32 +11,12 @@ BOOST_AUTO_TEST_SUITE(NthEvent_policy_t)
 BOOST_AUTO_TEST_CASE(Simple)
 {
 	fhicl::ParameterSet ps;
-	fhicl::make_ParameterSet("receiver_buffer_count: 2 receiver_ranks: [1,2,3,4] nth_event: 5 target_receiver: 3", ps);
+	fhicl::make_ParameterSet("receiver_ranks: [1,2,3,4] nth_event: 5 target_receiver: 3", ps);
 
 	auto nth = artdaq::makeRoutingMasterPolicy("NthEvent", ps);
 
 	BOOST_REQUIRE_EQUAL(nth->GetReceiverCount(), 4);
-
-	// Initial tokens
-	auto firstTable = nth->GetCurrentTable();
-	BOOST_REQUIRE_EQUAL(firstTable.size(), 8);
-	BOOST_REQUIRE_EQUAL(firstTable[0].destination_rank, 3);
-	BOOST_REQUIRE_EQUAL(firstTable[0].sequence_id, 0);
-	BOOST_REQUIRE_EQUAL(firstTable[1].destination_rank, 1);
-	BOOST_REQUIRE_EQUAL(firstTable[1].sequence_id, 1);
-	BOOST_REQUIRE_EQUAL(firstTable[2].destination_rank, 2);
-	BOOST_REQUIRE_EQUAL(firstTable[2].sequence_id, 2);
-	BOOST_REQUIRE_EQUAL(firstTable[3].destination_rank, 4);
-	BOOST_REQUIRE_EQUAL(firstTable[3].sequence_id, 3);
-	BOOST_REQUIRE_EQUAL(firstTable[4].destination_rank, 1);
-	BOOST_REQUIRE_EQUAL(firstTable[4].sequence_id, 4);
-	BOOST_REQUIRE_EQUAL(firstTable[5].destination_rank, 3);
-	BOOST_REQUIRE_EQUAL(firstTable[5].sequence_id, 5);
-	BOOST_REQUIRE_EQUAL(firstTable[6].destination_rank, 2);
-	BOOST_REQUIRE_EQUAL(firstTable[6].sequence_id, 6);
-	BOOST_REQUIRE_EQUAL(firstTable[7].destination_rank, 4);
-	BOOST_REQUIRE_EQUAL(firstTable[7].sequence_id, 7);
-	
+		
 	// Extra token, and out of sequence
 	nth->Reset();
 	nth->AddReceiverToken(1, 1);
