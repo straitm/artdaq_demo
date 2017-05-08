@@ -237,7 +237,8 @@ fi
 
 wget http://scisoft.fnal.gov/scisoft/bundles/tools/pullProducts
 chmod +x pullProducts
-./pullProducts $Base/products ${os} artdaq_demo-${demo_version} ${squalifier}-${equalifier} ${build_type}
+#./pullProducts $Base/products ${os} artdaq_demo-${demo_version} ${squalifier}-${equalifier} ${build_type}
+./pullProducts $Base/products ${os} artdaq-${artdaq_version} ${squalifier}-${equalifier} ${build_type}
     if [ $? -ne 0 ]; then
 	echo "Error in pullProducts. Please go to http://scisoft.fnal.gov/scisoft/bundles/artdaq_demo/${demo_version}/manifest and make sure that a manifest for the specified qualifiers (${squalifier}-${equalifier}) exists."
 	exit 1
@@ -274,13 +275,13 @@ mrb gitCheckout -d artdaq_demo http://cdcvs.fnal.gov/projects/artdaq-demo
 fi
 else
 if [ $opt_w -gt 0 ];then
+
 mrb gitCheckout -t ${coredemo_version} -d artdaq_core_demo ssh://p-artdaq-core-demo@cdcvs.fnal.gov/cvs/projects/artdaq-core-demo
-mrb gitCheckout -t ${demo_version} -d artdaq_demo ssh://p-artdaq-demo@cdcvs.fnal.gov/cvs/projects/artdaq-demo
-mrb gitCheckout -t ${artdaq_version} ssh://p-artdaq@cdcvs.fnal.gov/cvs/projects/artdaq
+mrb gitCheckout -b "feature/multiple_dispatchers" -d artdaq_demo ssh://p-artdaq-demo@cdcvs.fnal.gov/cvs/projects/artdaq-demo
+mrb gitCheckout -b "feature/multiple_dispatchers" -d artdaq ssh://p-artdaq@cdcvs.fnal.gov/cvs/projects/artdaq
 else
-mrb gitCheckout -t ${coredemo_version} -d artdaq_core_demo http://cdcvs.fnal.gov/projects/artdaq-core-demo
-mrb gitCheckout -t ${demo_version} -d artdaq_demo http://cdcvs.fnal.gov/projects/artdaq-demo
-mrb gitCheckout -t ${artdaq_version} http://cdcvs.fnal.gov/projects/artdaq
+echo "Error: need to supply the -w option"
+exit 1
 fi
 fi
 
@@ -359,4 +360,5 @@ endtime=`date`
 
 echo "Build start time: $starttime"
 echo "Build end time:   $endtime"
-
+echo
+echo "JCF: YOU SHOULD NOT BE ABLE TO SEE THIS. This is a special feature branch version of the quick-mrb-start.sh script which checks out a special feature branch version of artdaq-demo. Please contact John Freeman at jcfree@fnal.gov if you see this message" >&2

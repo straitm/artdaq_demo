@@ -120,7 +120,7 @@ void demo::ToyDump::analyze(art::Event const& evt)
 		ToyFragment bb(frag);
 
 		std::cout << std::endl;
-		std::cout << fragmentTypeToString(static_cast<demo::detail::FragmentType>(frag.type())) << " fragment " << frag.fragmentID() << " has total ADC counts = "
+		std::cout << fragmentTypeToString(static_cast<demo::detail::FragmentType>(frag.type())) << " fragment " << frag.fragmentID() << " w/ seqID " << frag.sequenceID() << " has total ADC counts = "
 			<< bb.total_adc_values() << std::endl;
 		//std::cout << std::endl;
 
