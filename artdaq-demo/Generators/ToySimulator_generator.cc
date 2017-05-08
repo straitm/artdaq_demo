@@ -22,7 +22,7 @@
 #include <iostream>
 
 #include <unistd.h>
-
+#include "trace.h"		// TRACE
 
 demo::ToySimulator::ToySimulator(fhicl::ParameterSet const& ps)
 	:
@@ -32,6 +32,7 @@ demo::ToySimulator::ToySimulator(fhicl::ParameterSet const& ps)
 	, timestampScale_(ps.get<int>("timestamp_scale_factor", 1))
 	, readout_buffer_(nullptr)
 	, fragment_type_(static_cast<decltype(fragment_type_)>(artdaq::Fragment::InvalidFragmentType))
+	, distribution_type_(static_cast<ToyHardwareInterface::DistributionType>(ps.get<int>("distribution_type")))
 {
 	hardware_interface_->AllocateReadoutBuffer(&readout_buffer_);
 
@@ -85,15 +86,29 @@ bool demo::ToySimulator::getNext_(artdaq::FragmentPtrs& frags)
 	// which will then return a unique_ptr to an artdaq::Fragment
 	// object. 
 
+#if 1
 	std::unique_ptr<artdaq::Fragment> fragptr(
-		artdaq::Fragment::FragmentBytes(bytes_read,
+						  artdaq::Fragment::FragmentBytes(bytes_read,
 		                                ev_counter(), fragment_id(),
 		                                fragment_type_,
 		                                metadata_, timestamp_));
-
-	memcpy(fragptr->dataBeginBytes(), readout_buffer_, bytes_read);
-
 	frags.emplace_back(std::move(fragptr));
+#else
+	std::unique_ptr<artdaq::Fragment> fragptr(
+						  artdaq::Fragment::FragmentBytes(/*bytes_read*/ 1024-40,
+		                                ev_counter(), fragment_id(),
+		                                fragment_type_,
+		                                metadata_, timestamp_));
+	frags.emplace_back(std::move(fragptr));
+	artdaq::detail::RawFragmentHeader *hdr = (artdaq::detail::RawFragmentHeader*)(frags.back()->headerBeginBytes());
+	// Need a way to fake frag->sizeBytes() (which calls frag->size() which calls fragmentHeader()->word_count
+	hdr->word_count = ceil( (bytes_read+32) / static_cast<double>(sizeof(artdaq::RawDataType)) );
+#endif
+
+	if (distribution_type_ != ToyHardwareInterface::DistributionType::uninitialized)
+	  memcpy(frags.back()->dataBeginBytes(), readout_buffer_, bytes_read);
+
+	TRACE( 50, "ToySimulator::getNext_ after memcpy %zu bytes and std::move dataSizeBytes()=%zu metabytes=%zu", bytes_read, frags.back()->sizeBytes(), sizeof(metadata_) );
 
 	if (metricMan != nullptr)
 	{

@@ -152,8 +152,8 @@ daq: {
 
   def generateXmlRpcClientList(cmdLineOptions)
 	xmlrpcClients = ""
-#    boardreaders = Array.new + @options.v1720s + @options.toys
-#    boardreaders.each do |proc|
+	#    boardreaders = Array.new + @options.v1720s + @options.toys
+	#    boardreaders.each do |proc|
 	(cmdLineOptions.toys + cmdLineOptions.asciis + cmdLineOptions.udps).each do |proc|
 	  br = cmdLineOptions.boardReaders[proc.board_reader_index]
 	  if br.hasBeenIncludedInXMLRPCList
@@ -233,10 +233,10 @@ class CommandLineParser
 			  "ARTDAQ-configuration XML Configuration file") do |configFile|
 		puts "Configuration File is " + configFile
 		doc = REXML::Document.new(File.new(configFile)).root
-	  
+		
 		portNumber = ENV['ARTDAQDEMO_PMT_PORT'].to_i
 		puts "This configuration brought to you by " + doc.elements["author"].text + "; portNumber=" + portNumber.to_s
- 
+		
 		if doc.elements["dataLogger/enabled"].text == "true"
 		  @options.writeData = "1"
 		else
@@ -296,15 +296,15 @@ class CommandLineParser
 				puts "DEBUG: Loading TypeConfig"
 				typeConfig = ""
 				element.elements["typeConfig"].each() { |config|
-				   begin
-				   if config.name == "generator_id"
-					 brConfig.generator_id = config.text
-				   else
-					 typeConfig += config.name + ": " + config.text + "\n"
-				   end
-				   rescue
-					 puts "DEBUG: RESCUE in TypeConfig"
-				   end
+				  begin
+					if config.name == "generator_id"
+					  brConfig.generator_id = config.text
+					else
+					  typeConfig += config.name + ": " + config.text + "\n"
+					end
+				  rescue
+					puts "DEBUG: RESCUE in TypeConfig"
+				  end
 				}
 				brConfig.typeConfig = typeConfig
 				brConfig.board_reader_index = addToBoardReaderList(brConfig.host, brConfig.port, brConfig.fragType,
@@ -313,7 +313,7 @@ class CommandLineParser
 				@options.pbrs << brConfig
 			  end
 			rescue
-			   puts "DEBUG: RESCUE in BR Config"
+			  puts "DEBUG: RESCUE in BR Config"
 			end
 		  }
 		end
@@ -341,17 +341,17 @@ class CommandLineParser
 		end
 		runMode = doc.elements["dataLogger/runMode"].text
 		if(runMode == "Time")
-		@options.runDurationSeconds = doc.elements["dataLogger/runValue"].text.to_i
+		  @options.runDurationSeconds = doc.elements["dataLogger/runValue"].text.to_i
 		elsif(runMode == "Events")
-		@options.eventsInRun = doc.elements["dataLogger/runValue"].text.to_i
+		  @options.eventsInRun = doc.elements["dataLogger/runValue"].text.to_i
 		end
 		fileMode = doc.elements["dataLogger/fileMode"].text
 		if(fileMode == "Size")
-		@options.fileSizeThreshold = doc.elements["dataLogger/fileValue"].text.to_i
+		  @options.fileSizeThreshold = doc.elements["dataLogger/fileValue"].text.to_i
 		elsif (fileMode == "Time")
-		@options.fileDurationSeconds = doc.elements["dataLogger/fileValue"].text.to_i
+		  @options.fileDurationSeconds = doc.elements["dataLogger/fileValue"].text.to_i
 		elsif (fileMode == "Events")
-		@options.eventsInFile = doc.elements["dataLogger/fileValue"].text.to_i
+		  @options.eventsInFile = doc.elements["dataLogger/fileValue"].text.to_i
 		end
 	  end
 
@@ -368,14 +368,14 @@ class CommandLineParser
 		ebConfig.port = Integer(eb[1])
 		ebConfig.kind = "eb"
 		ebConfig.sendRequests = 0
-if eb.length > 2
-  ebConfig.sendRequests = Integer(eb[2])
-end
+		if eb.length > 2
+		  ebConfig.sendRequests = Integer(eb[2])
+		end
 		ebConfig.index = @options.eventBuilders.length
 		@options.eventBuilders << ebConfig
 	  end
 
-	  opts.on("--ag [host,port,bunch_size,demoPrescale]", Array,
+	  opts.on("--ag [host,port,bunch_size,is_data_logger,demoPrescale]", Array,
 			  "Add an aggregator that runs on the",
 			  "specified host and port.  Also specify the",
 			  "number of events to pass to art per bunch.") do |ag|
@@ -389,37 +389,42 @@ end
 		agConfig.kind = "ag"
 		agConfig.bunch_size = Integer(ag[2])
 		if ag.length > 3
-			agConfig.demoPrescale = Integer(ag[3])
+			agConfig.is_data_logger =Integer(ag[3])
 		else
-			agConfig.demoPrescale = 0
+			agConfig.is_data_logger = 0
+		end
+		if ag.length > 4
+		  agConfig.demoPrescale = Integer(ag[4])
+		else
+		  agConfig.demoPrescale = 0
 		end
 		agConfig.index = @options.aggregators.length
 		@options.aggregators << agConfig
 	  end
 
 	  opts.on("--rm [host,xmlrpc_port,table_interval,token_port,table_port,ack_port,table_address]", Array,
-		"Add a Routing Master that runs on the specified host and ports.") do |rm|
+			  "Add a Routing Master that runs on the specified host and ports.") do |rm|
 		@options.useRoutingMaster = 1
 		if rm.length < 3 || rm.length > 3 && rm.length < 7
-			puts "You must specify a host, XMLRPC port, table interval, token port, table port, ack port and table address or just the host, XMLRPC port and table interval"
-			exit
+		  puts "You must specify a host, XMLRPC port, table interval, token port, table port, ack port and table address or just the host, XMLRPC port and table interval"
+		  exit
 		end
 		rmConfig = OpenStruct.new
 		rmConfig.host = rm[0]
 		rmConfig.port = Integer(rm[1])
 		rmConfig.table_interval = Integer(rm[2])
 		if rm.length > 3
-		rmConfig.token_port = Integer(rm[3])
-		rmConfig.table_port = Integer(rm[4])
-		rmConfig.ack_port = Integer(rm[5])
-		rmConfig.table_address = Integer(rm[6])
+		  rmConfig.token_port = Integer(rm[3])
+		  rmConfig.table_port = Integer(rm[4])
+		  rmConfig.ack_port = Integer(rm[5])
+		  rmConfig.table_address = rm[6]
 		end
 		rmConfig.kind = "rm"
 		rmConfig.index = @options.routingmasters.length
 		@options.routingmasters << rmConfig
-		end
+	  end
 
-	
+	  
 	  opts.on("--ascii [host,port,board_id,config_file]", Array, 
 			  "Add a ASCII fragment receiver that runs on the specified host, port, ",
 			  "and board ID. Reads configuration parameters from config_file ",
@@ -457,11 +462,11 @@ end
 		toy1Config.kind = "TOY1"
 		toy1Config.fragType = "TOY1"
 		if toy1.length > 3
-		   toy1Config.configFile = toy1[3]
+		  toy1Config.configFile = toy1[3]
 		end
 		toy1Config.index = (@options.toys + @options.asciis + @options.udps + @options.pbrs).length
 		toy1Config.board_reader_index = addToBoardReaderList(toy1Config.host, toy1Config.port,
-															  toy1Config.kind, toy1Config.index, toy1Config.configFile)
+															 toy1Config.kind, toy1Config.index, toy1Config.configFile)
 		@options.toys << toy1Config
 	  end
 
@@ -480,11 +485,11 @@ end
 		toy2Config.kind = "TOY2"
 		toy2Config.fragType = "TOY2"
 		if toy2.length > 3
-		   toy2Config.configFile = toy2[3]
+		  toy2Config.configFile = toy2[3]
 		end
 		toy2Config.index = (@options.toys + @options.asciis + @options.udps + @options.pbrs).length
 		toy2Config.board_reader_index = addToBoardReaderList(toy2Config.host, toy2Config.port,
-															  toy2Config.kind, toy2Config.index, toy2Config.configFile)
+															 toy2Config.kind, toy2Config.index, toy2Config.configFile)
 
 		@options.toys << toy2Config
 	  end
@@ -506,7 +511,7 @@ end
 		end
 		udpConfig.index = (@options.toys + @options.asciis + @options.udps + @options.pbrs).length
 		udpConfig.board_reader_index = addToBoardReaderList(udpConfig.host, udpConfig.port,
-															  udpConfig.kind, udpConfig.index, udpConfig.configFile)
+															udpConfig.kind, udpConfig.index, udpConfig.configFile)
 
 		@options.udps << udpConfig
 	  end
@@ -617,10 +622,10 @@ end
 	  end
 
 	  opts.on("--transfer-type [type] [base_port]", Array,
-	  "Use the specified transferPluginType for data transport. Default: \"MPI\"",
-	  "Supported types: \"MPI\" \"TCPSocket\" \"Autodetect\"",
-	  "If TCPSocket or Autodetect are used, specify base_port (default 5300)"
-	  ) do |type|
+			  "Use the specified transferPluginType for data transport. Default: \"MPI\"",
+			  "Supported types: \"MPI\" \"TCPSocket\" \"Autodetect\"",
+			  "If TCPSocket or Autodetect are used, specify base_port (default 5300)"
+			  ) do |type|
 		if type.length < 1
 		  puts "You must specify a type name with this option"
 		  exit
@@ -731,8 +736,8 @@ end
 			 item.board_id,item.configFile]
 		when "UDP"
 		  puts "    FragmentReceiver, UDPReceiver, port %d, rank %d, board_id %d, config_file %s" %
-			 [ item.port, item.index, item.board_id, item.configFile ]
-	    when "rm"
+			[ item.port, item.index, item.board_id, item.configFile ]
+		when "rm"
 		  puts "    RoutingMaster, port %d, rank %d" % [item.port,  totalEBs + totalFRs + totalAGs + item.index]
 		end
 	  end
@@ -783,7 +788,7 @@ class SystemControl
 	totalEBs = @options.eventBuilders.length
 	totalAGs = @options.aggregators.length
 	logger_rank = totalFRs + totalEBs
-	dispatcher_rank = logger_rank + 1
+	dispatcher_rank = totalFRs + totalEBs + totalAGs + @options.routingmasters.length
 	fullEventBuffSizeWords = 2097152
 	
 	xmlrpcClients = @configGen.generateXmlRpcClientList(@options)
@@ -799,31 +804,35 @@ class SystemControl
 	host_map = "["
 	br_ranks = []
 	eb_ranks = []
+	ag_ranks = []
 	# BoardReaders are EventBuilder sources
 	(@options.toys + @options.asciis + @options.udps + @options.pbrs).each { |boardreaderOptions|
-		eb_sources_fhicl += ("s%s: { transferPluginType: %s source_rank: %s max_fragment_size_words: %s host_map: {{host_map}}}\n" % [current_rank, @options.transferType,current_rank, fullEventBuffSizeWords])
-		host_map += ("{rank: %s host: \"%s\" portOffset: %s}," % [ current_rank, boardreaderOptions.host,(current_rank * 10) + @options.transferBasePort ] )
-		br_ranks << current_rank
-		current_rank += 1
+	  eb_sources_fhicl += ("s%s: { transferPluginType: %s source_rank: %s max_fragment_size_words: %s host_map: {{host_map}}}\n" % [current_rank, @options.transferType,current_rank, fullEventBuffSizeWords])
+	  host_map += ("{rank: %s host: \"%s\" portOffset: %s}," % [ current_rank, boardreaderOptions.host,(current_rank * 10) + @options.transferBasePort ] )
+	  br_ranks << current_rank
+	  current_rank += 1
 	}
 
 	# Event Builders are BoardReader destinations and Aggregator sources
 	@options.eventBuilders.each { |ebOptions|
-		br_destinations_fhicl += ("d%s: { transferPluginType: %s destination_rank: %s max_fragment_size_words: %s host_map: {{host_map}}}\n" % [current_rank, @options.transferType,current_rank, fullEventBuffSizeWords])
-		ag_sources_fhicl += ("s%s: { transferPluginType: %s source_rank: %s max_fragment_size_words: %s host_map: {{host_map}}}\n" % [current_rank, @options.transferType,current_rank, fullEventBuffSizeWords])
-		host_map += ("{rank: %s host: \"%s\" portOffset: %s}," % [ current_rank, ebOptions.host,(current_rank * 10) + @options.transferBasePort ] )
-		eb_ranks << current_rank
+	  br_destinations_fhicl += ("d%s: { transferPluginType: %s destination_rank: %s max_fragment_size_words: %s host_map: {{host_map}}}\n" % [current_rank, @options.transferType,current_rank, fullEventBuffSizeWords])
+	  ag_sources_fhicl += ("s%s: { transferPluginType: %s source_rank: %s max_fragment_size_words: %s host_map: {{host_map}}}\n" % [current_rank, @options.transferType,current_rank, fullEventBuffSizeWords])
+	  host_map += ("{rank: %s host: \"%s\" portOffset: %s}," % [ current_rank, ebOptions.host,(current_rank * 10) + @options.transferBasePort ] )
+	  eb_ranks << current_rank
 	  current_rank += 1
 	}
 	
 	# The first aggregator is the destination for the EventBuilders
-	first = true
+	has_dispatcher = false
 	@options.aggregators.each { |agOptions|
-	  if first
+	  host_map += ("{rank: %s host: \"%s\" portOffset: %s}," % [ current_rank, agOptions.host,(current_rank * 10) + @options.transferBasePort ] )
+	  if agOptions.is_data_logger == 1
 		eb_destinations_fhicl += ("d%s: { transferPluginType: %s destination_rank: %s max_fragment_size_words: %s host_map: {{host_map}}}\n" % [current_rank, @options.transferType,current_rank, fullEventBuffSizeWords])
-		first = false
+		ag_ranks << current_rank
+	  else
+	  has_dispatcher = true
+		dispatcher_rank = current_rank
 	  end
-		host_map += ("{rank: %s host: \"%s\" portOffset: %s}," % [ current_rank, agOptions.host,(current_rank * 10) + @options.transferBasePort ] )
 	  current_rank += 1
 	}
 
@@ -834,45 +843,80 @@ class SystemControl
 	eb_destinations_fhicl.gsub!(/\{\{host_map\}\}/, host_map)
 	ag_sources_fhicl.gsub!(/\{\{host_map\}\}/, host_map)
 
-	routing_fhicl = ""
-	if @options.useRoutingMaster >= 1
-	rmConfig = @options.routingmasters[0]
-	routing_fhicl = "\
-	use_routing_master: &{use_routing_master}
-	send_tokens: true
+	routing_fhicl_evb = "use_routing_master: false"
+	if @options.useRoutingMaster >= 1 && @options.routingmasters.length > 0
+	  rmConfig = @options.routingmasters[0]
+	  routing_fhicl_evb = "\
+	use_routing_master: true
 	routing_master_hostname: \"%s\"
 	routing_timeout_ms: %s
 	table_update_interval_ms: %s
-	table_ack_wait_time: %s
+	table_ack_retry_count: %s
 
 	&{table_update_port}
 	&{table_update_address}
 	&{routing_token_port}
 	&{table_acknowledge_port}
-	" % [rmConfig.host, rmConfig.table_interval / 2, rmConfig.table_interval, rmConfig.table_interval / 5]
+	" % [rmConfig.host, rmConfig.table_interval / 2, rmConfig.table_interval, 5]
 
-	if rmConfig.table_port != nil
-	routing_fhicl.gsub!(/&\{table_update_port\}/,"table_update_port: %s" % [rmConfig.table_port])
-	else
-	routing_fhicl.gsub!(/&\{table_update_port\}/,"")
+	  if rmConfig.table_port != nil
+		routing_fhicl_evb.gsub!(/&\{table_update_port\}/,"table_update_port: %s" % [rmConfig.table_port])
+	  else
+		routing_fhicl_evb.gsub!(/&\{table_update_port\}/,"")
+	  end
+	  if rmConfig.table_address != nil
+		routing_fhicl_evb.gsub!(/&\{table_update_address\}/,"table_update_address: \"%s\"" % [rmConfig.table_address])
+	  else
+		routing_fhicl_evb.gsub!(/&\{table_update_address\}/,"")
+	  end
+	  if rmConfig.token_port != nil
+		routing_fhicl_evb.gsub!(/&\{routing_token_port\}/,"routing_token_port: %s" % [rmConfig.token_port])
+	  else
+		routing_fhicl_evb.gsub!(/&\{routing_token_port\}/,"")
+	  end
+	  if rmConfig.ack_port != nil
+		routing_fhicl_evb.gsub!(/&\{table_acknowledge_port\}/,"table_acknowledge_port: %s" % [rmConfig.ack_port])
+	  else
+		routing_fhicl_evb.gsub!(/&\{table_acknowledge_port\}/,"")
+	  end
 	end
-	if rmConfig.table_address != nil
-	routing_fhicl.gsub!(/&\{table_update_address\}/,"table_update_address: \"%s\"" % [rmConfig.table_address])
-	else
-	routing_fhicl.gsub!(/&\{table_update_address\}/,"")
-	end
-	if rmConfig.token_port != nil
-	routing_fhicl.gsub!(/&\{routing_token_port\}/,"routing_token_port: %s" % [rmConfig.token_port])
-	else
-	routing_fhicl.gsub!(/&\{routing_token_port\}/,"")
-	end
-	if rmConfig.ack_port != nil
-	routing_fhicl.gsub!(/&\{table_acknowledge_port\}/,"table_acknowledge_port: %s" % [rmConfig.ack_port])
-	else
-	routing_fhicl.gsub!(/&\{table_acknowledge_port\}/,"")
-	end
-	else
-	routing_fhicl = "use_routing_master: false"
+
+	routing_fhicl_agg = "use_routing_master: false"
+	if @options.useRoutingMaster >= 1 && @options.routingmasters.length > 1
+	  rmConfig = @options.routingmasters[1]
+	  routing_fhicl_agg = "\
+	use_routing_master: true
+	routing_master_hostname: \"%s\"
+	routing_timeout_ms: %s
+	table_update_interval_ms: %s
+	table_ack_retry_count: %s
+
+	&{table_update_port}
+	&{table_update_address}
+	&{routing_token_port}
+	&{table_acknowledge_port}
+	" % [rmConfig.host, rmConfig.table_interval / 2, rmConfig.table_interval, 5]
+
+	  if rmConfig.table_port != nil
+		routing_fhicl_agg.gsub!(/&\{table_update_port\}/,"table_update_port: %s" % [rmConfig.table_port])
+	  else
+		routing_fhicl_agg.gsub!(/&\{table_update_port\}/,"")
+	  end
+	  if rmConfig.table_address != nil
+		routing_fhicl_agg.gsub!(/&\{table_update_address\}/,"table_update_address: \"%s\"" % [rmConfig.table_address])
+	  else
+		routing_fhicl_agg.gsub!(/&\{table_update_address\}/,"")
+	  end
+	  if rmConfig.token_port != nil
+		routing_fhicl_agg.gsub!(/&\{routing_token_port\}/,"routing_token_port: %s" % [rmConfig.token_port])
+	  else
+		routing_fhicl_agg.gsub!(/&\{routing_token_port\}/,"")
+	  end
+	  if rmConfig.ack_port != nil
+		routing_fhicl_agg.gsub!(/&\{table_acknowledge_port\}/,"table_acknowledge_port: %s" % [rmConfig.ack_port])
+	  else
+		routing_fhicl_agg.gsub!(/&\{table_acknowledge_port\}/,"")
+	  end
 	end
 
 	# 02-Dec-2013, KAB - loop over the front-end boards and build the configurations
@@ -903,9 +947,7 @@ class SystemControl
 			# 16-Feb-2016, KAB: Here in the Demo, we don't know whether the data is equally
 			# split between the BoardReaders or mainly concentrated in a single BoardReader, so
 			# we do the safest thing and make all of the BoardReader MPI buffers the maximum size.
-			br_routing_fhicl = routing_fhicl
-			br_routing_fhicl.gsub!(/&\{use_routing_master\}/,"true")
-			cfg = generateBoardReaderMain(generatorCode, br_destinations_fhicl, @options.dataDir, br_routing_fhicl,
+			cfg = generateBoardReaderMain(generatorCode, br_destinations_fhicl, @options.dataDir, routing_fhicl_evb,
 										  @options.gangliaMetric, @options.msgFacilityMetric, @options.graphiteMetric)
 
 			br.cfgList[listIndex] = cfg
@@ -915,16 +957,16 @@ class SystemControl
 		end
 
 
-	  if br.boardCount > 1
-		if br.fileHasBeenGenerated
-		  next
+		if br.boardCount > 1
+		  if br.fileHasBeenGenerated
+			next
+		  else
+			br.fileHasBeenGenerated = true
+			br.cfg = @configGen.generateComposite(br_destinations_fhicl, br.cfgList)
+		  end
 		else
-		  br.fileHasBeenGenerated = true
-		  br.cfg = @configGen.generateComposite(br_destinations_fhicl, br.cfgList)
+		  br.cfg = br.cfgList[0]
 		end
-	  else
-		br.cfg = br.cfgList[0]
-	  end
 
 		puts "  writing %s..." % fileName
 		handle = File.open(fileName, "w")
@@ -944,22 +986,22 @@ class SystemControl
 
 	fileProperties = "fileProperties: {%{maxevents} %{maxsubruns} %{maxruns} %{maxsize} %{maxage}}"
 	if @options.fileSizeThreshold > 1
-		fileProperties.gsub!(/\%\{maxsize\}/, "maxSize: %d" % [@options.fileSizeThreshold] )
+	  fileProperties.gsub!(/\%\{maxsize\}/, "maxSize: %d" % [@options.fileSizeThreshold] )
 	else
-		fileProperties.gsub!(/\%\{maxsize\}/, "")
+	  fileProperties.gsub!(/\%\{maxsize\}/, "")
 	end
 	if @options.fileDurationSeconds > 1
-		fileProperties.gsub!(/\%\{maxage\}/, "maxAge: %d" % [@options.fileDurationSeconds] )
+	  fileProperties.gsub!(/\%\{maxage\}/, "maxAge: %d" % [@options.fileDurationSeconds] )
 	else
-		fileProperties.gsub!(/\%\{maxage\}/, "")
+	  fileProperties.gsub!(/\%\{maxage\}/, "")
 	end
 	if @options.eventsInFile > 1
-		fileProperties.gsub!(/\%\{maxevents\}/, "maxEvents: %d" % [@options.eventsInFile] )
+	  fileProperties.gsub!(/\%\{maxevents\}/, "maxEvents: %d" % [@options.eventsInFile] )
 	else
-		fileProperties.gsub!(/\%\{maxevents\}/, "")
+	  fileProperties.gsub!(/\%\{maxevents\}/, "")
 	end
-		fileProperties.gsub!(/\%\{maxruns\}/, "maxRuns: %d" % [@options.runsInFile] )
-		fileProperties.gsub!(/\%\{maxsubruns\}/, "maxSubRuns: %d" % [@options.subrunsInFile] )
+	fileProperties.gsub!(/\%\{maxruns\}/, "maxRuns: %d" % [@options.runsInFile] )
+	fileProperties.gsub!(/\%\{maxsubruns\}/, "maxSubRuns: %d" % [@options.subrunsInFile] )
 
 	# 27-Jun-2013, KAB - send INIT to EBs and AG last
 	@options.eventBuilders.each { |ebOptions|
@@ -968,12 +1010,11 @@ class SystemControl
 	  if forceRegen || !File.file?(fileName)
 		puts "Generating %s" % [fileName]
 		fclWFViewer = generateWFViewer( (@options.toys + @options.asciis + @options.udps + @options.pbrs).map { |board| board.board_id } )
-										
-			eb_routing_fhicl = routing_fhicl
-			eb_routing_fhicl.gsub!(/&\{use_routing_master\}/,"false")
+		
 		ebOptions.cfg = generateEventBuilderMain(ebIndex, totalAGs,  @options.dataDir, @options.runOnmon,
 												 @options.writeData, totalBoards, fileProperties,
-												 fclWFViewer, eb_sources_fhicl, eb_destinations_fhicl, eb_routing_fhicl,
+												 fclWFViewer, eb_sources_fhicl, eb_destinations_fhicl,
+												 routing_fhicl_evb,routing_fhicl_agg,
 												 ebOptions.sendRequests,
 												 @options.gangliaMetric, @options.msgFacilityMetric, @options.graphiteMetric
 												 )
@@ -982,61 +1023,79 @@ class SystemControl
 		handle = File.open(fileName, "w")
 		handle.write(ebOptions.cfg)
 		handle.close()
-	  ebIndex += 1
-  else
-	  ebOptions.cfg = File.read(fileName)
-	end
-  }
-
-  @options.aggregators.each { |agOptions|
-	fileName = "Aggregator_%s_%d.fcl" % [agOptions.host, agOptions.port]
-	if forceRegen || !File.file?(fileName)
-	  puts "Generating %s" % [fileName]
-	  fclWFViewer = generateWFViewer( (@options.toys + @options.asciis + @options.udps + @options.pbrs).map { |board| board.board_id } )
-
-	  if @options.onmon_modules = "" || @options.onmon_modules = nil
-		@options.onmon_modules = ONMON_MODULES 
+		ebIndex += 1
+	  else
+		ebOptions.cfg = File.read(fileName)
 	  end
-	  agOptions.cfg = generateAggregatorMain(@options.dataDir, agOptions.bunch_size,
-											 @options.runOnmon, @options.writeData, agOptions.demoPrescale,
-											 agIndex, totalAGs, fullEventBuffSizeWords,
-											 ag_sources_fhicl, logger_rank, dispatcher_rank,
-											 xmlrpcClients, fileProperties,
-											  @options.subrunSizeThreshold, @options.subrunDurationSeconds,
-											 @options.eventsInSubrun, fclWFViewer, ONMON_EVENT_PRESCALE,
-											 @options.onmon_modules, @options.onmonFileEnabled, @options.onmonFile,
-											 @options.gangliaMetric, @options.msgFacilityMetric, @options.graphiteMetric)
+	}
 
-	  puts "  writing %s..." % fileName
-	  handle = File.open(fileName, "w")
-	  handle.write(agOptions.cfg)
-	  handle.close()
-	  STDOUT.flush
+	@options.aggregators.each { |agOptions|
+	  fileName = "Aggregator_%s_%d.fcl" % [agOptions.host, agOptions.port]
+	  if forceRegen || !File.file?(fileName)
+		puts "Generating %s" % [fileName]
+		fclWFViewer = generateWFViewer( (@options.toys + @options.asciis + @options.udps + @options.pbrs).map { |board| board.board_id } )
 
-	agIndex += 1
-  else
-	  agOptions.cfg = File.read(fileName)
-  end
+		if @options.onmon_modules = "" || @options.onmon_modules = nil
+		  @options.onmon_modules = ONMON_MODULES 
+		end
+		agOptions.cfg = generateAggregatorMain(@options.dataDir, agOptions.bunch_size, agOptions.is_data_logger, has_dispatcher,
+											   @options.runOnmon, @options.writeData, agOptions.demoPrescale,
+											   agIndex, totalAGs, fullEventBuffSizeWords,
+											   ag_sources_fhicl, logger_rank, dispatcher_rank,
+											   xmlrpcClients, fileProperties,
+											   @options.subrunSizeThreshold, @options.subrunDurationSeconds,
+											   @options.eventsInSubrun, fclWFViewer, ONMON_EVENT_PRESCALE,
+											   @options.onmon_modules, @options.onmonFileEnabled, @options.onmonFile,
+											   routing_fhicl_agg,
+											   @options.gangliaMetric, @options.msgFacilityMetric, @options.graphiteMetric)
 
-  if @options.useRoutingMaster >= 1
-  fileName = "RoutingMaster_%s_%d.fcl" % [rmConfig.host, rmConfig.port]
-  if forceRegen || !File.file?(fileName)
-    puts "Generating %s" % [fileName]
-	
-			rm_routing_fhicl = routing_fhicl
-			rm_routing_fhicl.gsub!(/&\{use_routing_master\}/,"true")
-	# Default event_queue_depth is 50 or 20 depending on EventStore constructor...
-	@options.routingmasters[0].cfg = generateRoutingMasterMain( rm_routing_fhicl, eb_ranks, br_ranks, 20, @options.gangliaMetric, @options.msgFacilityMetric, @options.graphiteMetric)
+		puts "  writing %s..." % fileName
+		handle = File.open(fileName, "w")
+		handle.write(agOptions.cfg)
+		handle.close()
+		STDOUT.flush
+
+		agIndex += 1
+	  else
+		agOptions.cfg = File.read(fileName)
+	  end
+	}
+	if @options.useRoutingMaster >= 1
+	  if @options.routingmasters.length > 0
+		rmConfig = @options.routingmasters[0]
+		fileName = "RoutingMaster_%s_%d.fcl" % [rmConfig.host, rmConfig.port]
+		if forceRegen || !File.file?(fileName)
+		  puts "Generating %s" % [fileName]
+		  # Default event_queue_depth is 50 or 20 depending on EventStore constructor...
+		  @options.routingmasters[0].cfg = generateRoutingMasterMain( routing_fhicl_evb, eb_ranks, br_ranks,@options.dataDir, 20, @options.gangliaMetric, @options.msgFacilityMetric, @options.graphiteMetric)
 		  puts "  writing %s..." % fileName
-	  handle = File.open(fileName, "w")
-	  handle.write(@options.routingmasters[0].cfg)
-	  handle.close()
-	  STDOUT.flush
-	  else 
-	  @options.routingmasters[0].cfg = File.read(fileName)
+		  handle = File.open(fileName, "w")
+		  handle.write(@options.routingmasters[0].cfg)
+		  handle.close()
+		  STDOUT.flush
+		else 
+		  @options.routingmasters[0].cfg = File.read(fileName)
+		end
+	  end
+
+	  if @options.routingmasters.length > 1
+		rmConfig = @options.routingmasters[1]
+		fileName = "RoutingMaster_%s_%d.fcl" % [rmConfig.host, rmConfig.port]
+		if forceRegen || !File.file?(fileName)
+		  puts "Generating %s" % [fileName]
+		  # Default event_queue_depth is 50 or 20 depending on EventStore constructor...
+		  @options.routingmasters[1].cfg = generateRoutingMasterMain( routing_fhicl_agg, ag_ranks, eb_ranks,@options.dataDir, 20, @options.gangliaMetric, @options.msgFacilityMetric, @options.graphiteMetric)
+		  puts "  writing %s..." % fileName
+		  handle = File.open(fileName, "w")
+		  handle.write(@options.routingmasters[1].cfg)
+		  handle.close()
+		  STDOUT.flush
+		else 
+		  @options.routingmasters[1].cfg = File.read(fileName)
+		end
+	  end
+
 	end
-	end
-}
 
 	STDOUT.flush
 
@@ -1046,6 +1105,7 @@ class SystemControl
 
 	ebIndex = 0
 	agIndex = 0
+	rmIndex = 0
 	totaltoy1s = 0
 	totaltoy2s = 0
 	totalasciis = @options.asciis.length
@@ -1086,15 +1146,15 @@ class SystemControl
 		end
 	  end
 
-		cfg = br.cfg
+	  cfg = br.cfg
 
 	  currentTime = DateTime.now.strftime("%Y/%m/%d %H:%M:%S")
 	  puts "%s: Sending the INIT command to %s:%d." %
-		[currentTime, proc.host, proc.port]
+	  [currentTime, proc.host, proc.port]
 	  threads << Thread.new() do
 		xmlrpcClient = XMLRPC::Client.new(proc.host, "/RPC2",
 										  proc.port)
- 
+		
 		# puts "Calling daq.init with configuration %s" % [cfg]
 		result = xmlrpcClient.call("daq.init", cfg)
 		currentTime = DateTime.now.strftime("%Y/%m/%d %H:%M:%S")
@@ -1114,7 +1174,7 @@ class SystemControl
 	@options.eventBuilders.each { |ebOptions|
 	  currentTime = DateTime.now.strftime("%Y/%m/%d %H:%M:%S")
 	  puts "%s: Sending the INIT command to %s:%d." %
-		[currentTime, ebOptions.host, ebOptions.port]
+	  [currentTime, ebOptions.host, ebOptions.port]
 	  threads << Thread.new( ebIndex ) do | ebIndexThread |
 		xmlrpcClient = XMLRPC::Client.new(ebOptions.host, "/RPC2", 
 										  ebOptions.port)
@@ -1131,10 +1191,10 @@ class SystemControl
 	}
 
 	
-@options.aggregators.each { |agOptions|
+	@options.aggregators.each { |agOptions|
 	  currentTime = DateTime.now.strftime("%Y/%m/%d %H:%M:%S")
 	  puts "%s: Sending the INIT command to %s:%d" %
-		[currentTime, agOptions.host, agOptions.port, agIndex]
+	  [currentTime, agOptions.host, agOptions.port, agIndex]
 	  threads << Thread.new( agIndex ) do |agIndexThread|
 		xmlrpcClient = XMLRPC::Client.new(agOptions.host, "/RPC2", 
 										  agOptions.port)
@@ -1151,16 +1211,17 @@ class SystemControl
 	  agIndex += 1
 	}
 
-	rmOptions = @options.routingmasters[0]
+	
+	@options.routingmasters.each { |rmOptions|
 	  currentTime = DateTime.now.strftime("%Y/%m/%d %H:%M:%S")
 	  puts "%s: Sending the INIT command to %s:%d" %
-		[currentTime, rmOptions.host, rmOptions.port, 0]
-	  threads << Thread.new( 0 ) do |rmIndexThread|
+	  [currentTime, rmOptions.host, rmOptions.port, ]
+	  threads << Thread.new( rmIndex ) do |rmIndexThread|
 		xmlrpcClient = XMLRPC::Client.new(rmOptions.host, "/RPC2", 
 										  rmOptions.port)
 
 		cfg = rmOptions.cfg
-		#puts "Calling daq.init with configuration %s" % [cfg]
+		# puts "Calling daq.init with configuration %s" % [cfg]
 		result = xmlrpcClient.call("daq.init", cfg)
 		currentTime = DateTime.now.strftime("%Y/%m/%d %H:%M:%S")
 		puts "%s: RoutingMaster on %s:%d result: %s" %
@@ -1168,6 +1229,8 @@ class SystemControl
 		STDOUT.flush
 	  end
 
+	  rmIndex += 1
+	}
 	
 	STDOUT.flush
 	threads.each { |aThread|
@@ -1176,9 +1239,9 @@ class SystemControl
   end
 
   def start(runNumber)
-	self.sendCommandSet("start", @options.routingmasters, runNumber)
 	self.sendCommandSet("start", @options.aggregators, runNumber)
 	self.sendCommandSet("start", @options.eventBuilders, runNumber)
+	self.sendCommandSet("start", @options.routingmasters, runNumber)
 	self.sendCommandSet("start", @options.pbrs, runNumber)
 	self.sendCommandSet("start", @options.toys, runNumber)
 	self.sendCommandSet("start", @options.asciis, runNumber)
@@ -1235,7 +1298,7 @@ class SystemControl
 		when "ag"
 		  puts "%s: Aggregator on %s:%d result: %s" %
 			[currentTime, proc.host, proc.port, result]
-			when "rm"
+		when "rm"
 		  puts "%s: RoutingMaster on %s:%d result: %s" %
 			[currentTime, proc.host, proc.port, result]
 		when "TOY1"
@@ -1266,13 +1329,13 @@ class SystemControl
   end
 
   def shutdown()
-	self.sendCommandSet("shutdown", @options.routingmasters)
 	self.sendCommandSet("shutdown", @options.toys)
 	self.sendCommandSet("shutdown", @options.asciis)
 	self.sendCommandSet("shutdown", @options.pbrs)
 	self.sendCommandSet("shutdown", @options.udps)
 	self.sendCommandSet("shutdown", @options.eventBuilders)
 	self.sendCommandSet("shutdown", @options.aggregators)
+	self.sendCommandSet("shutdown", @options.routingmasters)
   end
 
   def pause()
@@ -1281,8 +1344,8 @@ class SystemControl
 	self.sendCommandSet("pause", @options.pbrs)
 	self.sendCommandSet("pause", @options.udps)
 	self.sendCommandSet("pause", @options.eventBuilders)
-	self.sendCommandSet("pause", @options.routingmasters)
 	self.sendCommandSet("pause", @options.aggregators)
+	self.sendCommandSet("pause", @options.routingmasters)
   end
 
   def stop()
@@ -1419,18 +1482,18 @@ class SystemControl
 	self.sendCommandSet("stop", @options.pbrs)
 	self.sendCommandSet("stop", @options.udps)
 	self.sendCommandSet("stop", @options.eventBuilders)
-	self.sendCommandSet("stop", @options.routingmasters)
 	@options.aggregators.each do |proc|
 	  tmpList = []
 	  tmpList << proc
 	  self.sendCommandSet("stop", tmpList)
 	end
+	self.sendCommandSet("stop", @options.routingmasters)
   end
 
   def resume()
 	self.sendCommandSet("resume", @options.aggregators)
-	self.sendCommandSet("resume", @options.routingmasters)
 	self.sendCommandSet("resume", @options.eventBuilders)
+	self.sendCommandSet("resume", @options.routingmasters)
 	self.sendCommandSet("resume", @options.toys)
 	self.sendCommandSet("resume", @options.asciis)
 	self.sendCommandSet("resume", @options.pbrs)
@@ -1438,8 +1501,8 @@ class SystemControl
   end
 
   def checkStatus()
-	self.sendCommandSet("status", @options.aggregators)
 	self.sendCommandSet("status", @options.routingmasters)
+	self.sendCommandSet("status", @options.aggregators)
 	self.sendCommandSet("status", @options.eventBuilders)
 	self.sendCommandSet("status", @options.toys)
 	self.sendCommandSet("status", @options.asciis)
@@ -1447,9 +1510,8 @@ class SystemControl
 	self.sendCommandSet("status", @options.udps)
   end
 
-  def getLegalCommands()
+  def getLegalCommands()mrb b
 	self.sendCommandSet("legal_commands", @options.aggregators)
-	self.sendCommandSet("legal_commands", @options.routingmasters)
 	self.sendCommandSet("legal_commands", @options.eventBuilders)
 	self.sendCommandSet("legal_commands", @options.toys)
 	self.sendCommandSet("legal_commands", @options.asciis)
@@ -1485,7 +1547,7 @@ if __FILE__ == $0
 
   if options.command == "init"
 	sysCtrl.init()
-elsif options.command == "generate"
+  elsif options.command == "generate"
 	sysCtrl.generate()
   elsif options.command == "start"
 	sysCtrl.start(options.runNumber)

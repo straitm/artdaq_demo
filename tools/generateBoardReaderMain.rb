@@ -15,7 +15,9 @@ def generateBoardReaderMain( generatorCode, destinations_fhicl,dataDir, routingC
 	  %{destinations_fhicl}
 	}
 
-	%{routing_code}
+	routing_table_config: {
+	    %{routing_code}
+	}
   }
 
   metrics: {

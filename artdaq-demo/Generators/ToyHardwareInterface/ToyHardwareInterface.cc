@@ -1,10 +1,10 @@
 #include "artdaq-demo/Generators/ToyHardwareInterface/ToyHardwareInterface.hh"
+#include "artdaq/DAQdata/Globals.hh"
 #include "artdaq-core-demo/Overlays/ToyFragment.hh"
 #include "artdaq-core-demo/Overlays/FragmentType.hh"
 
 #include "fhiclcpp/ParameterSet.h"
 #include "cetlib/exception.h"
-#include "trace.h"				// TRACE
 
 #include <random>
 #include <unistd.h>
@@ -83,7 +83,6 @@ ToyHardwareInterface::ToyHardwareInterface(fhicl::ParameterSet const& ps) :
 void ToyHardwareInterface::StartDatataking()
 {
 	taking_data_ = true;
-	start_time_ = std::chrono::high_resolution_clock::now();
 	send_calls_ = 0;
 }
 
@@ -209,22 +208,30 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read)
 			"Attempt to call FillBuffer when not sending data";
 	}
 
-	if (usecs_between_sends_ != 0 && send_calls_ != 0)
+	if (usecs_between_sends_ != 0)
 	{
+	  if (send_calls_ == 0)
+	    {  start_time_ = std::chrono::high_resolution_clock::now();
+	      TRACE( 50, "ToyHardwareInterface::FillBuffer has set the start_time_" );
+	    }
+	  else
+	    {
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-compare"
 
 		auto usecs_since_start =
 			std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now()
-																  - start_time_).count();
-
+									      - start_time_).count();
 		long delta = (long)(usecs_between_sends_ * send_calls_) - usecs_since_start;
-		TRACE(15, "ToyHardwareInterface::FillBuffer send_calls=%d usecs_since_start=%ld delta=%ld"
-			  , send_calls_, usecs_since_start, delta);
 		if (delta > 0)
 			usleep(delta);
 
+		TRACE(15, "ToyHardwareInterface::FillBuffer send_calls=%d usecs_since_start=%ld delta=%ld"
+			  , send_calls_, usecs_since_start, delta);
+
 #pragma GCC diagnostic pop
+	    }
 	}
 	++send_calls_;
 }

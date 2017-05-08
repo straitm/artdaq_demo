@@ -6,7 +6,7 @@ require File.join( File.dirname(__FILE__), 'generateEventBuilder' )
 
 
 def generateEventBuilderMain(ebIndex, totalAGs, dataDir, onmonEnable, diskWritingEnable, totalFragments, filePropertiesFhicl,
-                         fclWFViewer, sources_fhicl, destinations_fhicl, routingCode, sendRequests, withGanglia, withMsgFacility, withGraphite )
+                         fclWFViewer, sources_fhicl, destinations_fhicl, tokenConfig,tableConfig,  sendRequests, withGanglia, withMsgFacility, withGraphite )
   # Do the substitutions in the event builder configuration given the options
   # that were passed in from the command line.  
 
@@ -23,6 +23,9 @@ services: {
 	destinations: {	
 	  %{destinations_fhicl}
     }
+	routing_table_config: {
+	    %{table_config}
+	}
   }
 
   #SimpleMemoryCheck: { }
@@ -89,9 +92,10 @@ if Integer(totalAGs) >= 1
 end
 
 
-event_builder_code = generateEventBuilder( totalFragments, verbose, sources_fhicl,dataDir,routingCode, sendRequests, withGanglia, withMsgFacility, withGraphite)
+event_builder_code = generateEventBuilder( totalFragments, verbose, sources_fhicl,dataDir,tokenConfig, sendRequests, withGanglia, withMsgFacility, withGraphite)
 
 ebConfig.gsub!(/\%\{destinations_fhicl\}/, destinations_fhicl)
+ebConfig.gsub!(/\%\{table_config\}/, tableConfig)
 ebConfig.gsub!(/\%\{event_builder_code\}/, event_builder_code)
 
   ebConfig.gsub!(/\%\{fileProperties\}/, filePropertiesFhicl)

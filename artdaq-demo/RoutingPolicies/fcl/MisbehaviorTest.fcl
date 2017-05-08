@@ -1,6 +1,5 @@
 # RoutingMasterPolicy configuration
-# event_builder_ranks:        # List of ranks for event builders
-# event_builder_buffer_count: # Number of events each event builder can hold
+# destination_ranks:        # List of ranks for event builders
 
 # MisbehaviorTest configuration
 misbehave_after_n_events: 1000               # When to start misbehaving
