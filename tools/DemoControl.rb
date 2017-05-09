@@ -391,7 +391,11 @@ class CommandLineParser
 		if ag.length > 3
 			agConfig.is_data_logger =Integer(ag[3])
 		else
-			agConfig.is_data_logger = 0
+			if @options.aggregators.length == 0
+				agConfig.is_data_logger = 1
+			else
+				agConfig.is_data_logger = 0
+			end
 		end
 		if ag.length > 4
 		  agConfig.demoPrescale = Integer(ag[4])

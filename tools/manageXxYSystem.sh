@@ -162,7 +162,7 @@ shmKeyString=`printf "0x%x" ${shmKey}`
 # this function expects a number of arguments:
 #  1) the DAQ command to be sent
 #  2) the run number (dummy for non-start commands)
-#  3) the compression level for ADC data [0..2]
+#  3) the compression level for ADC data [0..2] # UNUSED
 #  4) whether to run online monitoring
 #  5) the data directory
 #  6) the logfile name
@@ -172,15 +172,6 @@ shmKeyString=`printf "0x%x" ${shmKey}`
 # 10) the desired time duration of each file (minutes)
 # 11) whether to print out CFG information (verbose)
 function launch() {
-  ebComp=$3
-  agComp=$3
-  if [[ "$3" == "2" ]]; then
-    ebComp=1
-    agComp=3
-  elif [[ "$3" == "1" ]]; then
-    ebComp=1
-    agComp=0
-  fi
   enableSerial=""
   if [[ "${11}" == "1" ]]; then
       enableSerial="-e"
@@ -188,7 +179,7 @@ function launch() {
 
   cfg_ops=`cat $cf | awk '
 /BoardReader/{printf "--toy%d %s,%s,%d\n",t+1,$2,$3,b;t=xor(t,1);++b}
-/EventBuilder/{printf "--eb %s,%s,'$ebComp'\n",$2,$3}
+/EventBuilder/{printf "--eb %s,%s\n",$2,$3}
 '`
   DemoControl.rb ${enableSerial} -s -c $1 \
     $cfg_ops \

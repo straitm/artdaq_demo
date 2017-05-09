@@ -46,12 +46,12 @@ function launch() {
   DemoControl.rb ${enableSerial} -s -c $1 \
     --toy1 `hostname`,${ARTDAQDEMO_BR_PORT[0]},0,${14} \
     --toy2 `hostname`,${ARTDAQDEMO_BR_PORT[1]},1,${15} \
-    --eb `hostname`,${ARTDAQDEMO_EB_PORT[0]},$ebComp \
-    --eb `hostname`,${ARTDAQDEMO_EB_PORT[1]},$ebComp \
-    --ag `hostname`,${ARTDAQDEMO_AG_PORT[0]},1,$agComp,0 \
-    --ag `hostname`,${ARTDAQDEMO_AG_PORT[1]},1,$agComp,0 \
-    --ag `hostname`,${ARTDAQDEMO_AG_PORT[2]},1,$agComp,0 \
-    --ag `hostname`,${ARTDAQDEMO_AG_PORT[3]},1,$agComp \
+    --eb `hostname`,${ARTDAQDEMO_EB_PORT[0]} \
+    --eb `hostname`,${ARTDAQDEMO_EB_PORT[1]} \
+    --ag `hostname`,${ARTDAQDEMO_AG_PORT[0]},1,1,0 \
+    --ag `hostname`,${ARTDAQDEMO_AG_PORT[1]},1,0,0 \
+    --ag `hostname`,${ARTDAQDEMO_AG_PORT[2]},1,0,0 \
+    --ag `hostname`,${ARTDAQDEMO_AG_PORT[3]},1 \
     --data-dir ${5} --online-monitoring ${4},${onmonFile},${onmonPath} \
     --write-data ${7} --run-event-count ${8} \
     --run-duration ${9} --file-size ${10} \

@@ -8,7 +8,7 @@ THIS_NODE=`hostname -s`
 # this function expects a number of arguments:
 #  1) the DAQ command to be sent
 #  2) the run number (dummy for non-start commands)
-#  3) the compression level for ADC data [0..2]
+#  3) the compression level for ADC data [0..2] # UNUSED
 #  4) whether to run online monitoring
 #  5) the data directory
 #  6) the logfile name
@@ -23,15 +23,7 @@ THIS_NODE=`hostname -s`
 # 15) generator to use for toy2
 # 16) Output directory for onmon file
 function launch() {
-  ebComp=$3
-  agComp=$3
-  if [[ "$3" == "2" ]]; then
-	ebComp=1
-	agComp=3
-  elif [[ "$3" == "1" ]]; then
-	ebComp=1
-	agComp=0
-  fi
+
   enableSerial=""
   if [[ "${13}" == "1" ]]; then
 	  enableSerial="-e"
@@ -46,10 +38,10 @@ function launch() {
   DemoControl.rb ${enableSerial} -s -c $1 \
 	--toy1 `hostname`,${ARTDAQDEMO_BR_PORT[0]},0,${14} \
 	--toy2 `hostname`,${ARTDAQDEMO_BR_PORT[1]},1,${15} \
-	--eb `hostname`,${ARTDAQDEMO_EB_PORT[0]},$ebComp \
-	--eb `hostname`,${ARTDAQDEMO_EB_PORT[1]},$ebComp \
-	--ag `hostname`,${ARTDAQDEMO_AG_PORT[0]},1,1,$agComp \
-	--ag `hostname`,${ARTDAQDEMO_AG_PORT[1]},1,1,$agComp \
+	--eb `hostname`,${ARTDAQDEMO_EB_PORT[0]} \
+	--eb `hostname`,${ARTDAQDEMO_EB_PORT[1]} \
+	--ag `hostname`,${ARTDAQDEMO_AG_PORT[0]},1,1 \
+	--ag `hostname`,${ARTDAQDEMO_AG_PORT[1]},1,1 \
 	--rm `hostname`,${ARTDAQDEMO_AG_PORT[2]},1000 \
 	--rm `hostname`,${ARTDAQDEMO_AG_PORT[3]},1000,36555,36556,36557,"227.128.12.29" \
 	--data-dir ${5} --online-monitoring ${4},${onmonFile},${onmonPath} \

@@ -14,7 +14,7 @@ THIS_NODE=`hostname -s`
 # this function expects a number of arguments:
 #  1) the DAQ command to be sent
 #  2) the run number (dummy for non-start commands)
-#  3) the compression level for ADC data [0..2]
+#  3) the compression level for ADC data [0..2] # UNUSED
 #  4) whether to run online monitoring
 #  5) the data directory
 #  6) the logfile name
@@ -26,15 +26,6 @@ THIS_NODE=`hostname -s`
 # 12) the desired time duration of each file (minutes)
 # 13) whether to print out CFG information (verbose)
 function launch() {
-  ebComp=$3
-  agComp=$3
-  if [[ "$3" == "2" ]]; then
-    ebComp=1
-    agComp=3
-  elif [[ "$3" == "1" ]]; then
-    ebComp=1
-    agComp=0
-  fi
   enableSerial=""
   if [[ "${13}" == "1" ]]; then
       enableSerial="-e"
@@ -42,10 +33,10 @@ function launch() {
 
   DemoControl.rb ${enableSerial} -s -c $1 \
 	--ascii `hostname`,${ARTDAQDEMO_BR_PORT[0]},0 \
-    --eb `hostname`,${ARTDAQDEMO_EB_PORT[0]},$ebComp \
-    --eb `hostname`,${ARTDAQDEMO_EB_PORT[1]},$ebComp \
-    --ag `hostname`,${ARTDAQDEMO_AG_PORT[0]},1,$agComp \
-    --ag `hostname`,${ARTDAQDEMO_AG_PORT[1]},1,$agComp \
+    --eb `hostname`,${ARTDAQDEMO_EB_PORT[0]} \
+    --eb `hostname`,${ARTDAQDEMO_EB_PORT[1]} \
+    --ag `hostname`,${ARTDAQDEMO_AG_PORT[0]},1 \
+    --ag `hostname`,${ARTDAQDEMO_AG_PORT[1]},1 \
     --data-dir ${5} --online-monitoring $4 \
     --write-data ${7} --run-event-count ${8} \
     --run-duration ${9} --file-size ${10} \
