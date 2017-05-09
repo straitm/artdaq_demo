@@ -35,10 +35,25 @@ namespace demo
 class demo::CheckIntegrity : public art::EDAnalyzer
 {
 public:
+	/**
+	 * \brief CheckIntegrity Constructor
+	 * \param pset ParameterSet used to configure CheckIntegrity
+	 * 
+	 * CheckIntegrity has the following paramters:
+	 * "raw_data_label": The label applied to data (usually "daq")
+	 * "frag_type": The fragment type to analyze ("TOY1" or "TOY2")
+	 */
 	explicit CheckIntegrity(fhicl::ParameterSet const& pset);
 
+	/**
+	 * \brief Default destructor
+	 */
 	virtual ~CheckIntegrity() = default;
 
+	/**
+	* \brief Analyze an event. Called by art for each event in run (based on command line options)
+	* \param evt The art::Event object containing ToyFragments to check
+	*/
 	virtual void analyze(art::Event const& evt);
 
 private:

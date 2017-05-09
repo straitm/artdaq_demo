@@ -19,6 +19,12 @@
 
 namespace
 {
+	/**
+	 * \brief Convert sizeof(T) characters of a string to a number containing the ASCII representation of that string
+	 * \tparam T Output type
+	 * \param input String to convert to ASCII-encoded number
+	 * \return ASCII-encoded number
+	 */
 	template <typename T>
 	T convertToASCII(std::string input)
 	{

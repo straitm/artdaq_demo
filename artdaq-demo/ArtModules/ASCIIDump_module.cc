@@ -29,13 +29,24 @@ namespace demo
 	class ASCIIDump;
 }
 
+/**
+ * \brief An art::EDAnalyzer meant for decoding demo::ASCIIFragment objects
+ */
 class demo::ASCIIDump : public art::EDAnalyzer
 {
 public:
+	/**
+	 * \brief ASCIIDump Constructor
+	 * \param pset ParameterSet used for configuring ASCIIDump. Parameter is "raw_data_label", default "daq".
+	 */
 	explicit ASCIIDump(fhicl::ParameterSet const& pset);
 
 	virtual ~ASCIIDump();
 
+	/**
+	 * \brief Analyze an event. Called by art for each event in run (based on command line options)
+	 * \param evt The art::Event object to dump AsciiFragments from
+	 */
 	void analyze(art::Event const& evt) override;
 
 private:

@@ -29,13 +29,34 @@ namespace demo
 	class ToyDump;
 }
 
+/**
+ * \brief An art::EDAnalyzer module designed to display the data from demo::ToyFragment objects
+ */
 class demo::ToyDump : public art::EDAnalyzer
 {
 public:
+	/**
+	 * \brief ToyDump Constructor
+	 * \param pset ParamterSet used to configure ToyDump
+	 * 
+	 * ToyDump accepts the following Parameters:
+	 * "raw_data_label" (Default: "daq"): The label used to identify artdaq data
+	 * "num_adcs_to_show" (Default: 0): How many ADCs to print from each ToyFragment
+	 * "dump_to_file" (Default: true): Whether to write data to a binary file "out.bin"
+	 * "dump_to_screen" (Default: false): Whether to write data to stdout
+	 * "columns_to_display_on_screen" (Default: 10): How many ADC values to print in each row when writing to stdout
+	 */
 	explicit ToyDump(fhicl::ParameterSet const& pset);
 
+	/**
+	 * \brief ToyDump Destructor
+	 */
 	virtual ~ToyDump();
 
+	/**
+	* \brief Analyze an event. Called by art for each event in run (based on command line options)
+	* \param evt The art::Event object to dump ToyFragments from
+	*/
 	virtual void analyze(art::Event const& evt);
 
 private:

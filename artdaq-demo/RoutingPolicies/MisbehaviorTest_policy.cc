@@ -5,13 +5,35 @@
 
 namespace demo
 {
+	/**
+	 * \brief A test RoutingMasterPolicy which does various "bad" things, determined by configuration
+	 */
 	class MisbehaviorTest : public artdaq::RoutingMasterPolicy
 	{
 	public:
+		/**
+		 * \brief MisbehaviorTest Constructor
+		 * \param ps ParameterSet used to configure MisbehaviorTest
+		 * 
+		 * Note that only one misbehavior can be configured at a time. MisbehaviorTest will work like NoOp_policy when not misbehaving
+		 * MisbehaviorTest accepts the following Parameters:
+		 * "misbehave_after_n_events" (Default: 1000): The threshold after which it will start misbehaving
+		 * "misbehave_pause_time_ms" (Default: 0): If greater than 0, will pause this long before sending out table updates
+		 * "misbehave_send_confliting_table_data" (Default: false): If true, will send a table that contains the same sequence ID being sent to two different EventBuilders
+		 * "misbehave_send_corrupt_table_data" (Default: false): If true, will send a table that contains an entry created using rand(), rand()
+		 * "misbehave_overload_event_builder" (Default: false): If true, will send a large number of events to one EventBuilder
+		 */
 		explicit MisbehaviorTest(fhicl::ParameterSet ps);
 
-		virtual ~MisbehaviorTest() { }
+		/**
+		 * \brief MisbehaviorTest default Destructor
+		 */
+		virtual ~MisbehaviorTest() = default;
 
+		/**
+		 * \brief Generate and return a Routing Table
+		 * \return An artdaq::detail::RoutingPacket with the Routing Table information
+		 */
 		artdaq::detail::RoutingPacket GetCurrentTable() override;
 	private:
 		artdaq::Fragment::sequence_id_t misbehave_after_;

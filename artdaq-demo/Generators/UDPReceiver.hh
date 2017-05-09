@@ -30,6 +30,9 @@
 
 namespace demo
 {
+	/**
+	 * \brief Enumeration describing valid command types
+	 */
 	enum class CommandType : uint8_t
 	{
 		Read = 0,
@@ -38,6 +41,9 @@ namespace demo
 		Stop_Burst = 3,
 	};
 
+	/**
+	 * \brief Enumeration describing status codes that indicate current sender position in the stream
+	 */
 	enum class ReturnCode : uint8_t
 	{
 		Read = 0,
@@ -46,6 +52,9 @@ namespace demo
 		Last = 3,
 	};
 
+	/**
+	 * \brief Enumeration describing potential data types
+	 */
 	enum class DataType : uint8_t
 	{
 		Raw = 0,
@@ -53,20 +62,37 @@ namespace demo
 		String = 2,
 	};
 
+	/**
+	 * \brief Struct defining UDP packet used for communicating with data receiver
+	 */
 	struct CommandPacket
 	{
-		CommandType type;
-		uint8_t dataSize;
-		uint64_t address;
-		uint64_t data[182];
+		CommandType type; ///< The type of this CommandPacket
+		uint8_t dataSize; ///< How many words of data are in the packet
+		uint64_t address; ///< The destination of the CommandPacket
+		uint64_t data[182]; ///< The data for the CommandPacket
 	};
 
-	typedef std::array<uint8_t, 1500> packetBuffer_t;
-	typedef std::list<packetBuffer_t> packetBuffer_list_t;
+	typedef std::array<uint8_t, 1500> packetBuffer_t; ///< An array of 1500 bytes (MTU length)
+	typedef std::list<packetBuffer_t> packetBuffer_list_t; ///< A std::list of packetbuffer_t objects
 
+	/**
+	 * \brief An artdaq::CommandableFragmentGenerator which receives data in the form of UDP datagrams
+	 */
 	class UDPReceiver : public artdaq::CommandableFragmentGenerator
 	{
 	public:
+		/**
+		 * \brief UDPReceiver Constructor
+		 * \param ps ParameterSet used to configure UDPReceiver
+		 * 
+		 * UDPRecevier accepts the following Parameters:
+		 * "port" (Default: 6343): The port on which to receive UDP data
+		 * "ip" (Default: 127.0.0.1): The Address to bind to ("0.0.0.0" listens on all addresses)
+		 * "send_CAPTAN_commands" (Default: false): Whether to send CommandPackets to start and stop the data flow
+		 * "raw_output_enabled" (Default: false): Whether to write UDP data to disk as well as to EventBuilders
+		 * "raw_output_path" (Default: "/tmp"): Directory to save raw output file (UDPReceiver-[ip]:[port].bin)
+		 */
 		explicit UDPReceiver(fhicl::ParameterSet const& ps);
 
 	private:

@@ -4,6 +4,10 @@
 
 namespace artdaq
 {
+	/**
+	 * \brief An example RoutingMasterPolicy which redirects every Nth event to a desginated destination.
+	 * Other events are Round-Robin'ed to the other configured destinations.
+	 */
 	class NthEventPolicy : public RoutingMasterPolicy
 	{
 	public:
@@ -17,6 +21,14 @@ namespace artdaq
 		int nth_rank_;
 	};
 
+	/**
+	 * \brief NthEventPolicy Constructor
+	 * \param ps ParameterSet used to configure the NthEventPolicy
+	 * 
+	 * NthEventPolicy accepts the following Parameters:
+	 * "nth_event" (REQUIRED): Every event where sequence_id % nth == 0 will be sent to
+	 * "target_receiver" (REQUIRED): Recevier to which the nth_event will be sent
+	 */
 	NthEventPolicy::NthEventPolicy(fhicl::ParameterSet ps)
 		: RoutingMasterPolicy(ps)
 		, nth_(ps.get<size_t>("nth_event"))
@@ -25,6 +37,12 @@ namespace artdaq
 		if (nth_ == 0) throw cet::exception("NthEvent_policy") << "nth_event must be greater than 0!";
 	}
 
+	/**
+	 * \brief Construct a Routing Table using the current tokens
+	 * \return A detail::RoutingPacket with the table. The table will contain full "turns" through the set of "regular" receivers, with
+	 * the "nth" receiver inserted where sequence_id % nth == 0. If nth is mid-"turn" and no target_receiver tokens are availabe, it will
+	 * not start the "turn".
+	 */
 	detail::RoutingPacket NthEventPolicy::GetCurrentTable()
 	{
 		auto tokens = getTokensSnapshot();

@@ -20,17 +20,43 @@
 
 namespace demo
 {
+	/**
+	 * \brief Provides a wrapper for displaying ROOT canvases
+	 */
 	class RootApplication : public art::EDAnalyzer
 	{
 	public:
+		/**
+		 * \brief RootApplication Constructor
+		 * \param p ParameterSet for configuring RootApplication
+		 * 
+		 * RootApplication accepts the following Paramters:
+		 * "force_new" (Default: true): Always create a new window
+		 * "dont_quit" (Default: false): Keep window open after art exits
+		 */
 		explicit RootApplication(fhicl::ParameterSet const& p);
 
+		/**
+		 * \brief RootApplication Destructor
+		 */
 		virtual ~RootApplication();
 
+		/**
+		 * \brief Called by art at the beginning of the job. RootApplication will create a window unless one already exists and force_new == false.
+		 */
 		void beginJob() override;
 
+		/**
+		 * \brief Called by art for each event
+		 * \param e The art::Event object
+		 * 
+		 * RootApplication checks for ROOT system events, it does not touch the art::Event
+		 */
 		void analyze(art::Event const& e) override;
 
+		/**
+		 * \brief Called by art at the end of the job. RootApplication will close the findow if dont_quit == false.
+		 */
 		void endJob() override;
 
 	private:

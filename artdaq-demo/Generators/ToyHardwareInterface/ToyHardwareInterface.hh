@@ -22,7 +22,7 @@ class ToyHardwareInterface
 {
 public:
 
-	typedef uint16_t data_t;
+	typedef uint16_t data_t; ///< The type used to represent ADC counts (which are 12 or 14 bits, for TOY1 or TOY2)
 
 	/**
 	 * \brief Construct and configure ToyHardwareInterface

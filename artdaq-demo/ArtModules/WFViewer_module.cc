@@ -36,15 +36,43 @@ using std::endl;
 
 namespace demo
 {
+	/**
+	 * \brief An example art analysis module which plots events both as histograms and event snapshots (plot of ADC value vs ADC number)
+	 */
 	class WFViewer : public art::EDAnalyzer
 	{
 	public:
+		/**
+		 * \brief WFViewer Constructor
+		 * \param p ParameterSet used to configure WFViewer
+		 * 
+		 * WFViewer accepts the following Parameters:
+		 * "prescale" (REQUIRED): WFViewer will only redraw historgrams once per this many events
+		 * "digital_sum_only" (Default: false): Only create the histogram, not the event snapshot
+		 * "num_x_plots": (Default: size_t::MAX_VALUE): Maximum number of columns of plots
+		 * "num_y_plots": (Default: size_t::MAX_VALUE): Maximum number of rows of plots
+		 * "raw_data_label": (Default: "daq"): Label under which artdaq data is stored
+		 * "fragment_ids": (REQUIRED): List of ids to process. Fragment IDs are assigned by BoardReaders.
+		 * "fileName": (Default: artdaqdemo_onmon.root): File name for output, if
+		 * "write_to_file": (Default: false): Whether to write output histograms to "fileName"
+		 */
 		explicit WFViewer(fhicl::ParameterSet const& p);
 
+		/**
+		 * \brief WFViewer default Destructor
+		 */
 		virtual ~WFViewer() = default;
 
+		/**
+		* \brief Analyze an event. Called by art for each event in run (based on command line options)
+		* \param e The art::Event object to process, and display if it passes the prescale
+		*/
 		void analyze(art::Event const& e) override;
 
+		/**
+		 * \brief Art calls this function at the beginning of the run. Used for set-up of ROOT histogram objects
+		 * and to open the output file if one is specified.
+		 */
 		void beginRun(art::Run const&) override;
 
 	private:
@@ -72,21 +100,21 @@ namespace demo
 }
 
 demo::WFViewer::WFViewer(fhicl::ParameterSet const& ps):
-                                                       art::EDAnalyzer(ps)
-                                                       , prescale_(ps.get<int>("prescale"))
-                                                       , digital_sum_only_(ps.get<bool>("digital_sum_only", false))
-                                                       , current_run_(0)
-                                                       , num_x_plots_(ps.get<std::size_t>("num_x_plots", std::numeric_limits<std::size_t>::max()))
-                                                       , num_y_plots_(ps.get<std::size_t>("num_y_plots", std::numeric_limits<std::size_t>::max()))
-                                                       , raw_data_label_(ps.get<std::string>("raw_data_label", "daq"))
-                                                       , fragment_ids_(ps.get<std::vector<artdaq::Fragment::fragment_id_t>>("fragment_ids"))
-                                                       , graphs_(fragment_ids_.size())
-                                                       , histograms_(fragment_ids_.size())
-                                                       , outputFileName_(ps.get<std::string>("fileName", "artdaqdemo_onmon.root"))
-                                                       , writeOutput_(ps.get<bool>("write_to_file", false))
+													   art::EDAnalyzer(ps)
+													   , prescale_(ps.get<int>("prescale"))
+													   , digital_sum_only_(ps.get<bool>("digital_sum_only", false))
+													   , current_run_(0)
+													   , num_x_plots_(ps.get<std::size_t>("num_x_plots", std::numeric_limits<std::size_t>::max()))
+													   , num_y_plots_(ps.get<std::size_t>("num_y_plots", std::numeric_limits<std::size_t>::max()))
+													   , raw_data_label_(ps.get<std::string>("raw_data_label", "daq"))
+													   , fragment_ids_(ps.get<std::vector<artdaq::Fragment::fragment_id_t>>("fragment_ids"))
+													   , graphs_(fragment_ids_.size())
+													   , histograms_(fragment_ids_.size())
+													   , outputFileName_(ps.get<std::string>("fileName", "artdaqdemo_onmon.root"))
+													   , writeOutput_(ps.get<bool>("write_to_file", false))
 {
 	if (num_x_plots_ == std::numeric_limits<std::size_t>::max() ||
-	    num_y_plots_ == std::numeric_limits<std::size_t>::max())
+		num_y_plots_ == std::numeric_limits<std::size_t>::max())
 	{
 		switch (fragment_ids_.size())
 		{
@@ -244,7 +272,7 @@ void demo::WFViewer::analyze(art::Event const& e)
 			histograms_[ind] = std::unique_ptr<TH1D>(new TH1D(Form("Fragment_%d_hist", fragment_id), "", max_adc_count + 1, -0.5, max_adc_count + 0.5));
 
 			histograms_[ind]->SetTitle(Form("Frag %d, Type %s", fragment_id,
-			                                fragmentTypeToString(fragtype).c_str()));
+											fragmentTypeToString(fragtype).c_str()));
 			histograms_[ind]->GetXaxis()->SetTitle("ADC value");
 		}
 
@@ -332,8 +360,8 @@ void demo::WFViewer::analyze(art::Event const& e)
 
 			TH1F* padframe = static_cast<TH1F*>(pad->DrawFrame(lo_x, lo_y, hi_x, hi_y));
 			padframe->SetTitle(Form("Frag %d, Type %s, SeqID %d", static_cast<int>(fragment_id),
-			                        fragmentTypeToString(fragtype).c_str(),
-			                        static_cast<int>(expected_sequence_id)));
+									fragmentTypeToString(fragtype).c_str(),
+									static_cast<int>(expected_sequence_id)));
 			padframe->GetXaxis()->SetTitle("ADC #");
 			pad->SetGrid();
 			padframe->Draw("SAME");
