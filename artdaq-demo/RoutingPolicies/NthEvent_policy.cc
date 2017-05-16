@@ -25,9 +25,11 @@ namespace artdaq
 	 * \brief NthEventPolicy Constructor
 	 * \param ps ParameterSet used to configure the NthEventPolicy
 	 * 
+	 * \verbatim
 	 * NthEventPolicy accepts the following Parameters:
 	 * "nth_event" (REQUIRED): Every event where sequence_id % nth == 0 will be sent to
 	 * "target_receiver" (REQUIRED): Recevier to which the nth_event will be sent
+	 * \endverbatim
 	 */
 	NthEventPolicy::NthEventPolicy(fhicl::ParameterSet ps)
 		: RoutingMasterPolicy(ps)

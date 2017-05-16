@@ -15,6 +15,7 @@ namespace demo
 		 * \brief MisbehaviorTest Constructor
 		 * \param ps ParameterSet used to configure MisbehaviorTest
 		 * 
+		 * \verbatim
 		 * Note that only one misbehavior can be configured at a time. MisbehaviorTest will work like NoOp_policy when not misbehaving
 		 * MisbehaviorTest accepts the following Parameters:
 		 * "misbehave_after_n_events" (Default: 1000): The threshold after which it will start misbehaving
@@ -22,6 +23,7 @@ namespace demo
 		 * "misbehave_send_confliting_table_data" (Default: false): If true, will send a table that contains the same sequence ID being sent to two different EventBuilders
 		 * "misbehave_send_corrupt_table_data" (Default: false): If true, will send a table that contains an entry created using rand(), rand()
 		 * "misbehave_overload_event_builder" (Default: false): If true, will send a large number of events to one EventBuilder
+		 * \endverbatim
 		 */
 		explicit MisbehaviorTest(fhicl::ParameterSet ps);
 

@@ -39,12 +39,14 @@ public:
 	 * \brief ToyDump Constructor
 	 * \param pset ParamterSet used to configure ToyDump
 	 * 
+	 * \verbatim
 	 * ToyDump accepts the following Parameters:
 	 * "raw_data_label" (Default: "daq"): The label used to identify artdaq data
 	 * "num_adcs_to_show" (Default: 0): How many ADCs to print from each ToyFragment
 	 * "dump_to_file" (Default: true): Whether to write data to a binary file "out.bin"
 	 * "dump_to_screen" (Default: false): Whether to write data to stdout
 	 * "columns_to_display_on_screen" (Default: 10): How many ADC values to print in each row when writing to stdout
+	 * \endverbatim
 	 */
 	explicit ToyDump(fhicl::ParameterSet const& pset);
 

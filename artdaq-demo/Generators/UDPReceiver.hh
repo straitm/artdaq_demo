@@ -86,12 +86,14 @@ namespace demo
 		 * \brief UDPReceiver Constructor
 		 * \param ps ParameterSet used to configure UDPReceiver
 		 * 
+		 * \verbatim
 		 * UDPRecevier accepts the following Parameters:
 		 * "port" (Default: 6343): The port on which to receive UDP data
 		 * "ip" (Default: 127.0.0.1): The Address to bind to ("0.0.0.0" listens on all addresses)
 		 * "send_CAPTAN_commands" (Default: false): Whether to send CommandPackets to start and stop the data flow
 		 * "raw_output_enabled" (Default: false): Whether to write UDP data to disk as well as to EventBuilders
 		 * "raw_output_path" (Default: "/tmp"): Directory to save raw output file (UDPReceiver-[ip]:[port].bin)
+		 * \endverbatim
 		 */
 		explicit UDPReceiver(fhicl::ParameterSet const& ps);
 

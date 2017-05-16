@@ -46,6 +46,7 @@ namespace demo
 		 * \brief WFViewer Constructor
 		 * \param p ParameterSet used to configure WFViewer
 		 * 
+		 * \verbatim
 		 * WFViewer accepts the following Parameters:
 		 * "prescale" (REQUIRED): WFViewer will only redraw historgrams once per this many events
 		 * "digital_sum_only" (Default: false): Only create the histogram, not the event snapshot
@@ -55,6 +56,7 @@ namespace demo
 		 * "fragment_ids": (REQUIRED): List of ids to process. Fragment IDs are assigned by BoardReaders.
 		 * "fileName": (Default: artdaqdemo_onmon.root): File name for output, if
 		 * "write_to_file": (Default: false): Whether to write output histograms to "fileName"
+		 * \endverbatim
 		 */
 		explicit WFViewer(fhicl::ParameterSet const& p);
 
