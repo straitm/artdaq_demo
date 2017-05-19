@@ -890,6 +890,7 @@ class SystemControl
 	  rmConfig = @options.routingmasters[1]
 	  routing_fhicl_agg = "\
 	use_routing_master: true
+    senders_send_by_send_count: true
 	routing_master_hostname: \"%s\"
 	routing_timeout_ms: %s
 	table_update_interval_ms: %s
