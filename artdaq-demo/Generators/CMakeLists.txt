@@ -22,6 +22,7 @@ simple_plugin(AsciiSimulator "generator"
   artdaq-core_Utilities
   artdaq-core_Data
   ${FHICLCPP}
+  ${MF_MESSAGELOGGER}
   ${CETLIB}
   ${CETLIB_EXCEPT}
   )
