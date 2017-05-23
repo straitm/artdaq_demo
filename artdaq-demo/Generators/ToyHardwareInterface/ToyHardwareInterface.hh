@@ -87,7 +87,8 @@ public:
 		uniform, ///< A uniform distribution
 		gaussian, ///< A Gaussian distribution
 		monotonic, ///< A monotonically-increasing distribution
-		uninitialized ///< A use-after-free expliot distribution
+		uninitialized, ///< A use-after-free expliot distribution
+		uninit2		   // like uninitialized, but do memcpy
 	};
 
 private:

@@ -187,6 +187,7 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read)
 		break;
 
 		case DistributionType::uninitialized:
+		case DistributionType::uninit2:
 			break;
 
 		default:
@@ -194,7 +195,7 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read)
 				"Unknown distribution type specified";
 		}
 
-		if (distribution_type_ != DistributionType::uninitialized)
+		if (distribution_type_ != DistributionType::uninitialized && distribution_type_ != DistributionType::uninit2)
 		{
 			std::generate_n(reinterpret_cast<data_t*>(reinterpret_cast<demo::ToyFragment::Header*>(buffer) + 1),
 							nADCcounts_,
