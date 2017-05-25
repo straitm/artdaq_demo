@@ -73,7 +73,11 @@ sed -i -r 's!^\s*record_directory.*!record_directory: '$basedir/run_records'!' .
 # file. Notice the setup of artdaq-demo is done in a subshell so as
 # not to affect this environment
 
-productsdir=$( (cd $basedir; . setupARTDAQDEMO >&/dev/null; ups active | grep xmlrpc | awk '{print $NF}' ) )
+returndir=$PWD
+cd $basedir
+productsdir=$( ( . setupARTDAQDEMO >&/dev/null; ups active | grep xmlrpc | awk '{print $NF}' ) )
+cd $returndir
+
 sed -i -r 's!^\s*productsdir_for_bash_scripts.*!productsdir_for_bash_scripts: '$productsdir'!' .settings
 
 if [[ ! -e ./docs/config.txt ]]; then
