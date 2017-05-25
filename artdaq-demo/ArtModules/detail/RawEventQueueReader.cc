@@ -5,8 +5,8 @@
 
 demo::detail::RawEventQueueReader::RawEventQueueReader(fhicl::ParameterSet const& ps,
 													   art::ProductRegistryHelper& help,
-													   art::SourceHelper const& pm) :
-																					artdaq::detail::RawEventQueueReader(ps, help, pm)
+													   art::SourceHelper const& pm)
+	: artdaq::detail::RawEventQueueReader(ps, help, pm)
 {
 	mf::LogInfo("RawEventQueueReader") << "DemoInput Constructor!";
 	for (auto& name : names)
