@@ -343,6 +343,20 @@ if [ $installStatus -eq 0 ] && [ "x${opt_run_demo-}" != "x" ]; then
 
     toolsdir=${ARTDAQ_DEMO_DIR}/tools
 
+    # JCF, May-25-2017
+
+    # Guarantee for the time being that even if we're not installing
+    # with the --develop option, the run_demo.sh from the HEAD of the
+    # artdaq-demo develop branch gets used - as of commit
+    # 6e033acc10af6ba0879d88520d82bcea0e9b1b7e, this is one which uses
+    # DAQInterface
+
+    echo "JCF, May-25-2017: OVERRIDING run_demo.sh WITH THE VERSION FROM THE HEAD OF THE develop BRANCH"
+    returndir=$PWD
+    cd $toolsdir
+    git checkout origin/develop -- run_demo.sh
+    cd $returndir
+
     . $toolsdir/run_demo.sh $Base $toolsdir
 
 elif [ $installStatus -eq 0 ]; then
