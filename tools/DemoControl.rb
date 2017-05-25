@@ -579,7 +579,7 @@ class CommandLineParser
 
 	  opts.on("-f", "--file-size [number of MB]",
 			  "Close each data file when the specified size is reached (MB).") do |fileSize|
-		@options.fileSizeThreshold = Float(fileSize * 1024)
+		@options.fileSizeThreshold = Integer(fileSize) * 1024
 	  end
 
 	  opts.on("--file-duration [minutes]",
