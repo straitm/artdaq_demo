@@ -59,7 +59,7 @@ physics: {
     }
   }
   p1: [ artdaqDemoBuildInfo ]
-  e1: [ binaryout ]
+  e1: [ rootout ]
   end_paths: [ e1 ]
 }
 
