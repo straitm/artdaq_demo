@@ -70,13 +70,14 @@ sed -i -r 's!^\s*record_directory.*!record_directory: '$basedir/run_records'!' .
 
 # Figure out which products directory contains the xmlrpc package (for
 # sending commands to DAQInterface) and set it in the .settings
-# file. Notice the setup of artdaq-demo is done in a subshell so as
-# not to affect this environment
+# file. 
 
-returndir=$PWD
-cd $basedir
-productsdir=$( ( . setupARTDAQDEMO >&/dev/null; ups active | grep xmlrpc | awk '{print $NF}' ) )
-cd $returndir
+productsdir=$( ups active | grep xmlrpc | awk '{print $NF}' )
+
+if [[ -z $productsdir ]]; then
+    echo "Unable to determine the products directory containing xmlrpc; will return..." >&2
+    return 41
+fi
 
 sed -i -r 's!^\s*productsdir_for_bash_scripts.*!productsdir_for_bash_scripts: '$productsdir'!' .settings
 
