@@ -70,6 +70,9 @@ namespace artdaq
 			return physical_transfer_->receiveFragment(fragment, receiveTimeout);
 		}
 
+	  int source_rank() const { return physical_transfer_->source_rank(); }
+	  int destination_rank() const { return physical_transfer_->destination_rank(); }
+
 
 	private:
 
@@ -85,6 +88,11 @@ namespace artdaq
 	                                                                                                          , nth_(pset.get<size_t>("nth")),
 														  offset_(pset.get<size_t>("offset",0))
 	{
+	  if (pset.has_key("source_rank") || pset.has_key("destination_rank")) {
+	    throw cet::exception("NthEvent") << "The parameters \"source_rank\" and \"destination_rank\" must be explicitly defined in the body of the physical_transfer_plugin table, and not outside of it";
+	  }
+
+
 	        if (offset_ >= nth_) {
 		  throw cet::exception("NthEvent") << "Offset value of " << offset_ << 
 		    " must not be larger than the modulus value of " << nth_;
@@ -104,6 +112,7 @@ namespace artdaq
 	NthEventTransfer::copyFragment(artdaq::Fragment& fragment,
 	                               size_t send_timeout_usec)
 	{
+	  
 	        if (!pass(fragment))
 		{
 			// Do not transfer but return success. Fragment is discarded
