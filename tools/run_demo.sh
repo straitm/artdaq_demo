@@ -1,14 +1,5 @@
 #!/bin/bash
 
-# JCF, May-25-2017
-
-# This is an initial attempt at getting run_demo to use DAQInterface
-# rather than the traditional start / manage scripts. Note that since
-# there's a certain amount of decoupling between artdaq v2_02_03 and
-# DAQInterface v1_00_02, some tweaks to the DAQInterface code via sed
-# are performed below. Some of these tweaks can and should be
-# eliminated in future artdaq / DAQInterface releases.
-
 if [ $# -lt 2 ];then
  echo "USAGE: $0 base_directory tools_directory"
  exit
@@ -92,29 +83,6 @@ fi
 
 sed -i -r 's!^\s*DAQ\s*directory\s*:.*!DAQ directory: '$basedir'!' ./docs/config.txt
 
-# Set the configuration used in run_demo to "multiple_dispatchers"
-
-sed -i -r 's/^(\s*)config=.*/config="multiple_dispatchers"/' ./bin/just_do_it.sh
-
-
-# Hacky: comment out a crosscheck performed in just_do_it.sh since it
-# may fail due to overly stringent assumptions (the performing of the
-# crosscheck, that is, not the crosscheck itself) as of DAQInterface
-# v1_00_02
-
-sed -i -r 's/^(\s*check_event_count\s*)$/#\1/' ./bin/just_do_it.sh  
-
-# Hacky-er: update the bookkeeping function used by DAQInterface
-# v1_00_02 so it works with artdaq v2_02_03 and not prior artdaq
-# versions
-
-sed -i -r 's/bookkeeping_for_fhicl_documents_artdaq_v2/bookkeeping_for_fhicl_documents_artdaq_v3/' ./rc/control/daqinterface.py
-
-# Finally, in the DAQInterface configuration file, adjust the port #'s
-# so that they agree between DAQInterface v1_00_02 and the online
-# monitoring FHiCL documents in artdaq v2_02_03
-
-sed -i -r 's/54([0-9][0-9])/52\1/' ./docs/config.txt
 
 # And now, actually run DAQInterface as described in
 # https://cdcvs.fnal.gov/redmine/projects/artdaq-utilities/wiki/Artdaq-daqinterface
