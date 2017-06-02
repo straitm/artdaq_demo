@@ -41,6 +41,7 @@ metrics: {
   ProcFile: {
      metricPluginType: procFile
      pipe: "/tmp/eventQueueStats"
+     names: [ "bytesRead", "queue%Used" ]
      level: 5
   }
 }

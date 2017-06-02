@@ -67,6 +67,7 @@ outputs: {
   rootout: {
     module_type: RootOutput
     fileName: "driver_test.root"
+    names: [ "bytesRead", "queue%Used" ]
     compressionLevel: 0
   }
 }
