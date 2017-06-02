@@ -2,7 +2,7 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/make_ParameterSet.h"
 
-#include "boost/program_options.hpp"
+#include <boost/program_options.hpp>
 
 using namespace fhicl;
 namespace bpo = boost::program_options;

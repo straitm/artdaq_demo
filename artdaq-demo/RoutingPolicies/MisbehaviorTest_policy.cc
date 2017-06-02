@@ -1,7 +1,7 @@
 #include "artdaq/Application/Routing/RoutingMasterPolicy.hh"
 #include "artdaq/Application/Routing/PolicyMacros.hh"
-#include <fhiclcpp/ParameterSet.h>
-#include <messagefacility/MessageLogger/MessageLogger.h>
+#include "fhiclcpp/ParameterSet.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 namespace demo
 {
