@@ -41,6 +41,7 @@ metrics: {
   ProcFile: {
      metricPluginType: procFile
      pipe: "/tmp/eventQueueStats"
+     names: [ "bytesRead", "queue%Used" ]
      level: 5
   }
 }
@@ -67,7 +68,6 @@ outputs: {
   rootout: {
     module_type: RootOutput
     fileName: "driver_test.root"
-    names: [ "bytesRead", "queue%Used" ]
     compressionLevel: 0
   }
 }
