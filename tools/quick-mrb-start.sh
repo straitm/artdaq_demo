@@ -341,6 +341,23 @@ installStatus=$?
 if [ $installStatus -eq 0 ] && [ "x${opt_run_demo-}" != "x" ]; then
     echo doing the demo
 
+
+    # JCF, Jun-4-2017
+
+    # run_demo.sh will git clone and checkout the official
+    # DAQInterface version release. As of this writing, though,
+    # there's a bug in the FHiCL documents within demo in the official
+    # version (v1_00_03) (see Redmine Bug #16760 if you're
+    # curious). artdaq-utilities-daqinterface commit
+    # 5179966da07a457f76783207b377a35e0a7f8712 contains the fix.
+
+    returndir=$PWD
+    cd $Base
+    git clone http://cdcvs.fnal.gov/projects/artdaq-utilities-daqinterface
+    cd artdaq-utilities-daqinterface
+    git checkout 5179966da07a457f76783207b377a35e0a7f8712
+    cd $returndir
+
     toolsdir=${ARTDAQ_DEMO_DIR}/tools
 
     . $toolsdir/run_demo.sh $Base $toolsdir
