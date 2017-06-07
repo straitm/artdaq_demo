@@ -185,7 +185,7 @@ if [[ $opt_skip_extra_products -eq 0 ]]; then
       break
     fi
   done
-  PRODUCTS_SET="$PRODUCTS"
+  PRODUCTS_SET="${PRODUCTS:-}"
 fi
 
 echo "Cloning cetpkgsupport to determine current OS"
