@@ -342,20 +342,20 @@ if [ $installStatus -eq 0 ] && [ "x${opt_run_demo-}" != "x" ]; then
     echo doing the demo
 
 
-    # JCF, Jun-4-2017
+    # JCF, Jun-12-2017
 
     # run_demo.sh will git clone and checkout the official
-    # DAQInterface version release. As of this writing, though,
-    # there's a bug in the FHiCL documents within demo in the official
-    # version (v1_00_03) (see Redmine Bug #16760 if you're
-    # curious). artdaq-utilities-daqinterface commit
-    # 5179966da07a457f76783207b377a35e0a7f8712 contains the fix.
+    # DAQInterface version release. However, I added a bugfix to
+    # DAQInterface after Ron pointed out that /tmp/listconfigs.txt,
+    # created when listconfigs is executed, causes a failure if it was
+    # previously created by another user. The fix is in commit
+    # 974f5f704850dae540f0d3bc6265147ca1384706 .
 
     returndir=$PWD
     cd $Base
     git clone http://cdcvs.fnal.gov/projects/artdaq-utilities-daqinterface
     cd artdaq-utilities-daqinterface
-    git checkout 5179966da07a457f76783207b377a35e0a7f8712
+    git checkout 974f5f704850dae540f0d3bc6265147ca1384706
     cd $returndir
 
     toolsdir=${ARTDAQ_DEMO_DIR}/tools
