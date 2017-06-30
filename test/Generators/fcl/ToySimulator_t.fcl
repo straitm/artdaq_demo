@@ -18,6 +18,8 @@ genToArt:
   event_builder:
   {
     queue_size: 20
+	max_event_size_bytes: 1000
+	fragment_count: 1
     timeout: 5.0
     print_stats: false
   }
