@@ -20,6 +20,7 @@ genToArt:
     queue_size: 20
 	max_event_size_bytes: 1000
 	fragment_count: 1
+	shared_memory_key: 0x707513
     timeout: 5.0
     print_stats: false
   }
