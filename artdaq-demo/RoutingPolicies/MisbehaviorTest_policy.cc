@@ -1,5 +1,6 @@
 #include "artdaq/Application/Routing/RoutingMasterPolicy.hh"
 #include "artdaq/Application/Routing/PolicyMacros.hh"
+#include "artdaq/DAQdata/Globals.hh"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -53,6 +54,7 @@ namespace demo
 		, misbehave_corrupt_table_data_(ps.get<bool>("misbehave_send_corrupt_table_data", false))
 		, misbehave_overload_event_builder_(ps.get<bool>("misbehave_overload_event_builder", false))
 	{
+		srand(time(0));
 		auto count = (misbehave_conflicting_table_data_ ? 1 : 0) + (misbehave_corrupt_table_data_ ? 1 : 0) + (misbehave_overload_event_builder_ ? 1 : 0) + (misbehave_pause_ms_ > 0 ? 1 : 0);
 		if (count > 1)
 		{
@@ -90,7 +92,7 @@ namespace demo
 				if (misbehave_corrupt_table_data_)
 				{
 					mf::LogError("MisbehaviorTest") << "Adding random data point";
-					output.emplace_back(rand(), rand());
+					output.emplace_back(seedAndRandom(), rand());
 				}
 				if (misbehave_overload_event_builder_)
 				{

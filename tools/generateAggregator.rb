@@ -9,9 +9,10 @@ def generateAggregator(bunchSize, fragSizeWords, sources_fhicl,
 agConfig = String.new( "\
 daq: {
   aggregator: {
-    expected_events_per_bunch: %{bunch_size}
+    expected_fragments_per_event: %{bunch_size}
+	max_fragment_size_bytes: %{size_bytes}
     print_event_store_stats: true
-    event_queue_depth: %{queue_depth}
+    buffer_count: %{queue_depth}
     event_queue_wait_time: %{queue_timeout}
     onmon_event_prescale: %{onmon_event_prescale}
     xmlrpc_client_list: \"%{xmlrpc_client_list}\"
@@ -71,6 +72,7 @@ daq: {
 
 agConfig.gsub!(/\%\{sources_fhicl\}/, sources_fhicl)
   agConfig.gsub!(/\%\{size_words\}/, String(fragSizeWords))
+  agConfig.gsub!(/\%\{size_bytes\}/, String(fragSizeWords * 8))
   agConfig.gsub!(/\%\{bunch_size\}/, String(bunchSize))  
   agConfig.gsub!(/\%\{queue_depth\}/, String(queueDepth))  
   agConfig.gsub!(/\%\{queue_timeout\}/, String(queueTimeout))  

@@ -9,8 +9,8 @@ echo "BoardReaderMain `hostname` ${ARTDAQDEMO_BR_PORT[0]}" >> $tempFile
 echo "BoardReaderMain `hostname` ${ARTDAQDEMO_BR_PORT[1]}" >> $tempFile
 echo "EventBuilderMain `hostname` ${ARTDAQDEMO_EB_PORT[0]}" >> $tempFile
 echo "EventBuilderMain `hostname` ${ARTDAQDEMO_EB_PORT[1]}" >> $tempFile
-echo "AggregatorMain `hostname` ${ARTDAQDEMO_AG_PORT[0]}" >> $tempFile
-echo "AggregatorMain `hostname` ${ARTDAQDEMO_AG_PORT[1]}" >> $tempFile
+echo "DataLoggerMain `hostname` ${ARTDAQDEMO_AG_PORT[0]}" >> $tempFile
+echo "DataLoggerMain `hostname` ${ARTDAQDEMO_AG_PORT[1]}" >> $tempFile
 echo "RoutingMasterMain `hostname` ${ARTDAQDEMO_AG_PORT[2]}" >> $tempFile
 echo "RoutingMasterMain `hostname` ${ARTDAQDEMO_AG_PORT[3]}" >> $tempFile
 

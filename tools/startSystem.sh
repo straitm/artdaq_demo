@@ -37,8 +37,8 @@ if [ "x$configFile" == "x" ]; then
   echo "BoardReaderMain `hostname` ${ARTDAQDEMO_BR_PORT[1]}" >> $tempFile
   echo "EventBuilderMain `hostname` ${ARTDAQDEMO_EB_PORT[0]}" >> $tempFile
   echo "EventBuilderMain `hostname` ${ARTDAQDEMO_EB_PORT[1]}" >> $tempFile
-  echo "AggregatorMain `hostname` ${ARTDAQDEMO_AG_PORT[0]}" >> $tempFile
-  echo "AggregatorMain `hostname` ${ARTDAQDEMO_AG_PORT[1]}" >> $tempFile
+  echo "DataLoggerMain `hostname` ${ARTDAQDEMO_AG_PORT[0]}" >> $tempFile
+  echo "DispatcherMain `hostname` ${ARTDAQDEMO_AG_PORT[1]}" >> $tempFile
 
   # create the logfile directories, if needed
   logroot="${ARTDAQDEMO_LOG_DIR:-/tmp}"

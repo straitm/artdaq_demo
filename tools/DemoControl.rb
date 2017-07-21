@@ -1017,7 +1017,7 @@ class SystemControl
 		fclWFViewer = generateWFViewer( (@options.toys + @options.asciis + @options.udps + @options.pbrs).map { |board| board.board_id } )
 		
 		ebOptions.cfg = generateEventBuilderMain(ebIndex, totalAGs,  @options.dataDir, @options.runOnmon,
-												 @options.writeData, totalBoards, fileProperties,
+												 @options.writeData, totalBoards, fullEventBuffSizeWords, fileProperties,
 												 fclWFViewer, eb_sources_fhicl, eb_destinations_fhicl,
 												 routing_fhicl_evb,routing_fhicl_agg,
 												 ebOptions.sendRequests,
