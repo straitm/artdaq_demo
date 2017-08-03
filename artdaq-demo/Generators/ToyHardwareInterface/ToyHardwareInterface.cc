@@ -208,13 +208,15 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read)
 			"Attempt to call FillBuffer when not sending data";
 	}
 
+	if (send_calls_ == 0)
+	  {  start_time_ = std::chrono::high_resolution_clock::now();
+	    TRACE( 50, "ToyHardwareInterface::FillBuffer has set the start_time_" );
+	  }
+
 	if (usecs_between_sends_ != 0)
 	{
-	  if (send_calls_ == 0)
-	    {  start_time_ = std::chrono::high_resolution_clock::now();
-	      TRACE( 50, "ToyHardwareInterface::FillBuffer has set the start_time_" );
-	    }
-	  else
+
+	  if (send_calls_ != 0)
 	    {
 
 #pragma GCC diagnostic push
