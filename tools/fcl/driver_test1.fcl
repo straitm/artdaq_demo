@@ -45,21 +45,26 @@ physics:
 {
   analyzers:
   {
+    printBuildInfo: {
+      module_type: PrintBuildInfo
+      buildinfo_module_label: BuildInfo
+      buildinfo_instance_label: ArtdaqDemo
+    }
   }
 
   producers:
   {
-  artdaqDemoBuildInfo:
+  BuildInfo:
   {
-   module_type: ArtdaqDemoBuildInfo
-
-   ArtdaqDemoBuildInfo: myInstanceName
+       module_type: ArtdaqDemoBuildInfo
+       instance_name: ArtdaqDemo
    }
   }
 
-  p1: [ artdaqDemoBuildInfo ]
-  e1: [ rootout ]
-  end_paths: [ e1 ]
+  p1: [ BuildInfo ]
+  a1: [ printBuildInfo ]
+
+  my_output_modules: [ rootout ]
 }
 
 outputs:
@@ -69,6 +74,7 @@ outputs:
   {
     module_type: RootOutput
     fileName: "driver_test1.root"
+    fastCloning: false
     compressionLevel: 0
   }
 

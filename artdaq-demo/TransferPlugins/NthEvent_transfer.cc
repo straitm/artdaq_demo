@@ -45,7 +45,7 @@ namespace artdaq
 		 */
 		TransferInterface::CopyStatus
 		copyFragment(artdaq::Fragment& fragment,
-		             size_t send_timeout_usec = std::numeric_limits<size_t>::max()) override;
+					 size_t send_timeout_usec = std::numeric_limits<size_t>::max()) override;
 
 		/**
 		 * \brief Copy a fragment, using the reliable channel. moveFragment assumes ownership of the fragment
@@ -55,7 +55,7 @@ namespace artdaq
 		 */
 		TransferInterface::CopyStatus
 		moveFragment(artdaq::Fragment&& fragment,
-		             size_t send_timeout_usec = std::numeric_limits<size_t>::max()) override;
+					 size_t send_timeout_usec = std::numeric_limits<size_t>::max()) override;
 
 		/**
 		 * \brief Receive a fragment from the transfer plugin
@@ -64,13 +64,22 @@ namespace artdaq
 		 * \return Rank of sender or RECV_TIMEOUT
 		 */
 		int receiveFragment(artdaq::Fragment& fragment,
-		                    size_t receiveTimeout) override
+							size_t receiveTimeout) override
 		{
 			// nth-event discarding is done at the send side. Pass receive calls through to underlying transfer
 			return physical_transfer_->receiveFragment(fragment, receiveTimeout);
 		}
 
+		/**
+	   * \brief Get the source rank from the physical transfer
+	   * \return The source rank from the physical transfer
+	   */
 	  int source_rank() const { return physical_transfer_->source_rank(); }
+
+		/**
+	   * \brief Get the destination rank from the physical transfer
+	   * \return The destination rank from the physical transfer
+	   */
 	  int destination_rank() const { return physical_transfer_->destination_rank(); }
 
 
@@ -84,18 +93,18 @@ namespace artdaq
 	};
 
 	NthEventTransfer::NthEventTransfer(fhicl::ParameterSet const& pset, artdaq::TransferInterface::Role role) :
-	                                                                                                          TransferInterface(pset, role)
-	                                                                                                          , nth_(pset.get<size_t>("nth")),
+																											  TransferInterface(pset, role)
+																											  , nth_(pset.get<size_t>("nth")),
 														  offset_(pset.get<size_t>("offset",0))
 	{
 	  if (pset.has_key("source_rank") || pset.has_key("destination_rank")) {
-	    throw cet::exception("NthEvent") << "The parameters \"source_rank\" and \"destination_rank\" must be explicitly defined in the body of the physical_transfer_plugin table, and not outside of it";
+		throw cet::exception("NthEvent") << "The parameters \"source_rank\" and \"destination_rank\" must be explicitly defined in the body of the physical_transfer_plugin table, and not outside of it";
 	  }
 
 
-	        if (offset_ >= nth_) {
+			if (offset_ >= nth_) {
 		  throw cet::exception("NthEvent") << "Offset value of " << offset_ << 
-		    " must not be larger than the modulus value of " << nth_;
+			" must not be larger than the modulus value of " << nth_;
 		}
 	  
 		if(nth_ == 0)
@@ -110,10 +119,10 @@ namespace artdaq
 
 	TransferInterface::CopyStatus
 	NthEventTransfer::copyFragment(artdaq::Fragment& fragment,
-	                               size_t send_timeout_usec)
+								   size_t send_timeout_usec)
 	{
 	  
-	        if (!pass(fragment))
+			if (!pass(fragment))
 		{
 			// Do not transfer but return success. Fragment is discarded
 			return TransferInterface::CopyStatus::kSuccess;
@@ -125,9 +134,9 @@ namespace artdaq
 
 	TransferInterface::CopyStatus
 	NthEventTransfer::moveFragment(artdaq::Fragment&& fragment,
-	                               size_t send_timeout_usec)
+								   size_t send_timeout_usec)
 	{
-	        if (!pass(fragment))
+			if (!pass(fragment))
 		{
 			// Do not transfer but return success. Fragment is discarded
 			return TransferInterface::CopyStatus::kSuccess;
@@ -137,15 +146,15 @@ namespace artdaq
 		return physical_transfer_->moveFragment(std::move(fragment), send_timeout_usec);
 	}
 
-        bool
+		bool
 	NthEventTransfer::pass(const artdaq::Fragment& fragment) const 
 	{
 	  bool passed = false;
 
 	  if (fragment.type() == artdaq::Fragment::DataFragmentType) {
-	    passed = (fragment.sequenceID() + nth_ - offset_) % nth_ == 0 ? true: false;
+		passed = (fragment.sequenceID() + nth_ - offset_) % nth_ == 0 ? true: false;
 	  } else {
-	    passed = true;
+		passed = true;
 	  }
  
 	  return passed;

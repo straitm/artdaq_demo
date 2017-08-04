@@ -2,7 +2,7 @@
 #  about the FHiCL language, please look at
 #  cdcvs.fnal.gov/redmine/documents/327 , the "FHiCL Quick Start Guide"
 
-events_to_generate: 30000
+events_to_generate: 300000
 run_number: 101
 transition_timeout: 30
 
@@ -59,9 +59,9 @@ physics: {
       ArtdaqDemoBuildInfo: myInstanceName
     }
   }
-  p1: [ artdaqDemoBuildInfo ]
-  e1: [ rootout ]
-  end_paths: [ e1 ]
+  #p1: [ artdaqDemoBuildInfo ]
+  #e1: [ rootout ]
+  #end_paths: [ e1 ]
 }
 
 outputs: {

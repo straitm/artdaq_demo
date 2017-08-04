@@ -30,6 +30,7 @@ demo::ToySimulator::ToySimulator(fhicl::ParameterSet const& ps)
 	, hardware_interface_(new ToyHardwareInterface(ps))
 	, timestamp_(0)
 	, timestampScale_(ps.get<int>("timestamp_scale_factor", 1))
+	, metadata_({0,0,0})
 	, readout_buffer_(nullptr)
 	, fragment_type_(static_cast<decltype(fragment_type_)>(artdaq::Fragment::InvalidFragmentType))
 	, distribution_type_(static_cast<ToyHardwareInterface::DistributionType>(ps.get<int>("distribution_type")))
@@ -38,6 +39,8 @@ demo::ToySimulator::ToySimulator(fhicl::ParameterSet const& ps)
 
 	metadata_.board_serial_number = hardware_interface_->SerialNumber();
 	metadata_.num_adc_bits = hardware_interface_->NumADCBits();
+	TRACE( 50, "ToySimulator ctor metadata_.unused=0x%zu sizeof(metadata_)=%zd"
+	      , metadata_.unused, sizeof(metadata_) );
 
 	switch (hardware_interface_->BoardType())
 	{

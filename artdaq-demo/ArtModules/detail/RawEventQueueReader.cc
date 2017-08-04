@@ -1,7 +1,7 @@
 #include "artdaq-demo/ArtModules/detail/RawEventQueueReader.hh"
 #include "artdaq-core-demo/Overlays/FragmentType.hh"
 
-#include <messagefacility/MessageLogger/MessageLogger.h>
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 demo::detail::RawEventQueueReader::RawEventQueueReader(fhicl::ParameterSet const& ps,
 													   art::ProductRegistryHelper& help,
