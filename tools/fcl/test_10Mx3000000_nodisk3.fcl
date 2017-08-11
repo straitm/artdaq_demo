@@ -2,7 +2,7 @@
 #  about the FHiCL language, please look at
 #  cdcvs.fnal.gov/redmine/documents/327 , the "FHiCL Quick Start Guide"
 
-events_to_generate: 10
+events_to_generate: 3000000
 run_number: 101
 transition_timeout: 30
 
@@ -16,9 +16,9 @@ fragment_receiver: {
    		    
    generator: ToySimulator 
    fragment_type: TOY2        # Make sure downstream modules know about this fragment_type!
-   nADCcounts: 524268         # nBytes = nADCcounts * 2 + 40, 1 MB
-   #nADCcounts: 5242860         # nBytes = nADCcounts * 2 + 40, 10 MB
-   distribution_type: 4       # 0 is uniform, 1 is gaussian, 2 is monotonic, 3 is no initialization (fastest)
+   #nADCcounts: 524268         # nBytes = nADCcounts * 2 + 40, 1 MB
+   nADCcounts: 5242860         # nBytes = nADCcounts * 2 + 40, 10 MB
+   distribution_type: 3       # 0 is uniform, 1 is gaussian, 2 is monotonic, 3 is no initialization (fastest)
    throttle_usecs: 0
    random_seed: 6514
 
@@ -30,7 +30,6 @@ fragment_receiver: {
 }  		  
 
 event_builder: {
-
   expected_fragments_per_event: 1
   use_art: true
   print_event_store_stats: false
@@ -42,6 +41,7 @@ metrics: {
   ProcFile: {
      metricPluginType: procFile
      pipe: "/tmp/eventQueueStats"
+	 names: [ "bytesRead", "queue%Used" ]
      level: 5
   }
 }
@@ -50,44 +50,32 @@ metrics: {
 # The ART code
 ######################################################################
 
-physics:
-{
-  analyzers:
-  {
+physics: {
+  analyzers: {
   }
-
-  producers:
-  {
-  artdaqDemoBuildInfo:
-  {
-   module_type: ArtdaqDemoBuildInfo
-
-   ArtdaqDemoBuildInfo: myInstanceName
-   }
+  producers: {
+    artdaqDemoBuildInfo:  {
+      module_type: ArtdaqDemoBuildInfo
+      ArtdaqDemoBuildInfo: myInstanceName
+    }
   }
-
-  p1: [ artdaqDemoBuildInfo ]
-  e1: [ rootout ]
-  end_paths: [ e1 ]
+  #p1: [ artdaqDemoBuildInfo ]
+  #e1: [ rootout ]
+  #end_paths: [ e1 ]
 }
 
-outputs:
-{
-
- rootout:
-  {
-    module_type: RootDAQOut
-    fileName: "driver_test1.root"
+outputs: {
+  rootout: {
+    module_type: RootOutput
+    fileName: "driver_test.root"
     compressionLevel: 0
   }
-
 }
 
-source:
-{
-module_type: DemoInput
-waiting_time: 900
-resume_after_timeout: true
+source: {
+  module_type: DemoInput
+  waiting_time: 900
+  resume_after_timeout: true
 }
 
 process_name: Driver
