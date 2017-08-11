@@ -14,7 +14,6 @@ def generateEventBuilderMain(ebIndex, totalAGs, dataDir, onmonEnable, diskWritin
 
 services: {
   scheduler: {
-    fileMode: NOMERGE
     errorOnFailureToPut: false
   }
   NetMonTransportServiceInterface: {

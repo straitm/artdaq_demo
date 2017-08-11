@@ -1,9 +1,9 @@
 
-def generateAggregator(bunchSize, fragSizeWords, sources_fhicl,
+def generateAggregator(bunchSize, fragSizeWords, dl_sources_fhicl, dp_sources_fhicl,
                        xmlrpcClientList,
 					   subrunSizeThreshold, subrunDuration, subrunEventCount, 
 					   queueDepth, queueTimeout, onmonEventPrescale,
-                       agType, logger_rank,has_dispatcher, dispatcher_rank, dataDir, tokenConfig,
+                       agType, dataDir, tokenConfig,
 					   withGanglia = 0, withMsgFacility = 0, withGraphite = 0)
 
 agConfig = String.new( "\
@@ -60,17 +60,8 @@ daq: {
     %{graphite_metric}   namespace: \"artdaq.\"
     %{graphite_metric} }
   }
-
-  %{TtoD} transfer_to_dispatcher: {
-  %{TtoD}   transferPluginType: Shmem
-  %{TtoD} 	source_rank: %{logger_rank}
-  %{TtoD} 	destination_rank: %{dispatcher_rank}
-  %{TtoD}     max_fragment_size_words: %{size_words}
-  %{TtoD}   }
-
 }" )
 
-agConfig.gsub!(/\%\{sources_fhicl\}/, sources_fhicl)
   agConfig.gsub!(/\%\{size_words\}/, String(fragSizeWords))
   agConfig.gsub!(/\%\{size_bytes\}/, String(fragSizeWords * 8))
   agConfig.gsub!(/\%\{bunch_size\}/, String(bunchSize))  
@@ -85,15 +76,10 @@ agConfig.gsub!(/\%\{sources_fhicl\}/, sources_fhicl)
   if agType == "online_monitor"
     #agConfig.gsub!(/\%\{ag_type_param_name\}/, "is_online_monitor")
     agConfig.gsub!(/\%\{ag_type_param_name\}/, "is_dispatcher")
+    agConfig.gsub!(/\%\{sources_fhicl\}/, dp_sources_fhicl)
   else
     agConfig.gsub!(/\%\{ag_type_param_name\}/, "is_data_logger")
-  end
-  agConfig.gsub!(/\%\{logger_rank\}/, String(logger_rank))
-  agConfig.gsub!(/\%\{dispatcher_rank\}/, String(dispatcher_rank))
-  if has_dispatcher
-  agConfig.gsub!(/\%\{TtoD\}/,"")
-  else
-  agConfig.gsub!(/\%\{TtoD\}/,"#")
+    agConfig.gsub!(/\%\{sources_fhicl\}/, dl_sources_fhicl)
   end
   
 

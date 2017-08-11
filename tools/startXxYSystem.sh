@@ -54,6 +54,7 @@ mkdir -p -m 0777 ${logroot}/pmt
 mkdir -p -m 0777 ${logroot}/masterControl
 mkdir -p -m 0777 ${logroot}/boardreader
 mkdir -p -m 0777 ${logroot}/eventbuilder
+mkdir -p -m 0777 ${logroot}/artdaqart
 
 # start PMT
 pmt.rb -p ${ARTDAQDEMO_PMT_PORT} -d $cf --logpath ${logroot} --display ${DISPLAY}

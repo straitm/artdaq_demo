@@ -23,6 +23,7 @@ function makeLogDirs() {
   mkdir -p -m 0777 $1/boardreader
   mkdir -p -m 0777 $1/eventbuilder
   mkdir -p -m 0777 $1/aggregator
+mkdir -p -m 0777 $1/artdaqart
 
 }
 

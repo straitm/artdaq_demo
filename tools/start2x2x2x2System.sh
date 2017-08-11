@@ -22,6 +22,7 @@ mkdir -p -m 0777 ${logroot}/boardreader
 mkdir -p -m 0777 ${logroot}/eventbuilder
 mkdir -p -m 0777 ${logroot}/aggregator
 mkdir -p -m 0777 ${logroot}/routingmaster
+mkdir -p -m 0777 ${logroot}/artdaqart
 
 if [[ "x${ARTDAQ_MFEXTENSIONS_DIR-}" != "x" ]] && [[ "x${DISPLAY-}" != "x" ]]; then
     configPath=$ARTDAQ_MFEXTENSIONS_DIR/config/msgviewer.fcl

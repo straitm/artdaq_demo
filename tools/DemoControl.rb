@@ -202,7 +202,7 @@ class CommandLineParser
 	@options.summary = false
 	@options.runNumber = "0101"
 	@options.serialize = false
-	@options.transferType = "MPI"
+	@options.transferType = "Autodetect"
 	@options.transferBasePort = 5300
 	@options.runOnmon = 0
 	@options.useRoutingMaster = 0
@@ -626,7 +626,7 @@ class CommandLineParser
 	  end
 
 	  opts.on("--transfer-type [type] [base_port]", Array,
-			  "Use the specified transferPluginType for data transport. Default: \"MPI\"",
+			  "Use the specified transferPluginType for data transport. Default: \"Autodetect\"",
 			  "Supported types: \"MPI\" \"TCPSocket\" \"Autodetect\"",
 			  "If TCPSocket or Autodetect are used, specify base_port (default 5300)"
 			  ) do |type|
@@ -791,8 +791,8 @@ class SystemControl
 	totalFRs = @options.boardReaders.length
 	totalEBs = @options.eventBuilders.length
 	totalAGs = @options.aggregators.length
-	logger_rank = totalFRs + totalEBs
-	dispatcher_rank = totalFRs + totalEBs + totalAGs + @options.routingmasters.length
+	totalDLs = 0
+	totalDPs = 0
 	fullEventBuffSizeWords = 2097152
 	
 	xmlrpcClients = @configGen.generateXmlRpcClientList(@options)
@@ -804,11 +804,15 @@ class SystemControl
 	br_destinations_fhicl = ""
 	eb_sources_fhicl = ""
 	eb_destinations_fhicl = ""
-	ag_sources_fhicl = ""
+	dl_sources_fhicl = ""
+	dl_destinations_fhicl = ""
+	dp_sources_fhicl = ""
+	
 	host_map = "["
 	br_ranks = []
 	eb_ranks = []
-	ag_ranks = []
+	dl_ranks = []
+	dp_ranks = []
 	# BoardReaders are EventBuilder sources
 	(@options.toys + @options.asciis + @options.udps + @options.pbrs).each { |boardreaderOptions|
 	  eb_sources_fhicl += ("s%s: { transferPluginType: %s source_rank: %s max_fragment_size_words: %s host_map: {{host_map}}}\n" % [current_rank, @options.transferType,current_rank, fullEventBuffSizeWords])
@@ -817,35 +821,41 @@ class SystemControl
 	  current_rank += 1
 	}
 
-	# Event Builders are BoardReader destinations and Aggregator sources
+	# Event Builders are BoardReader destinations and DataLogger sources
 	@options.eventBuilders.each { |ebOptions|
 	  br_destinations_fhicl += ("d%s: { transferPluginType: %s destination_rank: %s max_fragment_size_words: %s host_map: {{host_map}}}\n" % [current_rank, @options.transferType,current_rank, fullEventBuffSizeWords])
-	  ag_sources_fhicl += ("s%s: { transferPluginType: %s source_rank: %s max_fragment_size_words: %s host_map: {{host_map}}}\n" % [current_rank, @options.transferType,current_rank, fullEventBuffSizeWords])
+	  dl_sources_fhicl += ("s%s: { transferPluginType: %s source_rank: %s max_fragment_size_words: %s host_map: {{host_map}}}\n" % [current_rank, @options.transferType,current_rank, fullEventBuffSizeWords])
 	  host_map += ("{rank: %s host: \"%s\" portOffset: %s}," % [ current_rank, ebOptions.host,(current_rank * 10) + @options.transferBasePort ] )
 	  eb_ranks << current_rank
 	  current_rank += 1
 	}
 	
-	# The first aggregator is the destination for the EventBuilders
-	has_dispatcher = false
+	# The DataLoggers are the destinations for the EventBuilders and sources for the Dispatchers
+	# The Dispatchers are the destiantions for the DataLoggers
 	@options.aggregators.each { |agOptions|
 	  host_map += ("{rank: %s host: \"%s\" portOffset: %s}," % [ current_rank, agOptions.host,(current_rank * 10) + @options.transferBasePort ] )
 	  if agOptions.is_data_logger == 1
+		totalDLs += 1
 		eb_destinations_fhicl += ("d%s: { transferPluginType: %s destination_rank: %s max_fragment_size_words: %s host_map: {{host_map}}}\n" % [current_rank, @options.transferType,current_rank, fullEventBuffSizeWords])
-		ag_ranks << current_rank
+		dp_sources_fhicl += ("s%s: { transferPluginType: %s source_rank: %s max_fragment_size_words: %s host_map: {{host_map}}}\n" % [current_rank, @options.transferType,current_rank, fullEventBuffSizeWords])
+		dl_ranks << current_rank
 	  else
-	  has_dispatcher = true
-		dispatcher_rank = current_rank
+	    totalDPs += 1
+		dl_destinations_fhicl += ("d%s: { transferPluginType: %s destination_rank: %s max_fragment_size_words: %s host_map: {{host_map}}}\n" % [current_rank, @options.transferType,current_rank, fullEventBuffSizeWords])
+	  dp_ranks << current_rank
 	  end
 	  current_rank += 1
 	}
+
 
 	host_map = host_map.chomp(",")
 	host_map += "]"
 	br_destinations_fhicl.gsub!(/\{\{host_map\}\}/, host_map)
 	eb_sources_fhicl.gsub!(/\{\{host_map\}\}/, host_map)
 	eb_destinations_fhicl.gsub!(/\{\{host_map\}\}/, host_map)
-	ag_sources_fhicl.gsub!(/\{\{host_map\}\}/, host_map)
+	dl_sources_fhicl.gsub!(/\{\{host_map\}\}/, host_map)
+	dl_destinations_fhicl.gsub!(/\{\{host_map\}\}/, host_map)
+	dp_sources_fhicl.gsub!(/\{\{host_map\}\}/, host_map)
 
 	routing_fhicl_evb = "use_routing_master: false"
 	if @options.useRoutingMaster >= 1 && @options.routingmasters.length > 0
@@ -1043,10 +1053,10 @@ class SystemControl
 		if @options.onmon_modules = "" || @options.onmon_modules = nil
 		  @options.onmon_modules = ONMON_MODULES 
 		end
-		agOptions.cfg = generateAggregatorMain(@options.dataDir, agOptions.bunch_size, agOptions.is_data_logger, has_dispatcher,
+		agOptions.cfg = generateAggregatorMain(@options.dataDir, agOptions.bunch_size, agOptions.is_data_logger,
 											   @options.runOnmon, @options.writeData, agOptions.demoPrescale,
-											   agIndex, totalAGs, fullEventBuffSizeWords,
-											   ag_sources_fhicl, logger_rank, dispatcher_rank,
+											   agIndex, totalDLs, totalDPs, fullEventBuffSizeWords,
+											   dl_sources_fhicl, dl_destinations_fhicl, dp_sources_fhicl,
 											   xmlrpcClients, fileProperties,
 											   @options.subrunSizeThreshold, @options.subrunDurationSeconds,
 											   @options.eventsInSubrun, fclWFViewer, ONMON_EVENT_PRESCALE,
@@ -1089,7 +1099,7 @@ class SystemControl
 		if forceRegen || !File.file?(fileName)
 		  puts "Generating %s" % [fileName]
 		  # Default event_queue_depth is 50 or 20 depending on EventStore constructor...
-		  @options.routingmasters[1].cfg = generateRoutingMasterMain( routing_fhicl_agg, ag_ranks, eb_ranks,@options.dataDir, 20, @options.gangliaMetric, @options.msgFacilityMetric, @options.graphiteMetric)
+		  @options.routingmasters[1].cfg = generateRoutingMasterMain( routing_fhicl_agg, dl_ranks, eb_ranks,@options.dataDir, 20, @options.gangliaMetric, @options.msgFacilityMetric, @options.graphiteMetric)
 		  puts "  writing %s..." % fileName
 		  handle = File.open(fileName, "w")
 		  handle.write(@options.routingmasters[1].cfg)
