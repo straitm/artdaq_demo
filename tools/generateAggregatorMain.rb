@@ -109,9 +109,9 @@ physics: {
 
   %{root_output}my_output_modules: [ normalOutput ]
   %{root_output2}my_output_modules: [ normalOutputMod2, normalOutputMod3 ]
-  %{rootmpi_output}my_output_modules: [ rootMPIOutput ]
+  %{rootmpi_output}my_mpi_output_modules: [ rootMPIOutput ]
 }
-process_name: DAQAG"
+process_name: DAQ%{daqproccode}"
 )
 
   queueDepth, queueTimeout = -999, -999
@@ -123,11 +123,13 @@ process_name: DAQAG"
     queueDepth = 20
     queueTimeout = 5
     agType = "data_logger"
+	agCode = "DL"
   else
     diskWritingEnable = 0
     queueDepth = 20
     queueTimeout = 1
     agType = "online_monitor"
+	agCode = "DISP"
   end
 
   aggregator_code = generateAggregator( bunchSize, fragSizeWords, dl_sources_fhicl, dp_sources_fhicl,
@@ -183,6 +185,8 @@ process_name: DAQAG"
   else
 	agConfig.gsub!(/\%\{rootmpi_output\}/,"#")
   end
+
+  agConfig.gsub!(/\%\{daqproccode\}/,agCode)
 
   if Integer(onmonEnable) != 0
     agConfig.gsub!(/\%\{phys_anal_onmon_cfg\}/, fclWFViewer )
