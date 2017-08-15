@@ -272,6 +272,13 @@ mrb gitCheckout http://cdcvs.fnal.gov/projects/artdaq
 mrb gitCheckout -d artdaq_core_demo http://cdcvs.fnal.gov/projects/artdaq-core-demo
 mrb gitCheckout -d artdaq_demo http://cdcvs.fnal.gov/projects/artdaq-demo
 fi
+
+echo "Fix artdaq_utilities product_deps defaultqual line"
+artdaq_utils_defaultqual="a_u_intf_v1:${equalifier}:${squalifier}"
+sed -i "s/^defaultqual.*/defaultqual ${artdaq_utils_defaultqual}/" artdaq_utilities/ups/product_deps
+echo "Head of artdaq_utilities/ups/product_deps:"
+head artdaq_utilities/ups/product_deps
+
 else
 if [ $opt_w -gt 0 ];then
 mrb gitCheckout -t ${coredemo_version} -d artdaq_core_demo ssh://p-artdaq-core-demo@cdcvs.fnal.gov/cvs/projects/artdaq-core-demo
