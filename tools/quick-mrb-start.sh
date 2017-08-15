@@ -353,21 +353,11 @@ installStatus=$?
 if [ $installStatus -eq 0 ] && [ "x${opt_run_demo-}" != "x" ]; then
     echo doing the demo
 
-
-    # JCF, Jun-12-2017
-
-    # run_demo.sh will git clone and checkout the official
-    # DAQInterface version release. However, I added a bugfix to
-    # DAQInterface after Ron pointed out that /tmp/listconfigs.txt,
-    # created when listconfigs is executed, causes a failure if it was
-    # previously created by another user. The fix is in commit
-    # 974f5f704850dae540f0d3bc6265147ca1384706 .
-
     returndir=$PWD
     cd $Base
     git clone http://cdcvs.fnal.gov/projects/artdaq-utilities-daqinterface
     cd artdaq-utilities-daqinterface
-    git checkout 974f5f704850dae540f0d3bc6265147ca1384706
+    git checkout 058b40b11786382d8e45098f16793e15c5e8a18e
     cd $returndir
 
     toolsdir=${ARTDAQ_DEMO_DIR}/tools
