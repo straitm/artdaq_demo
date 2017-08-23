@@ -104,6 +104,35 @@ source:
       first_event_builder_rank: 0
     }
   }
+
+  dispatcher_config: {
+	label: "shmem1"
+	path: [ out ]
+	physics: {}
+	outputs: {
+	  out: {
+	    module_type: TransferOutput
+		
+  transfer_plugin: {
+
+    transferPluginType: NthEvent
+    nth: @local::modulus
+
+    unique_label: "shmem1"
+
+    physical_transfer_plugin: {
+
+      transferPluginType: Shmem
+    
+      shm_key: 0x40471452
+
+      max_fragment_size_words: 2097152
+      first_event_builder_rank: 0
+    }
+  }
+	  } 
+	}
+  }
 }
 
 process_name: TransferInputShmem

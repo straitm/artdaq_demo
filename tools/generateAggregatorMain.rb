@@ -21,6 +21,7 @@ services: {
   NetMonTransportServiceInterface: {
     service_provider: NetMonTransportService
     %{rootmpi_output}broadcast_sends: true
+    %{rootmpi_output}nonblocking_sends: true
 	%{rootmpi_output}destinations: {	
 	%{rootmpi_output}  %{destinations_fhicl}
     %{rootmpi_output}}
