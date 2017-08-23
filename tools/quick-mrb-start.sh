@@ -84,6 +84,18 @@ if [[ -n "${tag:-}" ]] && [[ $opt_develop -eq 1 ]]; then
     exit
 fi
 
+if [ "x${opt_run_demo-}" != "x" ]; then
+    
+    daqintoutput=$(  ps aux | grep "python.*daqinterface.py" | grep -v grep )
+
+    if [[ -n $daqintoutput ]]; then 
+	echo "You selected --run-demo as an option, but it appears that an instance of DAQInterface is already running:" >&2
+	echo $daqintoutput >&2
+	echo "Please kill off this process (if it's yours) and then relaunch this script" >&2
+	exit 300
+    fi
+fi
+
 # JCF, 1/16/15
 # Save all output from this script (stdout + stderr) in a file with a
 # name that looks like "quick-start.sh_Fri_Jan_16_13:58:27.script" as
@@ -348,21 +360,11 @@ installStatus=$?
 if [ $installStatus -eq 0 ] && [ "x${opt_run_demo-}" != "x" ]; then
     echo doing the demo
 
-
-    # JCF, Jun-12-2017
-
-    # run_demo.sh will git clone and checkout the official
-    # DAQInterface version release. However, I added a bugfix to
-    # DAQInterface after Ron pointed out that /tmp/listconfigs.txt,
-    # created when listconfigs is executed, causes a failure if it was
-    # previously created by another user. The fix is in commit
-    # 974f5f704850dae540f0d3bc6265147ca1384706 .
-
     returndir=$PWD
     cd $Base
     git clone http://cdcvs.fnal.gov/projects/artdaq-utilities-daqinterface
     cd artdaq-utilities-daqinterface
-    git checkout 974f5f704850dae540f0d3bc6265147ca1384706
+    git checkout 058b40b11786382d8e45098f16793e15c5e8a18e
     cd $returndir
 
     toolsdir=${ARTDAQ_DEMO_DIR}/tools
