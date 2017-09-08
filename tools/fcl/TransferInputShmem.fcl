@@ -106,7 +106,7 @@ source:
   }
 
   dispatcher_config: {
-	label: "shmem1"
+	unique_label: "shmem1"
 	path: [ out ]
 	physics: {}
 	outputs: {
