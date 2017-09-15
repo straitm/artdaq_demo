@@ -96,7 +96,7 @@ sed -i -r 's!^\s*DAQ\s*directory\s*:.*!DAQ directory: '$basedir'!' ./docs/config
     $toolsdir/xt_cmd.sh $basedir --geom 132 \
 	-c 'cd ./artdaq-utilities-daqinterface' \
         -c 'source source_me' \
-	-c 'just_do_it.sh 20'
+	-c 'just_do_it.sh 60'
 
      sleep 14;
 
@@ -123,5 +123,6 @@ sed -i -r 's!^\s*DAQ\s*directory\s*:.*!DAQ directory: '$basedir'!' ./docs/config
     	-c 'sed -r -i "/end_paths:/s/a3/a1/" '$toolsdir'/fcl/TransferInputShmem2.fcl' \
     	-c 'sed -r -i "/shm_key:/s/.*/shm_key: 0x40471453/" '$toolsdir'/fcl/TransferInputShmem2.fcl' \
     	-c 'sed -r -i "s/shmem1/shmem2/" '$toolsdir'/fcl/TransferInputShmem2.fcl' \
+		-c 'sed -r -i "s/destination_rank: 6/destination_rank: 7/" '$toolsdir'/fcl/TransferInputShmem2.fcl' \
         -c 'art -c '$toolsdir'/fcl/TransferInputShmem2.fcl'
 

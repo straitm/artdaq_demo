@@ -102,6 +102,8 @@ source:
 
       max_fragment_size_words: 2097152
       first_event_builder_rank: 0
+	  source_rank: 5
+	  destination_rank: 6
     }
   }
 
@@ -128,6 +130,7 @@ source:
 
       max_fragment_size_words: 2097152
       first_event_builder_rank: 0
+	  destination_rank: 6
     }
   }
 	  } 
