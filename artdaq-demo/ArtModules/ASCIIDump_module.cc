@@ -69,6 +69,7 @@ void demo::ASCIIDump::analyze(art::Event const& evt)
 	// ***********************
 
 	artdaq::Fragments fragments;
+	artdaq::FragmentPtrs containerFragments;
 	std::vector<std::string> fragment_type_labels{"ASCII", "Container"};
 
 	for (auto label : fragment_type_labels)
@@ -89,15 +90,8 @@ void demo::ASCIIDump::analyze(art::Event const& evt)
 				artdaq::ContainerFragment contf(cont);
 				for (size_t ii = 0; ii < contf.block_count(); ++ii)
 				{
-					size_t fragSize = contf.fragSize(ii);
-					artdaq::Fragment thisfrag;
-					thisfrag.resizeBytes(fragSize);
-
-					//mf::LogDebug("WFViewer") << "Copying " << fragSize << " bytes from " << contf.at(ii) << " to " << thisfrag.headerAddress();
-					memcpy(thisfrag.headerAddress(), contf.at(ii), fragSize);
-
-					//mf::LogDebug("WFViewer") << "Putting new fragment into output vector";
-					fragments.push_back(thisfrag);
+					containerFragments.push_back(contf[ii]);
+					fragments.push_back(*containerFragments.back());
 				}
 			}
 		}
