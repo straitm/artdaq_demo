@@ -14,5 +14,6 @@ demo::detail::RawEventQueueReader::RawEventQueueReader(fhicl::ParameterSet const
 		mf::LogInfo("RawEventQueueReader") << "Adding fragment type " << name << " to fragment_type_map, and registering with the ProductRegistryHelper";
 		fragment_type_map_[toFragmentType(name)] = name;
 		help.reconstitutes<artdaq::Fragments, art::InEvent>(pretend_module_name, name);
+		help.reconstitutes<artdaq::Fragments, art::InEvent>(pretend_module_name, "Container_" + name);
 	}
 }
