@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# JCF, Oct-5-2017
+# This script basically follows the instructions found in https://cdcvs.fnal.gov/redmine/projects/artdaq-utilities/wiki/Artdaq-daqinterface
+
 if [ $# -lt 2 ];then
  echo "USAGE: $0 base_directory tools_directory"
  exit
@@ -9,59 +12,27 @@ toolsdir=$2
 
 cd $basedir
 
-# If we don't already have the DAQInterface git repo cloned into the
-# base directory and checked out to the version number corresponding
-# to the artdaq-demo instllation, do so...
 
-if [[ -d $basedir/artdaq-utilities-daqinterface ]]; then
-    cd $basedir/artdaq-utilities-daqinterface
-else
-    
-    if [[ -e $basedir/products/artdaq_daqinterface ]]; then
-	daqinterface_version=$( ls -1 $basedir/products/artdaq_daqinterface | grep "^v[0-9]_[0-9][0-9]_[0-9][0-9]$"  )
+daqintdir=$basedir/DAQInterface
 
-	if [[ -z $daqinterface_version ]]; then
-	    echo "Unable to determine the DAQInterface version from looking in $basedir/products/artdaq_daqinterface; will exit..." >&2
-	    return 10
-	fi
+git clone http://cdcvs.fnal.gov/projects/artdaq-utilities-daqinterface
+cd artdaq-utilities-daqinterface
+git checkout cc55ad50456f1cd2a6f1ce8e6c22b627a275ac24
 
-	git clone http://cdcvs.fnal.gov/projects/artdaq-utilities-daqinterface
-	
-	if [[ "$?" != "0" ]]; then
-	    echo "Problem attempting to clone DAQInterface; will return..." >&2
-	    return 20
-	fi
+mkdir $daqintdir
+cd $daqintdir
+cp ../artdaq-utilities-daqinterface/bin/mock_ups_setup.sh .
+cp ../artdaq-utilities-daqinterface/docs/user_sourcefile_example .
+cp ../artdaq-utilities-daqinterface/docs/settings_example .
+cp ../artdaq-utilities-daqinterface/docs/known_boardreaders_list_example .
+cp ../artdaq-utilities-daqinterface/docs/boot.txt .
 
-	cd ./artdaq-utilities-daqinterface
-	git checkout ${daqinterface_version}
-	
-	if [[ "$?" != "0" ]]; then
-	    echo "Problem trying to check out DAQInterface version ${daqinterface_version} in directory $PWD ; will return..." >&2
-	    return 30
-	fi
-
-    else
-	echo "Unable to determine version of DAQInterface as there appears to be no $basedir/products/artdaq_daqinterface directory; will return..." >&2
-	return 40
-    fi
-
-fi
-
-# JCF, May-25-2017
-
-# Now automate the edits described to new DAQInterface users in
-# https://cdcvs.fnal.gov/redmine/projects/artdaq-utilities/wiki/Artdaq-daqinterface
-
-mkdir -p $basedir/run_records
-
-# Set the run records directory in the .settings file
-
-sed -i -r 's!^\s*record_directory.*!record_directory: '$basedir/run_records'!' .settings
+sed -i -r 's!^\s*export DAQINTERFACE_DIR.*!export DAQINTERFACE_DIR='$basedir/artdaq-utilities-daqinterface'!' mock_ups_setup.sh
+sed -i -r 's!^\s*export DAQINTERFACE_SETTINGS.*!export DAQINTERFACE_SETTINGS='$PWD/settings_example'!' user_sourcefile_example
 
 
 # Figure out which products directory contains the xmlrpc package (for
-# sending commands to DAQInterface) and set it in the .settings
-# file. 
+# sending commands to DAQInterface) and set it in the settings file
 
 productsdir=$( ups active | grep xmlrpc | awk '{print $NF}' )
 
@@ -70,33 +41,34 @@ if [[ -z $productsdir ]]; then
     return 41
 fi
 
-sed -i -r 's!^\s*productsdir_for_bash_scripts.*!productsdir_for_bash_scripts: '$productsdir'!' .settings
+sed -i -r 's!^\s*productsdir_for_bash_scripts:.*!productsdir_for_bash_scripts: '$productsdir'!' settings_example
 
-if [[ ! -e ./docs/config.txt ]]; then
-    echo "Unable to find the DAQInterface configuration file ./docs/config.txt; will return..." >&2
-    return 50
-fi
+mkdir -p $basedir/run_records
 
-# Set the artdaq-demo installation location described in the
-# DAQInterface configuration file to the one this script is running
-# out of
+# Set the run records directory in the .settings file
 
-sed -i -r 's!^\s*DAQ\s*directory\s*:.*!DAQ directory: '$basedir'!' ./docs/config.txt
+sed -i -r 's!^\s*record_directory.*!record_directory: '$basedir/run_records'!' settings_example
+
+# Set the artdaq-demo setup script whose creation was part of the artdaq-demo installation
+
+sed -i -r 's!^\s*DAQ setup script:.*!DAQ setup script: '$basedir'/setupARTDAQDEMO!' boot.txt
 
 
 # And now, actually run DAQInterface as described in
 # https://cdcvs.fnal.gov/redmine/projects/artdaq-utilities/wiki/Artdaq-daqinterface
 
-    $toolsdir/xt_cmd.sh $basedir --geom '132x33 -sl 2500' \
-        -c 'cd ./artdaq-utilities-daqinterface' \
-        -c 'source source_me' \
+    $toolsdir/xt_cmd.sh $daqintdir --geom '132x33 -sl 2500' \
+        -c 'source mock_ups_setup.sh' \
+	-c 'export DAQINTERFACE_USER_SOURCEFILE=$PWD/user_sourcefile_example' \
+	-c 'source $DAQINTERFACE_DIR/source_me' \
 	-c 'DAQInterface'
     sleep 2
 
-    $toolsdir/xt_cmd.sh $basedir --geom 132 \
-	-c 'cd ./artdaq-utilities-daqinterface' \
-        -c 'source source_me' \
-	-c 'just_do_it.sh 20'
+    $toolsdir/xt_cmd.sh $daqintdir --geom 132 \
+        -c 'source mock_ups_setup.sh' \
+	-c 'export DAQINTERFACE_USER_SOURCEFILE=$PWD/user_sourcefile_example' \
+	-c 'source $DAQINTERFACE_DIR/source_me' \
+	-c 'just_do_it.sh $PWD/boot.txt 20'
 
      sleep 14;
 
