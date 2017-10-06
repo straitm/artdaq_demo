@@ -70,7 +70,7 @@ void demo::ASCIIDump::analyze(art::Event const& evt)
 
 	artdaq::Fragments fragments;
 	artdaq::FragmentPtrs containerFragments;
-	std::vector<std::string> fragment_type_labels{"ASCII", "Container_ASCII"};
+	std::vector<std::string> fragment_type_labels{"ASCII", "ContainerASCII"};
 
 	for (auto label : fragment_type_labels)
 	{

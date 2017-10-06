@@ -167,7 +167,7 @@ void demo::WFViewer::analyze(art::Event const& e)
 
 	artdaq::Fragments fragments;
 	artdaq::FragmentPtrs containerFragments;
-	std::vector<std::string> fragment_type_labels{"TOY1","TOY2","Container_TOY1", "Container_TOY2"};
+	std::vector<std::string> fragment_type_labels{"TOY1","TOY2","ContainerTOY1", "ContainerTOY2"};
 
 	for (auto label: fragment_type_labels)
 	{
