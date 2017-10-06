@@ -90,7 +90,7 @@ void demo::ToyDump::analyze(art::Event const& evt)
 
 	artdaq::Fragments fragments;
 	artdaq::FragmentPtrs containerFragments;
-	std::vector<std::string> fragment_type_labels{"TOY1", "TOY2", "Container"};
+	std::vector<std::string> fragment_type_labels{"TOY1", "TOY2", "ContainerTOY1", "ContainerTOY2"};
 
 	for (auto label : fragment_type_labels)
 	{
