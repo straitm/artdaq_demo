@@ -115,7 +115,7 @@ bool demo::ToySimulator::getNext_(artdaq::FragmentPtrs& frags)
 
 	if (metricMan != nullptr)
 	{
-		metricMan->sendMetric("Fragments Sent", ev_counter(), "Events", 3);
+		metricMan->sendMetric("Fragments Sent", ev_counter(), "Events", 3, artdaq::MetricMode::LastPoint);
 	}
 
 	ev_counter_inc();
