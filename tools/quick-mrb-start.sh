@@ -84,17 +84,6 @@ if [[ -n "${tag:-}" ]] && [[ $opt_develop -eq 1 ]]; then
     exit
 fi
 
-if [ "x${opt_run_demo-}" != "x" ]; then
-    
-    daqintoutput=$(  ps aux | grep "python.*daqinterface.py" | grep -v grep )
-
-    if [[ -n $daqintoutput ]]; then 
-	echo "You selected --run-demo as an option, but it appears that an instance of DAQInterface is already running:" >&2
-	echo $daqintoutput >&2
-	echo "Please kill off this process (if it's yours) and then relaunch this script" >&2
-	exit 300
-    fi
-fi
 
 # JCF, 1/16/15
 # Save all output from this script (stdout + stderr) in a file with a
@@ -318,6 +307,7 @@ if [[ "x${opt_viewer-}" != "x" ]] && [[ $opt_develop -eq 1 ]]; then
     detectAndPull qt ${os}-x86_64 ${equalifier} ${qtver}
 fi
 
+
 ARTDAQ_DEMO_DIR=$Base/srcs/artdaq_demo
 ARTDAQ_DIR=$Base/srcs/artdaq
 cd $Base
@@ -357,29 +347,72 @@ export CETPKG_J=$((`cat /proc/cpuinfo|grep processor|tail -1|awk '{print $3}'` +
 mrb build    # VERBOSE=1
 installStatus=$?
 
-if [ $installStatus -eq 0 ] && [ "x${opt_run_demo-}" != "x" ]; then
-    echo doing the demo
-
-    returndir=$PWD
-    cd $Base
-    git clone http://cdcvs.fnal.gov/projects/artdaq-utilities-daqinterface
-    cd artdaq-utilities-daqinterface
-    git checkout 058b40b11786382d8e45098f16793e15c5e8a18e
-    cd $returndir
-
-    toolsdir=${ARTDAQ_DEMO_DIR}/tools
-
-    . $toolsdir/run_demo.sh $Base $toolsdir
-
-elif [ $installStatus -eq 0 ]; then
+if [ $installStatus -eq 0 ]; then
     echo "artdaq-demo has been installed correctly. Please see: "
     echo "https://cdcvs.fnal.gov/redmine/projects/artdaq-demo/wiki/Running_a_sample_artdaq-demo_system"
     echo "for instructions on how to run, or re-run this script with the --run-demo option"
     echo
+    echo "Will now install DAQInterface as described at https://cdcvs.fnal.gov/redmine/projects/artdaq-utilities/wiki/Artdaq-daqinterface..."
 else
     echo "BUILD ERROR!!! SOMETHING IS VERY WRONG!!!"
     echo
+    echo "Skipping installation of DAQInterface"
+    echo
+    exit 1
 fi
+
+# Now, install DAQInterface, basically following the instructions at
+# https://cdcvs.fnal.gov/redmine/projects/artdaq-utilities/wiki/Artdaq-daqinterface
+
+daqintdir=$Base/DAQInterface
+
+# Nov-20-2017: in order to allow for more than one DAQInterface to run
+# on the system at once, we need to take it from its current HEAD of
+# the develop branch, fbfd4114dfe305da4a2fb81d9aaa4a734e523043
+
+cd $Base
+git clone http://cdcvs.fnal.gov/projects/artdaq-utilities-daqinterface
+cd artdaq-utilities-daqinterface
+git checkout fbfd4114dfe305da4a2fb81d9aaa4a734e523043
+
+mkdir $daqintdir
+cd $daqintdir
+cp ../artdaq-utilities-daqinterface/bin/mock_ups_setup.sh .
+cp ../artdaq-utilities-daqinterface/docs/user_sourcefile_example .
+cp ../artdaq-utilities-daqinterface/docs/settings_example .
+cp ../artdaq-utilities-daqinterface/docs/known_boardreaders_list_example .
+cp ../artdaq-utilities-daqinterface/docs/boot.txt .
+
+sed -i -r 's!^\s*export DAQINTERFACE_DIR.*!export DAQINTERFACE_DIR='$Base/artdaq-utilities-daqinterface'!' mock_ups_setup.sh
+sed -i -r 's!^\s*export DAQINTERFACE_SETTINGS.*!export DAQINTERFACE_SETTINGS='$PWD/settings_example'!' user_sourcefile_example
+
+
+# Figure out which products directory contains the xmlrpc package (for
+# sending commands to DAQInterface) and set it in the settings file
+
+productsdir=$( ups active | grep xmlrpc | awk '{print $NF}' )
+
+if [[ -z $productsdir ]]; then
+    echo "Unable to determine the products directory containing xmlrpc; will return..." >&2
+    return 41
+fi
+
+sed -i -r 's!^\s*productsdir_for_bash_scripts:.*!productsdir_for_bash_scripts: '$productsdir'!' settings_example
+
+mkdir -p $Base/run_records
+
+sed -i -r 's!^\s*record_directory.*!record_directory: '$Base/run_records'!' settings_example
+
+sed -i -r 's!^\s*DAQ setup script:.*!DAQ setup script: '$Base'/setupARTDAQDEMO!' boot.txt
+
+if [ "x${opt_run_demo-}" != "x" ]; then
+    echo doing the demo
+
+    toolsdir=${ARTDAQ_DEMO_DIR}/tools
+
+    . $toolsdir/run_demo.sh $Base $toolsdir
+fi
+
 
 endtime=`date`
 
