@@ -405,12 +405,15 @@ sed -i -r 's!^\s*record_directory.*!record_directory: '$Base/run_records'!' sett
 
 sed -i -r 's!^\s*DAQ setup script:.*!DAQ setup script: '$Base'/setupARTDAQDEMO!' boot.txt
 
+cd $Base
+wget https://cdcvs.fnal.gov/redmine/projects/artdaq-demo/repository/revisions/develop/raw/tools/run_demo.sh
+
 if [ "x${opt_run_demo-}" != "x" ]; then
     echo doing the demo
 
     toolsdir=${ARTDAQ_DEMO_DIR}/tools
 
-    . $toolsdir/run_demo.sh $Base $toolsdir
+    . ./run_demo.sh $Base $toolsdir
 fi
 
 
