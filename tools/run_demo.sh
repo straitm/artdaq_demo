@@ -26,14 +26,14 @@ fi
     $toolsdir/xt_cmd.sh $daqintdir --geom '132x33 -sl 2500' \
         -c 'source mock_ups_setup.sh' \
 	-c 'export DAQINTERFACE_USER_SOURCEFILE=$PWD/user_sourcefile_example' \
-	-c 'source $DAQINTERFACE_DIR/source_me' \
+	-c 'source $ARTDAQ_DAQINTERFACE_DIR/source_me' \
 	-c 'DAQInterface'
     sleep 2
 
     $toolsdir/xt_cmd.sh $daqintdir --geom 132 \
         -c 'source mock_ups_setup.sh' \
 	-c 'export DAQINTERFACE_USER_SOURCEFILE=$PWD/user_sourcefile_example' \
-	-c 'source $DAQINTERFACE_DIR/source_me' \
+	-c 'source $ARTDAQ_DAQINTERFACE_DIR/source_me' \
 	-c 'just_do_it.sh $PWD/boot.txt 20'
 
      sleep 14;
