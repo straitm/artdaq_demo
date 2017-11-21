@@ -366,14 +366,14 @@ fi
 
 daqintdir=$Base/DAQInterface
 
-# Nov-20-2017: in order to allow for more than one DAQInterface to run
+# Nov-21-2017: in order to allow for more than one DAQInterface to run
 # on the system at once, we need to take it from its current HEAD of
-# the develop branch, fbfd4114dfe305da4a2fb81d9aaa4a734e523043
+# the develop branch, 6c15e15c0f6e06282f2fd5dd8ad478659fdb29bd
 
 cd $Base
 git clone http://cdcvs.fnal.gov/projects/artdaq-utilities-daqinterface
 cd artdaq-utilities-daqinterface
-git checkout fbfd4114dfe305da4a2fb81d9aaa4a734e523043
+git checkout 6c15e15c0f6e06282f2fd5dd8ad478659fdb29bd
 
 mkdir $daqintdir
 cd $daqintdir
@@ -383,7 +383,7 @@ cp ../artdaq-utilities-daqinterface/docs/settings_example .
 cp ../artdaq-utilities-daqinterface/docs/known_boardreaders_list_example .
 cp ../artdaq-utilities-daqinterface/docs/boot.txt .
 
-sed -i -r 's!^\s*export DAQINTERFACE_DIR.*!export DAQINTERFACE_DIR='$Base/artdaq-utilities-daqinterface'!' mock_ups_setup.sh
+sed -i -r 's!^\s*export ARTDAQ_DAQINTERFACE_DIR.*!export ARTDAQ_DAQINTERFACE_DIR='$Base/artdaq-utilities-daqinterface'!' mock_ups_setup.sh
 sed -i -r 's!^\s*export DAQINTERFACE_SETTINGS.*!export DAQINTERFACE_SETTINGS='$PWD/settings_example'!' user_sourcefile_example
 
 
