@@ -99,9 +99,7 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read)
 	{
 		usleep(throttle_usecs_);
 
-		auto elapsed_secs_since_datataking_start =
-			std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now()
-															 - start_time_).count();
+		auto elapsed_secs_since_datataking_start = artdaq::TimeUtils::GetElapsedTime(start_time_);
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-compare"
@@ -209,7 +207,7 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read)
 	}
 
 	if (send_calls_ == 0)
-	  {  start_time_ = std::chrono::high_resolution_clock::now();
+	  {  start_time_ = std::chrono::steady_clock::now();
 	    TRACE( 50, "ToyHardwareInterface::FillBuffer has set the start_time_" );
 	  }
 
@@ -222,9 +220,7 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-compare"
 
-			auto usecs_since_start =
-				std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now()
-																	  - start_time_).count();
+			auto usecs_since_start = artdaq::TimeUtils::GetElapsedTimeMicroseconds(start_time_);
 			long delta = (long)(usecs_between_sends_ * send_calls_) - usecs_since_start;
 			if (delta > 0)
 				usleep(delta);

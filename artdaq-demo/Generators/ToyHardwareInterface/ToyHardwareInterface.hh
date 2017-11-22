@@ -108,7 +108,7 @@ private:
 	std::size_t usecs_between_sends_;
 	DistributionType distribution_type_;
 
-	using time_type = decltype(std::chrono::high_resolution_clock::now());
+	using time_type = decltype(std::chrono::steady_clock::now());
 
 	const time_type fake_time_ = std::numeric_limits<time_type>::max();
 
