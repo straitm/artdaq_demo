@@ -5,9 +5,11 @@
 tools/fcl/ToySimulator.fcl
 tools/fcl/V172xSimulator.fcl
 tools/fcl/WFViewer.fcl
+tools/fcl/TransferInputShmem2.fcl
 
 Aggregator_*.fcl
 BoardReader_*.fcl
 EventBuilder_*.fcl
 
 NONE
+.editorconfig
