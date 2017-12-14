@@ -71,6 +71,28 @@ namespace artdaq
 		}
 
 		/**
+		* \brief Receive a Fragment Header from the transport mechanism
+		* \param[out] header Received Fragment Header
+		* \param receiveTimeout Timeout for receive
+		* \return The rank the Fragment was received from (should be source_rank), or RECV_TIMEOUT
+		*/
+		int receiveFragmentHeader(detail::RawFragmentHeader& header, size_t receiveTimeout) override
+		{
+			return physical_transfer_->receiveFragmentHeader(header, receiveTimeout);
+		}
+
+		/**
+		* \brief Receive the body of a Fragment to the given destination pointer
+		* \param destination Pointer to memory region where Fragment data should be stored
+		* \param wordCount Number of words of Fragment data to receive
+		* \return The rank the Fragment was received from (should be source_rank), or RECV_TIMEOUT
+		*/
+		int receiveFragmentData(RawDataType* destination, size_t wordCount) override
+		{
+			return physical_transfer_->receiveFragmentData(destination, wordCount);
+		}
+
+		/**
 	   * \brief Get the source rank from the physical transfer
 	   * \return The source rank from the physical transfer
 	   */

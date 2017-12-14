@@ -1,13 +1,14 @@
 
-def generateEventBuilder( totalFragments, verbose, sources_fhicl, dataDir,tokenConfig, sendRequests = 0, withGanglia = 0, withMsgFacility = 0, withGraphite = 0)
+def generateEventBuilder( totalFragments, fullEventBuffSizeWords, verbose, sources_fhicl, dataDir,tokenConfig, sendRequests = 0, withGanglia = 0, withMsgFacility = 0, withGraphite = 0)
 
 ebConfig = String.new( "\
 daq: {
   event_builder: {
 	expected_fragments_per_event: %{total_fragments}
+	max_event_size_bytes: %{size_bytes}
 	use_art: true
 	print_event_store_stats: true
-	max_incomplete_events: 75 # Same as boardreader sync interval
+	buffer_count: 20
 	verbose: %{verbose}
 	send_requests: %{requests_enabled}
 	
@@ -52,6 +53,7 @@ daq: {
 )
 
   ebConfig.gsub!(/\%\{total_fragments\}/, String(totalFragments))
+  ebConfig.gsub!(/\%\{size_bytes\}/, String(fullEventBuffSizeWords * 8))
   ebConfig.gsub!(/\%\{verbose\}/, String(verbose))
   ebConfig.gsub!(/\%\{sources_fhicl\}/, sources_fhicl)
   ebConfig.gsub!(/\%\{token_config\}/, tokenConfig)

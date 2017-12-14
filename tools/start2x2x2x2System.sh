@@ -9,8 +9,8 @@ echo "BoardReaderMain `hostname` ${ARTDAQDEMO_BR_PORT[0]}" >> $tempFile
 echo "BoardReaderMain `hostname` ${ARTDAQDEMO_BR_PORT[1]}" >> $tempFile
 echo "EventBuilderMain `hostname` ${ARTDAQDEMO_EB_PORT[0]}" >> $tempFile
 echo "EventBuilderMain `hostname` ${ARTDAQDEMO_EB_PORT[1]}" >> $tempFile
-echo "AggregatorMain `hostname` ${ARTDAQDEMO_AG_PORT[0]}" >> $tempFile
-echo "AggregatorMain `hostname` ${ARTDAQDEMO_AG_PORT[1]}" >> $tempFile
+echo "DataLoggerMain `hostname` ${ARTDAQDEMO_AG_PORT[0]}" >> $tempFile
+echo "DataLoggerMain `hostname` ${ARTDAQDEMO_AG_PORT[1]}" >> $tempFile
 echo "RoutingMasterMain `hostname` ${ARTDAQDEMO_AG_PORT[2]}" >> $tempFile
 echo "RoutingMasterMain `hostname` ${ARTDAQDEMO_AG_PORT[3]}" >> $tempFile
 
@@ -22,6 +22,7 @@ mkdir -p -m 0777 ${logroot}/boardreader
 mkdir -p -m 0777 ${logroot}/eventbuilder
 mkdir -p -m 0777 ${logroot}/aggregator
 mkdir -p -m 0777 ${logroot}/routingmaster
+mkdir -p -m 0777 ${logroot}/artdaqart
 
 if [[ "x${ARTDAQ_MFEXTENSIONS_DIR-}" != "x" ]] && [[ "x${DISPLAY-}" != "x" ]]; then
     configPath=$ARTDAQ_MFEXTENSIONS_DIR/config/msgviewer.fcl

@@ -1,6 +1,5 @@
 art_make( BASENAME_ONLY
  LIBRARY_NAME artdaq-demo_ArtModules
- SUBDIRS detail
   NO_PLUGINS
   DICT_DICTIONARIES
   ${ART_PERSISTENCY_PROVENANCE}
@@ -73,7 +72,7 @@ simple_plugin(CheckIntegrity "module"
 )
 
 simple_plugin(DemoInput "source"
-  artdaq-demo_ArtModules
+ artdaq-core-demo_Overlays 
   artdaq_ArtModules
   art_Framework_Core
   art_Framework_IO_Sources

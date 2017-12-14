@@ -10,6 +10,6 @@ tools/fcl/TransferInputShmem2.fcl
 Aggregator_*.fcl
 BoardReader_*.fcl
 EventBuilder_*.fcl
-
+.editorconfig
 NONE
 .editorconfig

@@ -4,7 +4,7 @@
 #include "artdaq-core-demo/Overlays/FragmentType.hh"
 
 #include "fhiclcpp/ParameterSet.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include <random>
 #include <unistd.h>
@@ -99,9 +99,7 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read)
 	{
 		usleep(throttle_usecs_);
 
-		auto elapsed_secs_since_datataking_start =
-			std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now()
-															 - start_time_).count();
+		auto elapsed_secs_since_datataking_start = artdaq::TimeUtils::GetElapsedTime(start_time_);
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-compare"
@@ -209,31 +207,28 @@ void ToyHardwareInterface::FillBuffer(char* buffer, size_t* bytes_read)
 	}
 
 	if (send_calls_ == 0)
-	  {  start_time_ = std::chrono::high_resolution_clock::now();
+	  {  start_time_ = std::chrono::steady_clock::now();
 	    TRACE( 50, "ToyHardwareInterface::FillBuffer has set the start_time_" );
 	  }
 
 	if (usecs_between_sends_ != 0)
 	{
 
-	  if (send_calls_ != 0)
+        if (send_calls_ != 0)
 	    {
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-compare"
 
-		auto usecs_since_start =
-			std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now()
-									      - start_time_).count();
-		long delta = (long)(usecs_between_sends_ * send_calls_) - usecs_since_start;
-		if (delta > 0)
-			usleep(delta);
+			auto usecs_since_start = artdaq::TimeUtils::GetElapsedTimeMicroseconds(start_time_);
+			long delta = (long)(usecs_between_sends_ * send_calls_) - usecs_since_start;
+			if (delta > 0)
+				usleep(delta);
 
-		TRACE(15, "ToyHardwareInterface::FillBuffer send_calls=%d usecs_since_start=%ld delta=%ld"
-			  , send_calls_, usecs_since_start, delta);
+			TLOG_ARB(15, "ToyHardwareInterface") << "FillBuffer send_calls=" << std::to_string(send_calls_) << " usecs_since_start=" << std::to_string(usecs_since_start) << " delta=" << std::to_string(delta) << TLOG_ENDL;
 
 #pragma GCC diagnostic pop
-	    }
+		}
 	}
 	++send_calls_;
 }
