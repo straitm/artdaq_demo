@@ -11,5 +11,7 @@ Aggregator_*.fcl
 BoardReader_*.fcl
 EventBuilder_*.fcl
 .editorconfig
+bin/*
+obj/*
+*.vcxproj*
 NONE
-.editorconfig
