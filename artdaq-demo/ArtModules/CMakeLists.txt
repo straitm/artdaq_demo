@@ -4,7 +4,7 @@ art_make( BASENAME_ONLY
   DICT_DICTIONARIES
   ${ART_PERSISTENCY_PROVENANCE}
   ${CANVAS_PERSISTENCY_PROVENANCE}
- LIB_LIBRARIES 
+ LIB_LIBRARIES
  artdaq-core-demo_Overlays 
  artdaq_ArtModules
   art_Framework_Core
@@ -72,7 +72,10 @@ simple_plugin(CheckIntegrity "module"
 )
 
 simple_plugin(DemoInput "source"
- artdaq-core-demo_Overlays 
+ artdaq-core-demo_Overlays
+  artdaq-core_Core
+  artdaq_DAQdata
+  artdaq-utilities_Plugins
   artdaq_ArtModules
   art_Framework_Core
   art_Framework_IO_Sources
