@@ -236,6 +236,8 @@ else
     build_type="prof"
 fi
 
+
+
 wget http://scisoft.fnal.gov/scisoft/bundles/tools/pullProducts
 chmod +x pullProducts
 ./pullProducts $Base/products ${os} artdaq_demo-${demo_version} ${squalifier}-${equalifier} ${build_type}
@@ -258,20 +260,35 @@ set +u
 source $Base/localProducts_artdaq_demo_${demo_version}_${equalifier}_${squalifier}_${build_type}/setup
 set -u
 
+returndir=$PWD
+cd $Base/products
+wget http://scisoft.fnal.gov/scisoft/packages/cetbuildtools/v5_14_04/cetbuildtools-5.14.04-noarch.tar.bz2
+tar xjf cetbuildtools-5.14.04-noarch.tar.bz2
+wget http://scisoft.fnal.gov/scisoft/packages/cmake/v3_9_2/cmake-3.9.2-sl7-x86_64.tar.bz2
+tar xjf cmake-3.9.2-sl7-x86_64.tar.bz2
+wget http://scisoft.fnal.gov/scisoft/packages/TRACE/v3_13_01/TRACE-3.13.01-slf7-x86_64.tar.bz2
+tar xjf TRACE-3.13.01-slf7-x86_64.tar.bz2
+cd $returndir
+
 cd $MRB_SOURCE
 if [[ $opt_develop -eq 1 ]]; then
 if [ $opt_w -gt 0 ];then
+echo "JCF, Jan-2-2018: write-to-repo option not (yet) supported with this version of the quick-mrb-start.sh script" >&2
+exit 1
 mrb gitCheckout -d artdaq_core ssh://p-artdaq@cdcvs.fnal.gov/cvs/projects/artdaq-core
 mrb gitCheckout -d artdaq_utilities ssh://p-artdaq-utilities@cdcvs.fnal.gov/cvs/projects/artdaq-utilities
 mrb gitCheckout ssh://p-artdaq@cdcvs.fnal.gov/cvs/projects/artdaq
 mrb gitCheckout -d artdaq_core_demo ssh://p-artdaq-core-demo@cdcvs.fnal.gov/cvs/projects/artdaq-core-demo
 mrb gitCheckout -d artdaq_demo ssh://p-artdaq-demo@cdcvs.fnal.gov/cvs/projects/artdaq-demo
 else
-mrb gitCheckout -d artdaq_core http://cdcvs.fnal.gov/projects/artdaq-core
+mrb gitCheckout -d artdaq_core -b no_rootio http://cdcvs.fnal.gov/projects/artdaq-core
 mrb gitCheckout -d artdaq_utilities http://cdcvs.fnal.gov/projects/artdaq-utilities
 mrb gitCheckout http://cdcvs.fnal.gov/projects/artdaq
 mrb gitCheckout -d artdaq_core_demo http://cdcvs.fnal.gov/projects/artdaq-core-demo
 mrb gitCheckout -d artdaq_demo http://cdcvs.fnal.gov/projects/artdaq-demo
+mrb gitCheckout -d artdaq_ganglia_plugin http://cdcvs.fnal.gov/projects/artdaq-utilities-ganglia-plugin
+mrb gitCheckout -d artdaq_epics_plugin http://cdcvs.fnal.gov/projects/artdaq-utilities-epics-plugin
+mrb gitCheckout -d artdaq_mfextensions http://cdcvs.fnal.gov/projects/mf-extensions-git
 fi
 
 echo "Fix artdaq_utilities product_deps defaultqual line"
@@ -279,6 +296,12 @@ artdaq_utils_defaultqual="a_u_intf_v1:${equalifier}:${squalifier}"
 sed -i "s/^defaultqual.*/defaultqual ${artdaq_utils_defaultqual}/" artdaq_utilities/ups/product_deps
 echo "Head of artdaq_utilities/ups/product_deps:"
 head artdaq_utilities/ups/product_deps
+
+echo "Fix artdaq_core product_deps defaultqual line"
+artdaq_core_defaultqual="${equalifier}:${squalifier}"
+sed -i "s/^defaultqual.*/defaultqual ${artdaq_core_defaultqual}/" artdaq_core/ups/product_deps
+echo "Head of artdaq_core/ups/product_deps:"
+head artdaq_core/ups/product_deps
 
 else
 if [ $opt_w -gt 0 ];then
@@ -316,7 +339,12 @@ echo # This script is intended to be sourced.
 
 sh -c "[ \`ps \$\$ | grep bash | wc -l\` -gt 0 ] || { echo 'Please switch to the bash shell before running the artdaq-demo.'; exit; }" || exit
 
+if [[ -e /cvmfs/fermilab.opensciencegrid.org/products/artdaq ]]; then
+    . /cvmfs/fermilab.opensciencegrid.org/products/artdaq/setup
+fi
+
 source $Base/products/setup
+
 export PRODUCTS=$PRODUCTS_SET
 setup mrb
 source $Base/localProducts_artdaq_demo_${demo_version}_${equalifier}_${squalifier}_${build_type}/setup
