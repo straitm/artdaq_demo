@@ -399,9 +399,20 @@ daqintdir=$Base/DAQInterface
 # the develop branch, 6c15e15c0f6e06282f2fd5dd8ad478659fdb29bd
 
 cd $Base
+
+if [[ $opt_develop -eq 1 ]]; then 
+
+git clone ssh://p-artdaq-utilities@cdcvs.fnal.gov/cvs/projects/artdaq-utilities-daqinterface
+cd artdaq-utilities-daqinterface
+git checkout develop
+
+else
+
 git clone http://cdcvs.fnal.gov/projects/artdaq-utilities-daqinterface
 cd artdaq-utilities-daqinterface
 git checkout 6c15e15c0f6e06282f2fd5dd8ad478659fdb29bd
+
+fi
 
 mkdir $daqintdir
 cd $daqintdir
