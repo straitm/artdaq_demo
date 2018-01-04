@@ -1,4 +1,5 @@
 #include "artdaq-demo/Generators/ToyHardwareInterface/ToyHardwareInterface.hh"
+#define TRACE_NAME "ToyHardwareInterface"
 #include "artdaq/DAQdata/Globals.hh"
 #include "artdaq-core-demo/Overlays/ToyFragment.hh"
 #include "artdaq-core-demo/Overlays/FragmentType.hh"

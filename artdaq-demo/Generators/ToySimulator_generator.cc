@@ -20,7 +20,8 @@
 #include <iostream>
 
 #include <unistd.h>
-#include "trace.h"		// TRACE
+#define TRACE_NAME "ToySimulator"
+#include "tracemf.h"		// TRACE, TLOG*
 #include "cetlib_except/exception.h"
 
 demo::ToySimulator::ToySimulator(fhicl::ParameterSet const& ps)

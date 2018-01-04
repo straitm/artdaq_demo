@@ -5,12 +5,12 @@ source `which setupDemoEnvironment.sh`
 # create the configuration file for PMT
 tempFile="/tmp/pmtConfig.$$"
 
-echo "BoardReaderMain `hostname` ${ARTDAQDEMO_BR_PORT[0]}" >> $tempFile
-echo "BoardReaderMain `hostname` ${ARTDAQDEMO_BR_PORT[1]}" >> $tempFile
-echo "EventBuilderMain `hostname` ${ARTDAQDEMO_EB_PORT[0]}" >> $tempFile
-echo "EventBuilderMain `hostname` ${ARTDAQDEMO_EB_PORT[1]}" >> $tempFile
-echo "DataLoggerMain `hostname` ${ARTDAQDEMO_AG_PORT[0]}" >> $tempFile
-echo "DispatcherMain `hostname` ${ARTDAQDEMO_AG_PORT[1]}" >> $tempFile
+echo "BoardReaderMain!`hostname`!id:${ARTDAQDEMO_BR_PORT[0]} commanderPluginType:xmlrpc" >> $tempFile
+echo "BoardReaderMain!`hostname`!id:${ARTDAQDEMO_BR_PORT[1]} commanderPluginType:xmlrpc" >> $tempFile
+echo "EventBuilderMain!`hostname`!id:${ARTDAQDEMO_EB_PORT[0]} commanderPluginType:xmlrpc" >> $tempFile
+echo "EventBuilderMain!`hostname`!id:${ARTDAQDEMO_EB_PORT[1]} commanderPluginType:xmlrpc" >> $tempFile
+echo "DataLoggerMain!`hostname`!id:${ARTDAQDEMO_AG_PORT[0]} commanderPluginType:xmlrpc" >> $tempFile
+echo "DispatcherMain!`hostname`!id:${ARTDAQDEMO_AG_PORT[1]} commanderPluginType:xmlrpc" >> $tempFile
 
 # create the logfile directories, if needed
 logroot="${ARTDAQDEMO_LOG_DIR:-/tmp}"
@@ -33,6 +33,6 @@ mkdir -p -m 0777 ${logroot}/artdaqart
 # fi
 
 # start PMT
-pmt.rb -p ${ARTDAQDEMO_PMT_PORT} -d /tmp/pmtConfig.artdaq_v3_test --logpath ${logroot} --display ${DISPLAY}
+pmt.rb -p ${ARTDAQDEMO_PMT_PORT} -d $tempFile --logpath ${logroot} --display ${DISPLAY}
 rm $tempFile
 
