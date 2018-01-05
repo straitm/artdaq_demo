@@ -7,4 +7,5 @@ art_make(
   ${MF_MESSAGELOGGER}
 	artdaq-core_Data
 	artdaq-core-demo_Overlays
+	${Boost_SYSTEM_LIBRARY}
         )
