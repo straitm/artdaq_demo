@@ -39,7 +39,7 @@ demo::ToySimulator::ToySimulator(fhicl::ParameterSet const& ps)
 
 	metadata_.board_serial_number = hardware_interface_->SerialNumber();
 	metadata_.num_adc_bits = hardware_interface_->NumADCBits();
-	TRACE( 50, "ToySimulator ctor metadata_.unused=0x%zu sizeof(metadata_)=%zd"
+	TRACE( TLVL_INFO, "ToySimulator ctor metadata_.unused=0x%zu sizeof(metadata_)=%zd"
 	      , metadata_.unused, sizeof(metadata_) );
 
 	switch (hardware_interface_->BoardType())
