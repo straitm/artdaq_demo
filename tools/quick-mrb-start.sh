@@ -29,6 +29,7 @@ prompted for this location.
 --debug       perform a debug build
 --develop     Install the develop version of the software (may be unstable!)
 --viewer      install and run the artdaq Message Viewer
+--mfext       Use artdaq_mfextensions Destinations by default
 --tag         Install a specific tag of artdaq_demo
 --logdir      Set <dir> as the destination for log files
 --datadir     Set <dir> as the destination for data files
@@ -68,6 +69,7 @@ while [ -n "${1-}" ];do
             -logdir)    eval $op1arg; logdir=$1; shift;;
             -datadir)   eval $op1arg; datadir=$1; shift;;
             -no-extra-products)  opt_skip_extra_products=1;;
+			-mfext)     opt_mfext=1;;
             *)          echo "Unknown option -$op"; do_help=1;;
         esac
     else
@@ -354,6 +356,7 @@ export ARTDAQDEMO_REPO=$ARTDAQ_DEMO_DIR
 export ARTDAQDEMO_BUILD=$MRB_BUILDDIR/artdaq_demo
 #export ARTDAQDEMO_BASE_PORT=52200
 export DAQ_INDATA_PATH=$ARTDAQ_DEMO_DIR/test/Generators
+${opt_mfext+export ARTDAQ_MFEXTENSIONS_ENABLED=1}
 
 export ARTDAQDEMO_DATA_DIR=${datadir}
 export ARTDAQDEMO_LOG_DIR=${logdir}
