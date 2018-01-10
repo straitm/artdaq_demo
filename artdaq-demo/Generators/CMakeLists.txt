@@ -21,6 +21,7 @@ simple_plugin(AsciiSimulator "generator"
   artdaq_DAQdata
   artdaq-core_Utilities
   artdaq-core_Data
+  ${Boost_SYSTEM_LIBRARY}
   ${FHICLCPP}
   ${MF_MESSAGELOGGER}
   ${CETLIB}
@@ -33,6 +34,7 @@ simple_plugin(UDPReceiver "generator"
     artdaq_DAQdata
     artdaq-core_Utilities
     artdaq-core_Data
+  ${Boost_SYSTEM_LIBRARY}
   ${CANVAS_LIB_LIST}
     ${FHICLCPP}
   ${MF_MESSAGELOGGER}

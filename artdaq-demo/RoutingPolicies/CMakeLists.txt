@@ -2,6 +2,7 @@ simple_plugin("MisbehaviorTest" "policy"
     artdaq_Application_Routing
     ${FHICLCPP}
     ${MF_MESSAGELOGGER}
+  ${Boost_SYSTEM_LIBRARY}
     cetlib_except
     cetlib
     )
@@ -10,6 +11,7 @@ simple_plugin(NthEvent "policy"
 artdaq_Application_Routing
 ${FHICLCPP}
 ${MF_MESSAGELOGGER}
+  ${Boost_SYSTEM_LIBRARY}
 cetlib_except
 cetlib
 )

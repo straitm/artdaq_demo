@@ -7,6 +7,7 @@ simple_plugin(NthEvent "transfer"
   artdaq_DAQrate
   MF_MessageLogger
   fhiclcpp
+  ${Boost_SYSTEM_LIBRARY}
   ${CETLIB}
   ${CETLIB_EXCEPT}
   ${ROOT_RIO}
