@@ -6,7 +6,7 @@ daq:     { @table::daq_eventbuilder_t }
 services:{ @table::services_eventbuilder_config2_t}
 source:  { @table::source_eventbuilder_config2_t }
 physics: { @table::physics_eventbuilder_config2_t my_output_modules: [ out ]}
-outputs: { out :{ @table::rootMPIOutput_t} }
+outputs: { out :{ @table::rootNetOutput_t} }
 
 
 #override eventbuilder receiver configuration

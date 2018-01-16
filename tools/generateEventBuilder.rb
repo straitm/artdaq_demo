@@ -9,6 +9,7 @@ daq: {
 	use_art: true
 	print_event_store_stats: true
 	buffer_count: 20
+	send_init_fragments: false
 	verbose: %{verbose}
 	send_requests: %{requests_enabled}
 	

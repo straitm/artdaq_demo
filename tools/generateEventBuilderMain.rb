@@ -33,8 +33,8 @@ services: {
 %{event_builder_code}
 
 outputs: {
-  %{rootmpi_output}rootMPIOutput: {
-  %{rootmpi_output}  module_type: RootMPIOutput
+  %{rootmpi_output}rootNetOutput: {
+  %{rootmpi_output}  module_type: RootNetOutput
   %{rootmpi_output}  #SelectEvents: { SelectEvents: [ pmod2,pmod3 ] }
   %{rootmpi_output}}
   %{root_output}normalOutput: {
@@ -74,7 +74,7 @@ physics: {
 
   %{enable_onmon}a1: [ app, wf ]
 
-  %{rootmpi_output}my_output_modules: [ rootMPIOutput ]
+  %{rootmpi_output}my_output_modules: [ rootNetOutput ]
   %{root_output}my_output_modules: [ normalOutput ]
 }
 source: {

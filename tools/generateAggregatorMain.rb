@@ -36,8 +36,8 @@ source: {
   module_type: NetMonInput
 }
 outputs: {
-  %{rootmpi_output}rootMPIOutput: {
-  %{rootmpi_output}  module_type: RootMPIOutput
+  %{rootmpi_output}rootNetOutput: {
+  %{rootmpi_output}  module_type: RootNetOutput
   %{rootmpi_output}  #SelectEvents: { SelectEvents: [ pmod2,pmod3 ] }
   %{rootmpi_output}}
 
@@ -110,7 +110,7 @@ physics: {
 
   %{root_output}my_output_modules: [ normalOutput ]
   %{root_output2}my_output_modules: [ normalOutputMod2, normalOutputMod3 ]
-  %{rootmpi_output}my_mpi_output_modules: [ rootMPIOutput ]
+  %{rootmpi_output}my_mpi_output_modules: [ rootNetOutput ]
 }
 process_name: DAQ%{daqproccode}"
 )
