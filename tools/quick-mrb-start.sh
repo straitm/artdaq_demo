@@ -283,7 +283,7 @@ mrb gitCheckout ssh://p-artdaq@cdcvs.fnal.gov/cvs/projects/artdaq
 mrb gitCheckout -d artdaq_core_demo ssh://p-artdaq-core-demo@cdcvs.fnal.gov/cvs/projects/artdaq-core-demo
 mrb gitCheckout -d artdaq_demo ssh://p-artdaq-demo@cdcvs.fnal.gov/cvs/projects/artdaq-demo
 else
-mrb gitCheckout -d artdaq_core -b no_rootio http://cdcvs.fnal.gov/projects/artdaq-core
+mrb gitCheckout -d artdaq_core http://cdcvs.fnal.gov/projects/artdaq-core
 mrb gitCheckout -d artdaq_utilities http://cdcvs.fnal.gov/projects/artdaq-utilities
 mrb gitCheckout http://cdcvs.fnal.gov/projects/artdaq
 mrb gitCheckout -d artdaq_core_demo http://cdcvs.fnal.gov/projects/artdaq-core-demo
