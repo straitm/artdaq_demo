@@ -107,7 +107,7 @@ physics: {
   pmod3: [ prescaleMod3 ]
 
   %{enable_onmon}a1: %{onmon_modules}
-  a2: [ checkintegrity ]
+  #a2: [ checkintegrity ]
 
   %{root_output}my_output_modules: [ normalOutput ]
   %{root_output2}my_output_modules: [ normalOutputMod2, normalOutputMod3 ]
