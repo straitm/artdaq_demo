@@ -5,8 +5,8 @@
 git_status=`git status 2>/dev/null`
 git_sts=$?
 if [ $git_sts -eq 0 ];then
-    echo "This script is designed to be run in a fresh install directory!"
-    exit 1
+	echo "This script is designed to be run in a fresh install directory!"
+	exit 1
 fi
 
 
@@ -20,9 +20,9 @@ env_opts_var=`basename $0 | sed 's/\.sh$//' | tr 'a-z-' 'A-Z_'`_OPTS
 USAGE="\
    usage: `basename $0` [options] [demo_root]
 examples: `basename $0` .
-          `basename $0` --run-demo
-          `basename $0` --debug
-          `basename $0` --tag v2_08_04
+		  `basename $0` --run-demo
+		  `basename $0` --debug
+		  `basename $0` --tag v2_08_04
 If the \"demo_root\" optional parameter is not supplied, the user will be
 prompted for this location.
 --run-demo    runs the demo
@@ -50,31 +50,31 @@ op1arg='rest=`expr "$op" : "[^-]\(.*\)"`   && set --  "$rest" "$@"'
 reqarg="$op1arg;"'test -z "${1+1}" &&echo opt -$op requires arg. &&echo "$USAGE" &&exit'
 args= do_help= opt_v=0; opt_w=0; opt_develop=0; opt_skip_extra_products=0;
 while [ -n "${1-}" ];do
-    if expr "x${1-}" : 'x-' >/dev/null;then
-        op=`expr "x$1" : 'x-\(.*\)'`; shift   # done with $1
-        leq=`expr "x$op" : 'x-[^=]*\(=\)'` lev=`expr "x$op" : 'x-[^=]*=\(.*\)'`
-        test -n "$leq"&&eval "set -- \"\$lev\" \"\$@\""&&op=`expr "x$op" : 'x\([^=]*\)'`
-        case "$op" in
-            \?*|h*)     eval $op1chr; do_help=1;;
-            v*)         eval $op1chr; opt_v=`expr $opt_v + 1`;;
-            x*)         eval $op1chr; set -x;;
-            s*)         eval $op1arg; squalifier=$1; shift;;
-            e*)         eval $op1arg; equalifier=$1; shift;;
-            w*)         eval $op1chr; opt_w=`expr $opt_w + 1`;;
-            -run-demo)  opt_run_demo=--run-demo;;
-            -debug)     opt_debug=--debug;;
-            -develop) opt_develop=1;;
-            -tag)       eval $reqarg; tag=$1; shift;;
-            -viewer)    opt_viewer=--viewer;;
-            -logdir)    eval $op1arg; logdir=$1; shift;;
-            -datadir)   eval $op1arg; datadir=$1; shift;;
-            -no-extra-products)  opt_skip_extra_products=1;;
+	if expr "x${1-}" : 'x-' >/dev/null;then
+		op=`expr "x$1" : 'x-\(.*\)'`; shift   # done with $1
+		leq=`expr "x$op" : 'x-[^=]*\(=\)'` lev=`expr "x$op" : 'x-[^=]*=\(.*\)'`
+		test -n "$leq"&&eval "set -- \"\$lev\" \"\$@\""&&op=`expr "x$op" : 'x\([^=]*\)'`
+		case "$op" in
+			\?*|h*)     eval $op1chr; do_help=1;;
+			v*)         eval $op1chr; opt_v=`expr $opt_v + 1`;;
+			x*)         eval $op1chr; set -x;;
+			s*)         eval $op1arg; squalifier=$1; shift;;
+			e*)         eval $op1arg; equalifier=$1; shift;;
+			w*)         eval $op1chr; opt_w=`expr $opt_w + 1`;;
+			-run-demo)  opt_run_demo=--run-demo;;
+			-debug)     opt_debug=--debug;;
+			-develop) opt_develop=1;;
+			-tag)       eval $reqarg; tag=$1; shift;;
+			-viewer)    opt_viewer=--viewer;;
+			-logdir)    eval $op1arg; logdir=$1; shift;;
+			-datadir)   eval $op1arg; datadir=$1; shift;;
+			-no-extra-products)  opt_skip_extra_products=1;;
 			-mfext)     opt_mfext=1;;
-            *)          echo "Unknown option -$op"; do_help=1;;
-        esac
-    else
-        aa=`echo "$1" | sed -e"s/'/'\"'\"'/g"` args="$args '$aa'"; shift
-    fi
+			*)          echo "Unknown option -$op"; do_help=1;;
+		esac
+	else
+		aa=`echo "$1" | sed -e"s/'/'\"'\"'/g"` args="$args '$aa'"; shift
+	fi
 done
 eval "set -- $args \"\$@\""; unset args aa
 set -u   # complain about uninitialed shell variables - helps development
@@ -82,8 +82,8 @@ set -u   # complain about uninitialed shell variables - helps development
 test -n "${do_help-}" -o $# -ge 2 && echo "$USAGE" && exit
 
 if [[ -n "${tag:-}" ]] && [[ $opt_develop -eq 1 ]]; then 
-    echo "The \"--tag\" and \"--develop\" options are incompatible - please specify only one."
-    exit
+	echo "The \"--tag\" and \"--develop\" options are incompatible - please specify only one."
+	exit
 fi
 
 
@@ -102,10 +102,10 @@ function detectAndPull() {
 	cd $Base/download
 	local packageName=$1
 	local packageOs=$2
-    if [[ "$packageOs" != "noarch" ]]; then
-	    local packageOsArch="$2-x86_64"
-	    packageOs=`echo $packageOsArch|sed 's/-x86_64-x86_64/-x86_64/g'`
-    fi
+	if [[ "$packageOs" != "noarch" ]]; then
+		local packageOsArch="$2-x86_64"
+		packageOs=`echo $packageOsArch|sed 's/-x86_64-x86_64/-x86_64/g'`
+	fi
 
 	if [ $# -gt 2 ];then
 		local qualifiers=$3
@@ -159,34 +159,34 @@ if [[ $opt_skip_extra_products -eq 0 ]]; then
   FERMIAPP_ARTDAQ_DIR="/grid/fermiapp/products/artdaq"
   for dir in $FERMIOSG_ARTDAQ_DIR $FERMIAPP_ARTDAQ_DIR;
   do
-    # if one of these areas has already been set up, do no more
-    for prodDir in $(echo ${PRODUCTS:-""} | tr ":" "\n")
-    do
-      if [[ "$dir" == "$prodDir" ]]; then
-        break 2
-      fi
-    done
-    if [[ -f $dir/setup ]]; then
-      echo "Setting up artdaq UPS area... ${dir}"
-      source $dir/setup
-      break
-    fi
+	# if one of these areas has already been set up, do no more
+	for prodDir in $(echo ${PRODUCTS:-""} | tr ":" "\n")
+	do
+	  if [[ "$dir" == "$prodDir" ]]; then
+		break 2
+	  fi
+	done
+	if [[ -f $dir/setup ]]; then
+	  echo "Setting up artdaq UPS area... ${dir}"
+	  source $dir/setup
+	  break
+	fi
   done
   CENTRAL_PRODUCTS_AREA="/products"
   for dir in $CENTRAL_PRODUCTS_AREA;
   do
-    # if one of these areas has already been set up, do no more
-    for prodDir in $(echo ${PRODUCTS:-""} | tr ":" "\n")
-    do
-      if [[ "$dir" == "$prodDir" ]]; then
-        break 2
-      fi
-    done
-    if [[ -f $dir/setup ]]; then
-      echo "Setting up central UPS area... ${dir}"
-      source $dir/setup
-      break
-    fi
+	# if one of these areas has already been set up, do no more
+	for prodDir in $(echo ${PRODUCTS:-""} | tr ":" "\n")
+	do
+	  if [[ "$dir" == "$prodDir" ]]; then
+		break 2
+	  fi
+	done
+	if [[ -f $dir/setup ]]; then
+	  echo "Setting up central UPS area... ${dir}"
+	  source $dir/setup
+	  break
+	fi
   done
   PRODUCTS_SET="${PRODUCTS:-}"
 fi
@@ -223,19 +223,19 @@ defaultQuals=`grep "defaultqual" $Base/download/product_deps|awk '{print $2}'`
 defaultE=`echo $defaultQuals|cut -f1 -d:`
 defaultS=`echo $defaultQuals|cut -f2 -d:`
 if [ -n "${equalifier-}" ]; then 
-    equalifier="e${equalifier}";
+	equalifier="e${equalifier}";
 else
-    equalifier=$defaultE
+	equalifier=$defaultE
 fi
 if [ -n "${squalifier-}" ]; then
-    squalifier="s${squalifier}"
+	squalifier="s${squalifier}"
 else
-    squalifier=$defaultS
+	squalifier=$defaultS
 fi
 if [[ -n "${opt_debug:-}" ]] ; then
-    build_type="debug"
+	build_type="debug"
 else
-    build_type="prof"
+	build_type="prof"
 fi
 
 
@@ -243,10 +243,10 @@ fi
 wget http://scisoft.fnal.gov/scisoft/bundles/tools/pullProducts
 chmod +x pullProducts
 ./pullProducts $Base/products ${os} artdaq_demo-${demo_version} ${squalifier}-${equalifier} ${build_type}
-    if [ $? -ne 0 ]; then
+	if [ $? -ne 0 ]; then
 	echo "Error in pullProducts. Please go to http://scisoft.fnal.gov/scisoft/bundles/artdaq_demo/${demo_version}/manifest and make sure that a manifest for the specified qualifiers (${squalifier}-${equalifier}) exists."
 	exit 1
-    fi
+	fi
 detectAndPull mrb noarch
 export PRODUCTS=$PRODUCTS_SET
 source $Base/products/setup
@@ -262,87 +262,62 @@ set +u
 source $Base/localProducts_artdaq_demo_${demo_version}_${equalifier}_${squalifier}_${build_type}/setup
 set -u
 
-returndir=$PWD
-cd $Base/products
-wget http://scisoft.fnal.gov/scisoft/packages/cetbuildtools/v5_14_04/cetbuildtools-5.14.04-noarch.tar.bz2
-tar xjf cetbuildtools-5.14.04-noarch.tar.bz2
-wget http://scisoft.fnal.gov/scisoft/packages/cmake/v3_9_2/cmake-3.9.2-sl7-x86_64.tar.bz2
-tar xjf cmake-3.9.2-sl7-x86_64.tar.bz2
-wget http://scisoft.fnal.gov/scisoft/packages/TRACE/v3_13_01/TRACE-3.13.01-slf7-x86_64.tar.bz2
-tar xjf TRACE-3.13.01-slf7-x86_64.tar.bz2
-cd $returndir
-
 cd $MRB_SOURCE
 if [[ $opt_develop -eq 1 ]]; then
-if [ $opt_w -gt 0 ];then
-echo "JCF, Jan-2-2018: write-to-repo option not (yet) supported with this version of the quick-mrb-start.sh script" >&2
-exit 1
-mrb gitCheckout -d artdaq_core ssh://p-artdaq@cdcvs.fnal.gov/cvs/projects/artdaq-core
-mrb gitCheckout -d artdaq_utilities ssh://p-artdaq-utilities@cdcvs.fnal.gov/cvs/projects/artdaq-utilities
-mrb gitCheckout ssh://p-artdaq@cdcvs.fnal.gov/cvs/projects/artdaq
-mrb gitCheckout -d artdaq_core_demo ssh://p-artdaq-core-demo@cdcvs.fnal.gov/cvs/projects/artdaq-core-demo
-mrb gitCheckout -d artdaq_demo ssh://p-artdaq-demo@cdcvs.fnal.gov/cvs/projects/artdaq-demo
+	if [ $opt_w -gt 0 ];then
+		mrb gitCheckout -d artdaq_core ssh://p-artdaq@cdcvs.fnal.gov/cvs/projects/artdaq-core
+		mrb gitCheckout -d artdaq_utilities ssh://p-artdaq-utilities@cdcvs.fnal.gov/cvs/projects/artdaq-utilities
+		mrb gitCheckout ssh://p-artdaq@cdcvs.fnal.gov/cvs/projects/artdaq
+		mrb gitCheckout -d artdaq_core_demo ssh://p-artdaq-core-demo@cdcvs.fnal.gov/cvs/projects/artdaq-core-demo
+		mrb gitCheckout -d artdaq_demo ssh://p-artdaq-demo@cdcvs.fnal.gov/cvs/projects/artdaq-demo
+	else
+		mrb gitCheckout -d artdaq_core http://cdcvs.fnal.gov/projects/artdaq-core
+		mrb gitCheckout -d artdaq_utilities http://cdcvs.fnal.gov/projects/artdaq-utilities
+		mrb gitCheckout http://cdcvs.fnal.gov/projects/artdaq
+		mrb gitCheckout -d artdaq_core_demo http://cdcvs.fnal.gov/projects/artdaq-core-demo
+		mrb gitCheckout -d artdaq_demo http://cdcvs.fnal.gov/projects/artdaq-demo
+		mrb gitCheckout -d artdaq_ganglia_plugin http://cdcvs.fnal.gov/projects/artdaq-utilities-ganglia-plugin
+		mrb gitCheckout -d artdaq_epics_plugin http://cdcvs.fnal.gov/projects/artdaq-utilities-epics-plugin
+		mrb gitCheckout -d artdaq_mfextensions http://cdcvs.fnal.gov/projects/mf-extensions-git
+	fi
 else
-mrb gitCheckout -d artdaq_core http://cdcvs.fnal.gov/projects/artdaq-core
-mrb gitCheckout -d artdaq_utilities http://cdcvs.fnal.gov/projects/artdaq-utilities
-mrb gitCheckout http://cdcvs.fnal.gov/projects/artdaq
-mrb gitCheckout -d artdaq_core_demo http://cdcvs.fnal.gov/projects/artdaq-core-demo
-mrb gitCheckout -d artdaq_demo http://cdcvs.fnal.gov/projects/artdaq-demo
-mrb gitCheckout -d artdaq_ganglia_plugin http://cdcvs.fnal.gov/projects/artdaq-utilities-ganglia-plugin
-mrb gitCheckout -d artdaq_epics_plugin http://cdcvs.fnal.gov/projects/artdaq-utilities-epics-plugin
-mrb gitCheckout -d artdaq_mfextensions http://cdcvs.fnal.gov/projects/mf-extensions-git
-fi
-
-echo "Fix artdaq_utilities product_deps defaultqual line"
-artdaq_utils_defaultqual="a_u_intf_v1:${equalifier}:${squalifier}"
-sed -i "s/^defaultqual.*/defaultqual ${artdaq_utils_defaultqual}/" artdaq_utilities/ups/product_deps
-echo "Head of artdaq_utilities/ups/product_deps:"
-head artdaq_utilities/ups/product_deps
-
-echo "Fix artdaq_core product_deps defaultqual line"
-artdaq_core_defaultqual="${equalifier}:${squalifier}"
-sed -i "s/^defaultqual.*/defaultqual ${artdaq_core_defaultqual}/" artdaq_core/ups/product_deps
-echo "Head of artdaq_core/ups/product_deps:"
-head artdaq_core/ups/product_deps
-
-else
-if [ $opt_w -gt 0 ];then
-mrb gitCheckout -t ${coredemo_version} -d artdaq_core_demo ssh://p-artdaq-core-demo@cdcvs.fnal.gov/cvs/projects/artdaq-core-demo
-mrb gitCheckout -t ${demo_version} -d artdaq_demo ssh://p-artdaq-demo@cdcvs.fnal.gov/cvs/projects/artdaq-demo
-mrb gitCheckout -t ${artdaq_version} ssh://p-artdaq@cdcvs.fnal.gov/cvs/projects/artdaq
-else
-mrb gitCheckout -t ${coredemo_version} -d artdaq_core_demo http://cdcvs.fnal.gov/projects/artdaq-core-demo
-mrb gitCheckout -t ${demo_version} -d artdaq_demo http://cdcvs.fnal.gov/projects/artdaq-demo
-mrb gitCheckout -t ${artdaq_version} http://cdcvs.fnal.gov/projects/artdaq
-fi
+	if [ $opt_w -gt 0 ];then
+		mrb gitCheckout -t ${coredemo_version} -d artdaq_core_demo ssh://p-artdaq-core-demo@cdcvs.fnal.gov/cvs/projects/artdaq-core-demo
+		mrb gitCheckout -t ${demo_version} -d artdaq_demo ssh://p-artdaq-demo@cdcvs.fnal.gov/cvs/projects/artdaq-demo
+		mrb gitCheckout -t ${artdaq_version} ssh://p-artdaq@cdcvs.fnal.gov/cvs/projects/artdaq
+	else
+		mrb gitCheckout -t ${coredemo_version} -d artdaq_core_demo http://cdcvs.fnal.gov/projects/artdaq-core-demo
+		mrb gitCheckout -t ${demo_version} -d artdaq_demo http://cdcvs.fnal.gov/projects/artdaq-demo
+		mrb gitCheckout -t ${artdaq_version} http://cdcvs.fnal.gov/projects/artdaq
+	fi
 fi
 
 if [[ "x${opt_viewer-}" != "x" ]] && [[ $opt_develop -eq 1 ]]; then
-    cd $MRB_SOURCE
-    mrb gitCheckout -d artdaq_mfextensions http://cdcvs.fnal.gov/projects/mf-extensions-git
+	cd $MRB_SOURCE
+	mrb gitCheckout -d artdaq_mfextensions http://cdcvs.fnal.gov/projects/mf-extensions-git
 
-    qtver=$( awk '/^[[:space:]]*qt[[:space:]]*/ {print $2}' artdaq_mfextensions/ups/product_deps )
+	qtver=$( awk '/^[[:space:]]*qt[[:space:]]*/ {print $2}' artdaq_mfextensions/ups/product_deps )
 
-    os=`$Base/download/cetpkgsupport/bin/get-directory-name os`
+	os=`$Base/download/cetpkgsupport/bin/get-directory-name os`
 
-    if [[ "$os" == "slf7" ]]; then
+	if [[ "$os" == "slf7" ]]; then
 	os="sl7"
-    fi
+	fi
 
-    detectAndPull qt ${os}-x86_64 ${equalifier} ${qtver}
+	detectAndPull qt ${os}-x86_64 ${equalifier} ${qtver}
 fi
 
 
 ARTDAQ_DEMO_DIR=$Base/srcs/artdaq_demo
 ARTDAQ_DIR=$Base/srcs/artdaq
 cd $Base
-    cat >setupARTDAQDEMO <<-EOF
+	cat >setupARTDAQDEMO <<-EOF
 echo # This script is intended to be sourced.
 
 sh -c "[ \`ps \$\$ | grep bash | wc -l\` -gt 0 ] || { echo 'Please switch to the bash shell before running the artdaq-demo.'; exit; }" || exit
 
 if [[ -e /cvmfs/fermilab.opensciencegrid.org/products/artdaq ]]; then
-    . /cvmfs/fermilab.opensciencegrid.org/products/artdaq/setup
+	. /cvmfs/fermilab.opensciencegrid.org/products/artdaq/setup
 fi
 
 source $Base/products/setup
@@ -379,17 +354,17 @@ mrb build    # VERBOSE=1
 installStatus=$?
 
 if [ $installStatus -eq 0 ]; then
-    echo "artdaq-demo has been installed correctly. Please see: "
-    echo "https://cdcvs.fnal.gov/redmine/projects/artdaq-demo/wiki/Running_a_sample_artdaq-demo_system"
-    echo "for instructions on how to run, or re-run this script with the --run-demo option"
-    echo
-    echo "Will now install DAQInterface as described at https://cdcvs.fnal.gov/redmine/projects/artdaq-utilities/wiki/Artdaq-daqinterface..."
+	echo "artdaq-demo has been installed correctly. Please see: "
+	echo "https://cdcvs.fnal.gov/redmine/projects/artdaq-demo/wiki/Running_a_sample_artdaq-demo_system"
+	echo "for instructions on how to run, or re-run this script with the --run-demo option"
+	echo
+	echo "Will now install DAQInterface as described at https://cdcvs.fnal.gov/redmine/projects/artdaq-utilities/wiki/Artdaq-daqinterface..."
 else
-    echo "BUILD ERROR!!! SOMETHING IS VERY WRONG!!!"
-    echo
-    echo "Skipping installation of DAQInterface"
-    echo
-    exit 1
+	echo "BUILD ERROR!!! SOMETHING IS VERY WRONG!!!"
+	echo
+	echo "Skipping installation of DAQInterface"
+	echo
+	exit 1
 fi
 
 # Now, install DAQInterface, basically following the instructions at
@@ -404,17 +379,13 @@ daqintdir=$Base/DAQInterface
 cd $Base
 
 if [[ $opt_develop -eq 1 ]]; then 
-
-git clone ssh://p-artdaq-utilities@cdcvs.fnal.gov/cvs/projects/artdaq-utilities-daqinterface
-cd artdaq-utilities-daqinterface
-git checkout develop
-
+	git clone ssh://p-artdaq-utilities@cdcvs.fnal.gov/cvs/projects/artdaq-utilities-daqinterface
+	cd artdaq-utilities-daqinterface
+	git checkout develop
 else
-
-git clone http://cdcvs.fnal.gov/projects/artdaq-utilities-daqinterface
-cd artdaq-utilities-daqinterface
-git checkout 6c15e15c0f6e06282f2fd5dd8ad478659fdb29bd
-
+	git clone http://cdcvs.fnal.gov/projects/artdaq-utilities-daqinterface
+	cd artdaq-utilities-daqinterface
+	git checkout `git tag --sort authordate|tail -1` # Fetch latest tagged version
 fi
 
 mkdir $daqintdir
@@ -435,8 +406,8 @@ sed -i -r 's!^\s*export DAQINTERFACE_SETTINGS.*!export DAQINTERFACE_SETTINGS='$P
 productsdir=$( ups active | grep xmlrpc | awk '{print $NF}' )
 
 if [[ -z $productsdir ]]; then
-    echo "Unable to determine the products directory containing xmlrpc; will return..." >&2
-    return 41
+	echo "Unable to determine the products directory containing xmlrpc; will return..." >&2
+	return 41
 fi
 
 sed -i -r 's!^\s*productsdir_for_bash_scripts:.*!productsdir_for_bash_scripts: '$productsdir'!' settings_example
@@ -451,11 +422,11 @@ cd $Base
 wget https://cdcvs.fnal.gov/redmine/projects/artdaq-demo/repository/revisions/develop/raw/tools/run_demo.sh
 
 if [ "x${opt_run_demo-}" != "x" ]; then
-    echo doing the demo
+	echo doing the demo
 
-    toolsdir=${ARTDAQ_DEMO_DIR}/tools
+	toolsdir=${ARTDAQ_DEMO_DIR}/tools
 
-    . ./run_demo.sh $Base $toolsdir
+	. ./run_demo.sh $Base $toolsdir
 fi
 
 
