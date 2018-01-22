@@ -5,7 +5,7 @@
 require File.join( File.dirname(__FILE__), 'generateEventBuilder' )
 
 
-def generateEventBuilderMain(ebIndex, totalAGs, dataDir, onmonEnable, diskWritingEnable, totalFragments, filePropertiesFhicl,
+def generateEventBuilderMain(ebIndex, totalAGs, dataDir, onmonEnable, diskWritingEnable, totalFragments, fullEventBuffSizeWords, filePropertiesFhicl,
                          fclWFViewer, sources_fhicl, destinations_fhicl, tokenConfig,tableConfig,  sendRequests, withGanglia, withMsgFacility, withGraphite )
   # Do the substitutions in the event builder configuration given the options
   # that were passed in from the command line.  
@@ -14,7 +14,6 @@ def generateEventBuilderMain(ebIndex, totalAGs, dataDir, onmonEnable, diskWritin
 
 services: {
   scheduler: {
-    fileMode: NOMERGE
     errorOnFailureToPut: false
   }
   NetMonTransportServiceInterface: {
@@ -34,8 +33,8 @@ services: {
 %{event_builder_code}
 
 outputs: {
-  %{rootmpi_output}rootMPIOutput: {
-  %{rootmpi_output}  module_type: RootMPIOutput
+  %{rootmpi_output}rootNetOutput: {
+  %{rootmpi_output}  module_type: RootNetOutput
   %{rootmpi_output}  #SelectEvents: { SelectEvents: [ pmod2,pmod3 ] }
   %{rootmpi_output}}
   %{root_output}normalOutput: {
@@ -75,7 +74,7 @@ physics: {
 
   %{enable_onmon}a1: [ app, wf ]
 
-  %{rootmpi_output}my_output_modules: [ rootMPIOutput ]
+  %{rootmpi_output}my_output_modules: [ rootNetOutput ]
   %{root_output}my_output_modules: [ normalOutput ]
 }
 source: {
@@ -92,7 +91,7 @@ if Integer(totalAGs) >= 1
 end
 
 
-event_builder_code = generateEventBuilder( totalFragments, verbose, sources_fhicl,dataDir,tokenConfig, sendRequests, withGanglia, withMsgFacility, withGraphite)
+event_builder_code = generateEventBuilder( totalFragments, fullEventBuffSizeWords, verbose, sources_fhicl,dataDir,tokenConfig, sendRequests, withGanglia, withMsgFacility, withGraphite)
 
 ebConfig.gsub!(/\%\{destinations_fhicl\}/, destinations_fhicl)
 ebConfig.gsub!(/\%\{table_config\}/, tableConfig)

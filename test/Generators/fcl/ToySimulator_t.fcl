@@ -1,7 +1,7 @@
 genToArt:
 {
   run_number: 10
-  events_to_generate: 5
+  events_to_generate: 20
 
   fragment_receivers:
   [
@@ -17,7 +17,9 @@ genToArt:
 
   event_builder:
   {
-    queue_size: 20
+	buffer_count: 10
+	max_event_size_bytes: 1000
+	expected_fragments_per_event: 1
     timeout: 5.0
     print_stats: false
   }
@@ -29,4 +31,11 @@ source:
 {
   module_type: RawInput
   waiting_time: 25.0
+  fragment_type_map: [[3, "TOY2"]]
+}
+
+physics: {
+  analyzers: {}
+  producers: {}
+  filters: { }
 }

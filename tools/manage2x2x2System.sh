@@ -3,7 +3,7 @@
 source `which setupDemoEnvironment.sh` ""
 
 AGGREGATOR_NODE=`hostname`
-THIS_NODE=`hostname -s`
+THIS_NODE="localhost"
 
 # this function expects a number of arguments:
 #  1) the DAQ command to be sent

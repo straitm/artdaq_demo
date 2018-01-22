@@ -16,7 +16,7 @@
 #include "artdaq/Application/CommandableFragmentGenerator.hh"
 #include "artdaq/Application/makeCommandableFragmentGenerator.hh"
 #include "artdaq/DAQrate/EventStore.hh"
-#include "artdaq-core/Core/SimpleQueueReader.hh"
+#include "artdaq-core/Core/SimpleMemoryReader.hh"
 #include "artdaq-core/Utilities/SimpleLookupPolicy.hh"
 #include "cetlib/container_algorithms.h"
 #include "cetlib/filepath_maker.h"
@@ -119,24 +119,24 @@ int main(int argc, char* argv[]) try
 
 	// The instance of the artdaq::EventStore object can either pass
 	// events to a thread running Art, or to a small executable called
-	// "SimpleQueueReader"
+	// "SimpleMemoryReader"
 
 	bool const want_artapp = event_builder_pset.get<bool>("use_art", false);
 
 	std::ostringstream os;
 	if (!want_artapp)
 	{
-		os << event_builder_pset.get<int>("events_expected_in_SimpleQueueReader");
+		os << event_builder_pset.get<int>("events_expected_in_SimpleMemoryReader");
 	}
 	std::string oss = os.str();
 
-	const char* args[2]{"SimpleQueueReader", const_cast<char *>(oss.c_str())};
+	const char* args[2]{"SimpleMemoryReader", const_cast<char *>(oss.c_str())};
 
 	int es_argc(want_artapp ? argc : 2);
 	char** es_argv(want_artapp ? argv : const_cast<char**>(args));
 
 	artdaq::EventStore::ART_CMDLINE_FCN*
-		es_fcn(want_artapp ? &artapp : &artdaq::simpleQueueReaderApp);
+		es_fcn(want_artapp ? &artapp : &artdaq::SimpleMemoryReaderApp);
 
 	artdaq::EventStore store(event_builder_pset, event_builder_pset.get<size_t>("expected_fragments_per_event"),
 	                         complete_pset.get<artdaq::EventStore::run_id_t>("run_number"),

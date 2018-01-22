@@ -12,8 +12,6 @@
 #include "artdaq-core-demo/Overlays/ToyFragment.hh"
 #include "artdaq-core-demo/Overlays/FragmentType.hh"
 
-
-#include "cetlib/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 
 #include <fstream>
@@ -22,7 +20,9 @@
 #include <iostream>
 
 #include <unistd.h>
-#include "trace.h"		// TRACE
+#define TRACE_NAME "ToySimulator"
+#include "tracemf.h"		// TRACE, TLOG*
+#include "cetlib_except/exception.h"
 
 demo::ToySimulator::ToySimulator(fhicl::ParameterSet const& ps)
 	:
@@ -39,7 +39,7 @@ demo::ToySimulator::ToySimulator(fhicl::ParameterSet const& ps)
 
 	metadata_.board_serial_number = hardware_interface_->SerialNumber();
 	metadata_.num_adc_bits = hardware_interface_->NumADCBits();
-	TRACE( 50, "ToySimulator ctor metadata_.unused=0x%zu sizeof(metadata_)=%zd"
+	TRACE( TLVL_INFO, "ToySimulator ctor metadata_.unused=0x%zu sizeof(metadata_)=%zd"
 	      , metadata_.unused, sizeof(metadata_) );
 
 	switch (hardware_interface_->BoardType())
@@ -91,27 +91,28 @@ bool demo::ToySimulator::getNext_(artdaq::FragmentPtrs& frags)
 
 #if 1
 	std::unique_ptr<artdaq::Fragment> fragptr(
-						  artdaq::Fragment::FragmentBytes(bytes_read,
-		                                ev_counter(), fragment_id(),
-		                                fragment_type_,
-		                                metadata_, timestamp_));
+		artdaq::Fragment::FragmentBytes(bytes_read,
+										ev_counter(), fragment_id(),
+										fragment_type_,
+										metadata_, timestamp_));
 	frags.emplace_back(std::move(fragptr));
 #else
 	std::unique_ptr<artdaq::Fragment> fragptr(
-						  artdaq::Fragment::FragmentBytes(/*bytes_read*/ 1024-40,
-		                                ev_counter(), fragment_id(),
-		                                fragment_type_,
-		                                metadata_, timestamp_));
+		artdaq::Fragment::FragmentBytes(/*bytes_read*/ 1024 - 40,
+										ev_counter(), fragment_id(),
+										fragment_type_,
+										metadata_, timestamp_));
 	frags.emplace_back(std::move(fragptr));
 	artdaq::detail::RawFragmentHeader *hdr = (artdaq::detail::RawFragmentHeader*)(frags.back()->headerBeginBytes());
 	// Need a way to fake frag->sizeBytes() (which calls frag->size() which calls fragmentHeader()->word_count
-	hdr->word_count = ceil( (bytes_read+32) / static_cast<double>(sizeof(artdaq::RawDataType)) );
+	hdr->word_count = ceil((bytes_read + 32) / static_cast<double>(sizeof(artdaq::RawDataType)));
 #endif
 
 	if (distribution_type_ != ToyHardwareInterface::DistributionType::uninitialized)
-	  memcpy(frags.back()->dataBeginBytes(), readout_buffer_, bytes_read);
+		memcpy(frags.back()->dataBeginBytes(), readout_buffer_, bytes_read);
 
-	TRACE( 50, "ToySimulator::getNext_ after memcpy %zu bytes and std::move dataSizeBytes()=%zu metabytes=%zu", bytes_read, frags.back()->sizeBytes(), sizeof(metadata_) );
+	TLOG_ARB(50, "ToySimulator") << "ToySimulator::getNext_ after memcpy " << std::to_string(bytes_read)
+		<< " bytes and std::move dataSizeBytes()=" << std::to_string(frags.back()->sizeBytes()) << " metabytes=" << std::to_string(sizeof(metadata_)) << TLOG_ENDL;
 
 	if (metricMan != nullptr)
 	{

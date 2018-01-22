@@ -4,9 +4,9 @@
 
 require File.join( File.dirname(__FILE__), 'generateAggregator' )
 
-def generateAggregatorMain(dataDir, bunchSize, is_data_logger, has_dispatcher, onmonEnable,
-                           diskWritingEnable, demoPrescale, agIndex, totalAGs, fragSizeWords,
-						   sources_fhicl, logger_rank, dispatcher_rank,
+def generateAggregatorMain(dataDir, bunchSize, is_data_logger, onmonEnable,
+                           diskWritingEnable, demoPrescale, agIndex, totalDLs, totalDPs, fragSizeWords,
+						   dl_sources_fhicl, dl_destinations_fhicl, dp_sources_fhicl,
                            xmlrpcClientList, filePropertiesFhicl,
 						    subrunSizeThreshold, subrunDuration, subrunEventCount,
 							fclWFViewer, onmonEventPrescale, 
@@ -16,11 +16,15 @@ def generateAggregatorMain(dataDir, bunchSize, is_data_logger, has_dispatcher, o
 agConfig = String.new( "\
 services: {
   scheduler: {
-    fileMode: NOMERGE
     errorOnFailureToPut: false
   }
   NetMonTransportServiceInterface: {
     service_provider: NetMonTransportService
+    %{rootmpi_output}broadcast_sends: true
+    %{rootmpi_output}nonblocking_sends: true
+	%{rootmpi_output}destinations: {	
+	%{rootmpi_output}  %{destinations_fhicl}
+    %{rootmpi_output}}
   }
 
   #SimpleMemoryCheck: { }
@@ -32,6 +36,11 @@ source: {
   module_type: NetMonInput
 }
 outputs: {
+  %{rootmpi_output}rootNetOutput: {
+  %{rootmpi_output}  module_type: RootNetOutput
+  %{rootmpi_output}  #SelectEvents: { SelectEvents: [ pmod2,pmod3 ] }
+  %{rootmpi_output}}
+
   %{root_output}normalOutput: {
   %{root_output}  module_type: RootOutput
   %{root_output}  fileName: \"%{output_file}\"
@@ -98,33 +107,37 @@ physics: {
   pmod3: [ prescaleMod3 ]
 
   %{enable_onmon}a1: %{onmon_modules}
+  #a2: [ checkintegrity ]
 
   %{root_output}my_output_modules: [ normalOutput ]
   %{root_output2}my_output_modules: [ normalOutputMod2, normalOutputMod3 ]
+  %{rootmpi_output}my_mpi_output_modules: [ rootNetOutput ]
 }
-process_name: DAQAG"
+process_name: DAQ%{daqproccode}"
 )
 
   queueDepth, queueTimeout = -999, -999
 
   if is_data_logger > 0
-    if totalAGs > 1
+    if totalDPs > 1
       onmonEnable = 0
     end
     queueDepth = 20
     queueTimeout = 5
     agType = "data_logger"
+	agCode = "DL"
   else
     diskWritingEnable = 0
-    queueDepth = 2
+    queueDepth = 20
     queueTimeout = 1
     agType = "online_monitor"
+	agCode = "DISP"
   end
 
-  aggregator_code = generateAggregator( bunchSize, fragSizeWords, sources_fhicl,
-                                        xmlrpcClientList, subrunSizeThreshold, subrunDuration, 
-										subrunEventCount, queueDepth, queueTimeout, onmonEventPrescale,
-										agType, logger_rank, has_dispatcher, dispatcher_rank, dataDir, tokenConfig,
+  aggregator_code = generateAggregator( bunchSize, fragSizeWords, dl_sources_fhicl, dp_sources_fhicl,
+                                        xmlrpcClientList, subrunSizeThreshold, subrunDuration, subrunEventCount, 
+										queueDepth, queueTimeout, onmonEventPrescale,
+										agType, dataDir, tokenConfig,
 										withGanglia, withMsgFacility, withGraphite )
   agConfig.gsub!(/\%\{aggregator_code\}/, aggregator_code)
 
@@ -136,7 +149,7 @@ process_name: DAQAG"
   currentTime = Time.now
   fileName = "artdaqdemo_"
   fileName += "r%06r_sr%02s_%to_%#"
-  need_index = totalAGs > 1 + (has_dispatcher ? 1 : 0)
+  need_index = totalDLs > 1
   if need_index
     fileName += "_"
     fileName += String(agIndex)
@@ -151,7 +164,7 @@ process_name: DAQAG"
 
   agConfig.gsub!(/\%\{onmon_modules\}/, String(onmon_modules))
 
-  puts "agIndex = %d, totalAGs = %d, onmonEnable = %d" % [agIndex, totalAGs, onmonEnable]
+  puts "agIndex = %d, totalDLs = %d, totalDPs = %d, onmonEnable = %d" % [agIndex, totalDLs, totalDPs, onmonEnable]
 
   puts "Final aggregator " + String(agIndex) + " disk writing setting = " +
   String(diskWritingEnable)
@@ -167,6 +180,16 @@ process_name: DAQAG"
     agConfig.gsub!(/\%\{root_output\}/, "#")
     agConfig.gsub!(/\%\{root_output2\}/,"#")
   end
+
+  if is_data_logger > 0
+	agConfig.gsub!(/\%\{rootmpi_output\}/,"")
+	agConfig.gsub!(/\%\{destinations_fhicl\}/, dl_destinations_fhicl)
+  else
+	agConfig.gsub!(/\%\{rootmpi_output\}/,"#")
+  end
+
+  agConfig.gsub!(/\%\{daqproccode\}/,agCode)
+
   if Integer(onmonEnable) != 0
     agConfig.gsub!(/\%\{phys_anal_onmon_cfg\}/, fclWFViewer )
     agConfig.gsub!(/\%\{enable_onmon\}/, "")

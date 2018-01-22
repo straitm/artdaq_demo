@@ -25,7 +25,7 @@ demo::UDPReceiver::UDPReceiver(fhicl::ParameterSet const& ps)
 	, rawPath_(ps.get<std::string>("raw_output_path", "/tmp"))
 {
 	datasocket_ = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	if (!datasocket_)
+	if (datasocket_ < 0)
 	{
 		throw art::Exception(art::errors::Configuration) << "UDPReceiver: Error creating socket!" << std::endl;
 		exit(1);
