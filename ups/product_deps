@@ -1,6 +1,6 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent artdaq_demo	v2_10_04
+parent artdaq_demo	v3_00_00
 defaultqual	e14:s50
 
 # These optional lines define the installed directories where
@@ -17,7 +17,7 @@ bindir      fq_dir      bin
 
 #
 product		 version	optional
-artdaq           v3_00_00_RC3
+artdaq           v3_00_00
 artdaq_core_demo v1_06_05
 cetbuildtools    v6_01_00       -       only_for_build
 end_product_list
@@ -28,42 +28,12 @@ end_product_list
 qualifier	   artdaq	 	 artdaq_core_demo
 e14:s50:prof   e14:s50:prof  	 e14:s50:prof
 e14:s50:debug  e14:s50:debug 	 e14:s50:debug
-e14:s48:prof   e14:s48:prof  	 e14:s48:prof
-e14:s48:debug  e14:s48:debug 	 e14:s48:debug
-e10:s48:prof   e10:s48:prof  	 e10:s48:prof
-e10:s48:debug  e10:s48:debug 	 e10:s48:debug
-e14:s47:prof   e14:s47:prof  	 e14:s47:prof
-e14:s47:debug  e14:s47:debug 	 e14:s47:debug
-e10:s47:prof   e10:s47:prof  	 e10:s47:prof
-e10:s47:debug  e10:s47:debug 	 e10:s47:debug
-e14:s46:prof   e14:s46:prof  	 e14:s46:prof
-e14:s46:debug  e14:s46:debug 	 e14:s46:debug
 e10:s46:prof   e10:s46:prof  	 e10:s46:prof
 e10:s46:debug  e10:s46:debug 	 e10:s46:debug
 e14:s50:eth:prof   e14:s50:eth:prof  	 e14:s50:prof
 e14:s50:eth:debug  e14:s50:eth:debug 	 e14:s50:debug
 e14:s50:ib:prof    e14:s50:ib:prof   	 e14:s50:prof
 e14:s50:ib:debug   e14:s50:ib:debug  	 e14:s50:debug
-e14:s48:eth:prof   e14:s48:eth:prof  	 e14:s48:prof
-e14:s48:eth:debug  e14:s48:eth:debug 	 e14:s48:debug
-e14:s48:ib:prof    e14:s48:ib:prof   	 e14:s48:prof
-e14:s48:ib:debug   e14:s48:ib:debug  	 e14:s48:debug
-e10:s48:eth:prof   e10:s48:eth:prof  	 e10:s48:prof
-e10:s48:eth:debug  e10:s48:eth:debug 	 e10:s48:debug
-e10:s48:ib:prof    e10:s48:ib:prof   	 e10:s48:prof
-e10:s48:ib:debug   e10:s48:ib:debug  	 e10:s48:debug
-e14:s47:eth:prof   e14:s47:eth:prof  	 e14:s47:prof
-e14:s47:eth:debug  e14:s47:eth:debug 	 e14:s47:debug
-e14:s47:ib:prof    e14:s47:ib:prof   	 e14:s47:prof
-e14:s47:ib:debug   e14:s47:ib:debug  	 e14:s47:debug
-e10:s47:eth:prof   e10:s47:eth:prof  	 e10:s47:prof
-e10:s47:eth:debug  e10:s47:eth:debug 	 e10:s47:debug
-e10:s47:ib:prof    e10:s47:ib:prof   	 e10:s47:prof
-e10:s47:ib:debug   e10:s47:ib:debug  	 e10:s47:debug
-e14:s46:eth:prof   e14:s46:eth:prof  	 e14:s46:prof
-e14:s46:eth:debug  e14:s46:eth:debug 	 e14:s46:debug
-e14:s46:ib:prof    e14:s46:ib:prof   	 e14:s46:prof
-e14:s46:ib:debug   e14:s46:ib:debug  	 e14:s46:debug
 e10:s46:eth:prof   e10:s46:eth:prof  	 e10:s46:prof
 e10:s46:eth:debug  e10:s46:eth:debug 	 e10:s46:debug
 e10:s46:ib:prof    e10:s46:ib:prof   	 e10:s46:prof
