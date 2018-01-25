@@ -385,7 +385,8 @@ if [[ $opt_develop -eq 1 ]]; then
 else
 	git clone http://cdcvs.fnal.gov/projects/artdaq-utilities-daqinterface
 	cd artdaq-utilities-daqinterface
-	git checkout `git tag --sort authordate|tail -1` # Fetch latest tagged version
+    echo "Checking out version `git tag --sort creatordate|tail -1` of artdaq_daqinterface"
+	git checkout `git tag --sort creatordate|tail -1` # Fetch latest tagged version
 fi
 
 mkdir $daqintdir
