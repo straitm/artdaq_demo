@@ -103,7 +103,7 @@ void demo::ToyDump::analyze(art::Event const& evt)
 		//      fragments.emplace_back( (*fragments_with_label)[i_l] );
 		//    }
 
-		if (label == "Container")
+		if (label == "Container" || label == "ContainerTOY1" || label == "ContainerTOY2")
 		{
 			for (auto cont : *fragments_with_label)
 			{
