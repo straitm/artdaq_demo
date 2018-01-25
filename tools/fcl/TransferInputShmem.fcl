@@ -84,6 +84,7 @@ source:
 
   timeoutInUsecs: 10000000  
 
+  commanderPluginType: xmlrpc
   dispatcherHost: localhost
   dispatcherPort: 5266
 
