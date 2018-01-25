@@ -1,6 +1,6 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent artdaq_demo	v3_00_00
+parent artdaq_demo	v3_00_01
 defaultqual	e14:s50
 
 # These optional lines define the installed directories where
@@ -17,9 +17,9 @@ bindir      fq_dir      bin
 
 #
 product		 version	optional
-artdaq           v3_00_00
-artdaq_core_demo v1_06_05
-cetbuildtools    v6_01_00       -       only_for_build
+artdaq           v3_00_01
+artdaq_core_demo v1_06_06
+cetbuildtools    v7_00_02       -       only_for_build
 end_product_list
 
 # See https://cdcvs.fnal.gov/redmine/projects/cet-is-public/wiki/AboutQualifiers for information about the qualifiers used
