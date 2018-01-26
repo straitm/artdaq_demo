@@ -42,8 +42,8 @@ prompted for this location.
 
 # Process script arguments and options
 eval env_opts=\${$env_opts_var-} # can be args too
-datadir="${ARTDAQDEMO_DATA_DIR:-/tmp}"
-logdir="${ARTDAQDEMO_LOG_DIR:-/tmp}"
+datadir="${ARTDAQDEMO_DATA_DIR:-$Base/daqdata}"
+logdir="${ARTDAQDEMO_LOG_DIR:-$Base/daqlogs}"
 eval "set -- $env_opts \"\$@\""
 op1chr='rest=`expr "$op" : "[^-]\(.*\)"`   && set -- "-$rest" "$@"'
 op1arg='rest=`expr "$op" : "[^-]\(.*\)"`   && set --  "$rest" "$@"'
@@ -418,8 +418,9 @@ mkdir -p $Base/run_records
 sed -i -r 's!^\s*record_directory.*!record_directory: '$Base/run_records'!' settings_example
 
 mkdir -p $Base/daqlogs
+mkdir -p $Base/daqdata
 
-sed -i -r 's!^\s*log_directory.*!log_directory: '$Base/daqlogs'!' settings_example
+sed -i -r 's!^\s*log_directory.*!log_directory: '$logdir'!' settings_example
 
 sed -i -r 's!^\s*DAQ setup script:.*!DAQ setup script: '$Base'/setupARTDAQDEMO!' boot.txt
 
