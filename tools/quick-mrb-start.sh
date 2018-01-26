@@ -417,6 +417,10 @@ mkdir -p $Base/run_records
 
 sed -i -r 's!^\s*record_directory.*!record_directory: '$Base/run_records'!' settings_example
 
+mkdir -p $Base/daqlogs
+
+sed -i -r 's!^\s*log_directory.*!log_directory: '$Base/daqlogs'!' settings_example
+
 sed -i -r 's!^\s*DAQ setup script:.*!DAQ setup script: '$Base'/setupARTDAQDEMO!' boot.txt
 
 cd $Base
