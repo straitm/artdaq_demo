@@ -181,7 +181,7 @@ process_name: DAQ%{daqproccode}"
     agConfig.gsub!(/\%\{root_output2\}/,"#")
   end
 
-  if is_data_logger > 0
+  if is_data_logger > 0 && totalDPs > 0
 	agConfig.gsub!(/\%\{rootmpi_output\}/,"")
 	agConfig.gsub!(/\%\{destinations_fhicl\}/, dl_destinations_fhicl)
   else
