@@ -1525,7 +1525,7 @@ class SystemControl
 	self.sendCommandSet("status", @options.udps)
   end
 
-  def getLegalCommands()mrb b
+  def getLegalCommands()
 	self.sendCommandSet("legal_commands", @options.aggregators)
 	self.sendCommandSet("legal_commands", @options.eventBuilders)
 	self.sendCommandSet("legal_commands", @options.toys)
