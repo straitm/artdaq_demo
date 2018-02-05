@@ -5,7 +5,7 @@ physics:
     evtDump:
     {
       module_type: ToyDump
-      num_adcs_to_show: 0
+      num_adcs_to_show: 10
     }
 
     printBuildInfo: {

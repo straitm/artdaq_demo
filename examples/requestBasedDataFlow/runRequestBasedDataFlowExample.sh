@@ -1,7 +1,9 @@
+#!/bin/sh
 
 if [ -z "${ARTDAQDEMO_REPO:-}" ]; then
-  echo "Please set ARTDAQDEMO_REPO to the artdaq-demo directory (containing tools/ and examples/)"
-  exit 1
+  test -d ${MRB_SOURCE-}/artdaq_demo && { export ARTDAQDEMO_REPO=${MRB_SOURCE-}/artdaq_demo; } || \
+  { echo "Please set ARTDAQDEMO_REPO to the artdaq-demo directory (containing tools/ and examples/)"
+    exit 1; }
 fi
 
 basedir=$MRB_SOURCE/..

@@ -1,6 +1,5 @@
 
 # Request configuration
-requests_enabled: false # Whether to set up the socket for listening for request messages
 request_mode: "Ignored" # Possible values are: Ignored, Single, Buffer, Window
 
 # Threading
