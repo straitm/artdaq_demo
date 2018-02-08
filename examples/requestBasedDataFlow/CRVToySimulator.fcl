@@ -1,5 +1,4 @@
 # Request configuration
-requests_enabled: true # Whether to set up the socket for listening for request messages
 request_mode: "Window" # Possible values are: Ignored, Single, Buffer, Window
 
 # Window Request configuration
