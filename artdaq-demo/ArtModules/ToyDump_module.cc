@@ -5,6 +5,8 @@
 // Description: Prints out information about each event.
 ////////////////////////////////////////////////////////////////////////
 
+#define TRACE_NAME "ToyDump"
+
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
@@ -38,7 +40,7 @@ public:
 	/**
 	 * \brief ToyDump Constructor
 	 * \param pset ParamterSet used to configure ToyDump
-	 * 
+	 *
 	 * \verbatim
 	 * ToyDump accepts the following Parameters:
 	 * "raw_data_label" (Default: "daq"): The label used to identify artdaq data
@@ -63,20 +65,23 @@ public:
 
 private:
 	std::string raw_data_label_;
-	uint32_t num_adcs_to_show_;
+	int num_adcs_to_write_;
+	int num_adcs_to_print_;
 	bool dump_to_file_;
 	bool dump_to_screen_;
 	uint32_t columns_to_display_on_screen_;
+	std::string output_file_name_;
 };
 
 
 demo::ToyDump::ToyDump(fhicl::ParameterSet const& pset)
 	: EDAnalyzer(pset)
 	, raw_data_label_(pset.get<std::string>("raw_data_label", "daq"))
-	, num_adcs_to_show_(pset.get<uint32_t>("num_adcs_to_show", 0))
-	, dump_to_file_(pset.get<bool>("dump_to_file", true))
-	, dump_to_screen_(pset.get<bool>("dump_to_screen", false))
-	, columns_to_display_on_screen_(pset.get<uint32_t>("columns_to_display_on_screen", 10)) {}
+	, num_adcs_to_write_(pset.get<int>("num_adcs_to_write", 0))
+	, num_adcs_to_print_(pset.get<int>("num_adcs_to_print", 10))
+	, columns_to_display_on_screen_(pset.get<uint32_t>("columns_to_display_on_screen", 10))
+	, output_file_name_(pset.get<std::string>("output_file_name", "out.bin"))
+{}
 
 demo::ToyDump::~ToyDump() {}
 
@@ -90,7 +95,7 @@ void demo::ToyDump::analyze(art::Event const& evt)
 
 	artdaq::Fragments fragments;
 	artdaq::FragmentPtrs containerFragments;
-	std::vector<std::string> fragment_type_labels{"TOY1", "TOY2", "ContainerTOY1", "ContainerTOY2"};
+	std::vector<std::string> fragment_type_labels{ "TOY1", "TOY2", "ContainerTOY1", "ContainerTOY2" };
 
 	for (auto label : fragment_type_labels)
 	{
@@ -98,10 +103,6 @@ void demo::ToyDump::analyze(art::Event const& evt)
 
 		evt.getByLabel(raw_data_label_, label, fragments_with_label);
 		if (!fragments_with_label.isValid()) continue;
-
-		//    for (int i_l = 0; i_l < static_cast<int>(fragments_with_label->size()); ++i_l) {
-		//      fragments.emplace_back( (*fragments_with_label)[i_l] );
-		//    }
 
 		if (label == "Container" || label == "ContainerTOY1" || label == "ContainerTOY2")
 		{
@@ -125,90 +126,76 @@ void demo::ToyDump::analyze(art::Event const& evt)
 	}
 
 	// look for raw Toy data
-
-	std::cout << "######################################################################" << std::endl;
-	std::cout << std::endl;
-	std::cout << "Run " << evt.run() << ", subrun " << evt.subRun()
+	TLOG(TLVL_INFO) << "Run " << evt.run() << ", subrun " << evt.subRun()
 		<< ", event " << eventNumber << " has " << fragments.size()
-		<< " fragment(s) of type TOY1 or TOY2" << std::endl;
+		<< " fragment(s) of type TOY1 or TOY2";
 
 	for (const auto& frag : fragments)
 	{
 		ToyFragment bb(frag);
 
-		std::cout << std::endl;
-		std::cout << fragmentTypeToString(static_cast<demo::detail::FragmentType>(frag.type())) << " fragment " << frag.fragmentID() << " w/ seqID " << frag.sequenceID() << " has total ADC counts = "
-			<< bb.total_adc_values() << std::endl;
-		//std::cout << std::endl;
+		TLOG(TLVL_INFO) << fragmentTypeToString(static_cast<demo::detail::FragmentType>(frag.type())) << " fragment " << frag.fragmentID()
+			<< " w/ seqID " << frag.sequenceID()
+			<< " has total ADC counts = " << bb.total_adc_values();
 
 		if (frag.hasMetadata())
 		{
-			std::cout << std::endl;
-			std::cout << "Fragment metadata: " << std::endl;
 			ToyFragment::Metadata const* md =
 				frag.metadata<ToyFragment::Metadata>();
-			std::cout << std::showbase << "Board serial number = "
-				<< ((int)md->board_serial_number) << ", sample bits = "
-				<< ((int)md->num_adc_bits)
+			TLOG(TLVL_DEBUG) << "Fragment metadata: " << std::showbase << "Board serial number = "
+				<< md->board_serial_number << ", sample bits = "
+				<< md->num_adc_bits
 				<< " -> max ADC value = "
-				<< bb.adc_range((int)md->num_adc_bits)
-				<< std::endl;
-			//std::cout << std::endl;
+				<< bb.adc_range((int)md->num_adc_bits);
 		}
 
-		if (num_adcs_to_show_ == 0)
+		if (num_adcs_to_write_ >= 0)
 		{
-			num_adcs_to_show_ = bb.total_adc_values();
+			uint32_t numAdcs = num_adcs_to_write_;
+			if (num_adcs_to_write_ == 0) numAdcs = bb.total_adc_values();
+			else if (static_cast<uint32_t>(num_adcs_to_write_) > bb.total_adc_values())
+			{
+				TLOG(TLVL_WARNING) << "Asked for more ADC values to file than are in Fragment. Only writing what's here...";
+				numAdcs = bb.total_adc_values();
+			}
+			std::ofstream output(output_file_name_, std::ios::out | std::ios::app | std::ios::binary);
+			for (uint32_t i_adc = 0; i_adc < numAdcs; ++i_adc)
+			{
+				output.write((char*)(bb.dataBeginADCs() + i_adc), sizeof(ToyFragment::adc_t));
+			}
+			output.close();
 		}
 
-		if (num_adcs_to_show_ > 0)
+		if (num_adcs_to_print_ >= 0)
 		{
-			if (num_adcs_to_show_ > bb.total_adc_values())
+			uint32_t numAdcs = num_adcs_to_print_;
+			if (num_adcs_to_print_ == 0) numAdcs = bb.total_adc_values();
+			else if (static_cast<uint32_t>(num_adcs_to_print_) > bb.total_adc_values())
 			{
-				throw cet::exception("num_adcs_to_show is larger than total number of adcs in fragment");
-			}
-			else
-			{
-				std::cout << std::endl;
-				std::cout << "First " << num_adcs_to_show_
-					<< " ADC values in the fragment: "
-					<< std::endl;
+				TLOG(TLVL_WARNING) << "Asked for more ADC values to file than are in Fragment. Only writing what's here...";
+				numAdcs = bb.total_adc_values();
 			}
 
-			if (dump_to_file_)
+			TLOG(TLVL_INFO) << "First " << numAdcs << " ADC values in the fragment:";
+			int rows = 1 + (int)((num_adcs_to_print_ - 1) / columns_to_display_on_screen_);
+			uint32_t adc_counter = 0;
+			for (int idx = 0; idx < rows; ++idx)
 			{
-				std::ofstream output("out.bin", std::ios::out | std::ios::app | std::ios::binary);
-				for (uint32_t i_adc = 0; i_adc < num_adcs_to_show_; ++i_adc)
+				std::ostringstream o;
+				o << std::right;
+				o << std::setw(4) << std::setfill('.');
+				o << (idx * columns_to_display_on_screen_) << ": ";
+				for (uint32_t jdx = 0; jdx < columns_to_display_on_screen_; ++jdx)
 				{
-					output.write((char*)(bb.dataBeginADCs() + i_adc), sizeof(ToyFragment::adc_t));
+					if (adc_counter >= numAdcs) { break; }
+					o << std::setw(6) << std::setfill(' ');
+					o << bb.adc_value(adc_counter);
+					++adc_counter;
 				}
-				output.close();
+				TLOG(TLVL_INFO) << o.str();
 			}
-
-			if (dump_to_screen_)
-			{
-				std::cout << std::right;
-				int rows = 1 + (int)((num_adcs_to_show_ - 1) / columns_to_display_on_screen_);
-				uint32_t adc_counter = 0;
-				for (int idx = 0; idx < rows; ++idx)
-				{
-					std::cout << std::setw(4) << std::setfill('.');
-					std::cout << (idx * columns_to_display_on_screen_) << ": ";
-					for (uint32_t jdx = 0; jdx < columns_to_display_on_screen_; ++jdx)
-					{
-						if (adc_counter >= num_adcs_to_show_) { break; }
-						std::cout << std::setw(6) << std::setfill(' ');
-						std::cout << bb.adc_value(adc_counter);
-						++adc_counter;
-					}
-					std::cout << std::endl;
-				}
-			}
-
-			std::cout << std::endl;
 		}
 	}
-	std::cout << std::endl;
 }
 
 DEFINE_ART_MODULE(demo::ToyDump)

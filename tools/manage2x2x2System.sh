@@ -281,6 +281,8 @@ if [[ "$command" == "shutdown" ]]; then
     launch "shutdown" $runNumber $compressionLevel $onmonEnable $dataDir \
         $logFile $diskWriting $runEventCount $runDuration $fileSize \
         $fileEventCount $fileDuration $verbose $toy1Generator $toy2Generator $onmonDir
+	wait
+	sleep 3
     # stop the MPI program
     xmlrpc ${THIS_NODE}:${ARTDAQDEMO_PMT_PORT}/RPC2 pmt.stopSystem
     # clean up any stale shared memory segment

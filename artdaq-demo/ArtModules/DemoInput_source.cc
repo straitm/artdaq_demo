@@ -7,17 +7,6 @@
 #include <string>
 using std::string;
 
-/**
- * \brief The artdaq_demo namespace
- */
-namespace demo
-{
-	/**
-	 * \brief DemoInput is an art::Source using the detail::RawEventQueueReader class
-	 */
-	typedef art::Source< artdaq::detail::SharedMemoryReader<demo::makeFragmentTypeMap> > DemoInput;
-}
-
 namespace art
 {
 	/**
@@ -29,6 +18,17 @@ namespace art
 	{
 		static constexpr bool value = true; ///< Used to suppress use of file services on art Source
 	};
+}
+
+/**
+ * \brief The artdaq_demo namespace
+ */
+namespace demo
+{
+	/**
+	 * \brief DemoInput is an art::Source using the detail::RawEventQueueReader class
+	 */
+	typedef art::Source< artdaq::detail::SharedMemoryReader<demo::makeFragmentTypeMap> > DemoInput;
 }
 
 DEFINE_ART_INPUT_SOURCE(demo::DemoInput)
