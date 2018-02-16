@@ -26,22 +26,16 @@ end_product_list
 # -nq- here means there is no qualifier
 # a "-" here means the dependent product is not required by the parent and will not be setup
 qualifier	   artdaq	 	 artdaq_core_demo
-e15:s62:prof   e15:s62:prof  	 e15:s62:prof
-e15:s62:debug  e15:s62:debug 	 e15:s62:debug
-e14:s62:prof   e14:s62:prof  	 e14:s62:prof
-e14:s62:debug  e14:s62:debug 	 e14:s62:debug
+e15:s64:prof   e15:s64:prof  	 e15:s64:prof
+e15:s64:debug  e15:s64:debug 	 e15:s64:debug
 e14:s50:prof   e14:s50:prof  	 e14:s50:prof
 e14:s50:debug  e14:s50:debug 	 e14:s50:debug
 e10:s46:prof   e10:s46:prof  	 e10:s46:prof
 e10:s46:debug  e10:s46:debug 	 e10:s46:debug
-e15:s62:eth:prof   e15:s62:eth:prof  	 e15:s62:prof
-e15:s62:eth:debug  e15:s62:eth:debug 	 e15:s62:debug
-e15:s62:ib:prof    e15:s62:ib:prof   	 e15:s62:prof
-e15:s62:ib:debug   e15:s62:ib:debug  	 e15:s62:debug
-e14:s62:eth:prof   e14:s62:eth:prof  	 e14:s62:prof
-e14:s62:eth:debug  e14:s62:eth:debug 	 e14:s62:debug
-e14:s62:ib:prof    e14:s62:ib:prof   	 e14:s62:prof
-e14:s62:ib:debug   e14:s62:ib:debug  	 e14:s62:debug
+e15:s64:eth:prof   e15:s64:eth:prof  	 e15:s64:prof
+e15:s64:eth:debug  e15:s64:eth:debug 	 e15:s64:debug
+e15:s64:ib:prof    e15:s64:ib:prof   	 e15:s64:prof
+e15:s64:ib:debug   e15:s64:ib:debug  	 e15:s64:debug
 e14:s50:eth:prof   e14:s50:eth:prof  	 e14:s50:prof
 e14:s50:eth:debug  e14:s50:eth:debug 	 e14:s50:debug
 e14:s50:ib:prof    e14:s50:ib:prof   	 e14:s50:prof
