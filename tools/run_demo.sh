@@ -28,15 +28,15 @@ fi
 	-c 'export DAQINTERFACE_USER_SOURCEFILE=$PWD/user_sourcefile_example' \
 	-c 'source $ARTDAQ_DAQINTERFACE_DIR/source_me' \
 	-c 'DAQInterface'
-    sleep 2
+    sleep 5
 
     $toolsdir/xt_cmd.sh $daqintdir --geom 132 \
         -c 'source mock_ups_setup.sh' \
 	-c 'export DAQINTERFACE_USER_SOURCEFILE=$PWD/user_sourcefile_example' \
 	-c 'source $ARTDAQ_DAQINTERFACE_DIR/source_me' \
-	-c 'just_do_it.sh $PWD/boot.txt 20'
+	-c 'just_do_it.sh $PWD/boot.txt 120'
 
-     sleep 14;
+    sleep 40;
 
     xrdbproc=$( which xrdb )
 
@@ -51,7 +51,7 @@ fi
         -c '. ./setupARTDAQDEMO' \
         -c 'art -c '$toolsdir'/fcl/TransferInputShmem.fcl'
 
-    sleep 4;
+    sleep 5;
 
     $toolsdir/xt_cmd.sh $basedir --geom '100x33+0+0 -sl 2500' \
         -c '. ./setupARTDAQDEMO' \
