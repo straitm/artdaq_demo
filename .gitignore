@@ -15,3 +15,5 @@ bin/*
 obj/*
 *.vcxproj*
 NONE
+*.swp
+*.swo
