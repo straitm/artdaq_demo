@@ -74,31 +74,10 @@ void demo::CheckIntegrity::analyze(art::Event const& evt)
 
 	if (raw.isValid())
 	{
-		for (size_t idx = 0; idx < raw->size(); ++idx)
-		{
+		for (size_t idx = 0; idx < raw->size(); ++idx){
 			const auto& frag((*raw)[idx]);
 
-			ToyFragment bb(frag);
-
-			{
-				auto adc_iter = bb.dataBeginADCs();
-				ToyFragment::adc_t expected_adc = 1;
-
-				for (; adc_iter != bb.dataEndADCs(); adc_iter++ , expected_adc++)
-				{
-					if (*adc_iter != expected_adc)
-					{
-						mf::LogError("CheckIntegrity") << "Error: in run " << evt.run() << ", subrun " << evt.subRun() <<
-							", event " << evt.event() << ", seqID " << frag.sequenceID() <<
-							", fragID " << frag.fragmentID() << ": expected an ADC value of " << expected_adc <<
-							", got " << *adc_iter;
-						return;
-					}
-				}
-
-				mf::LogDebug("CheckIntegrity") << "In run " << evt.run() << ", subrun " << evt.subRun() <<
-					", event " << evt.event() << ", everything is fine";
-			}
+      printf("First byte of the fragment is %d\n", ((const char *)&frag)[0]);
 		}
 	}
 	else

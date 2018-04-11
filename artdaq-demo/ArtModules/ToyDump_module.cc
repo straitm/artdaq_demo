@@ -13,7 +13,6 @@
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Utilities/Exception.h"
 
-#include "artdaq-core-demo/Overlays/FragmentType.hh"
 #include "artdaq-core-demo/Overlays/ToyFragment.hh"
 #include "artdaq-core/Data/ContainerFragment.hh"
 #include "artdaq-core/Data/Fragment.hh"
@@ -87,8 +86,6 @@ demo::ToyDump::~ToyDump() {}
 
 void demo::ToyDump::analyze(art::Event const& evt)
 {
-	art::EventNumber_t eventNumber = evt.event();
-
 	// ***********************
 	// *** Toy Fragments ***
 	// ***********************
@@ -121,78 +118,6 @@ void demo::ToyDump::analyze(art::Event const& evt)
 			for (auto frag : *fragments_with_label)
 			{
 				fragments.emplace_back(frag);
-			}
-		}
-	}
-
-	// look for raw Toy data
-	TLOG(TLVL_INFO) << "Run " << evt.run() << ", subrun " << evt.subRun()
-		<< ", event " << eventNumber << " has " << fragments.size()
-		<< " fragment(s) of type TOY1 or TOY2";
-
-	for (const auto& frag : fragments)
-	{
-		ToyFragment bb(frag);
-
-		TLOG(TLVL_INFO) << fragmentTypeToString(static_cast<demo::detail::FragmentType>(frag.type())) << " fragment " << frag.fragmentID()
-			<< " w/ seqID " << frag.sequenceID()
-			<< " has total ADC counts = " << bb.total_adc_values();
-
-		if (frag.hasMetadata())
-		{
-			ToyFragment::Metadata const* md =
-				frag.metadata<ToyFragment::Metadata>();
-			TLOG(TLVL_DEBUG) << "Fragment metadata: " << std::showbase << "Board serial number = "
-				<< md->board_serial_number << ", sample bits = "
-				<< md->num_adc_bits
-				<< " -> max ADC value = "
-				<< bb.adc_range((int)md->num_adc_bits);
-		}
-
-		if (num_adcs_to_write_ >= 0)
-		{
-			uint32_t numAdcs = num_adcs_to_write_;
-			if (num_adcs_to_write_ == 0) numAdcs = bb.total_adc_values();
-			else if (static_cast<uint32_t>(num_adcs_to_write_) > bb.total_adc_values())
-			{
-				TLOG(TLVL_WARNING) << "Asked for more ADC values to file than are in Fragment. Only writing what's here...";
-				numAdcs = bb.total_adc_values();
-			}
-			std::ofstream output(output_file_name_, std::ios::out | std::ios::app | std::ios::binary);
-			for (uint32_t i_adc = 0; i_adc < numAdcs; ++i_adc)
-			{
-				output.write((char*)(bb.dataBeginADCs() + i_adc), sizeof(ToyFragment::adc_t));
-			}
-			output.close();
-		}
-
-		if (num_adcs_to_print_ >= 0)
-		{
-			uint32_t numAdcs = num_adcs_to_print_;
-			if (num_adcs_to_print_ == 0) numAdcs = bb.total_adc_values();
-			else if (static_cast<uint32_t>(num_adcs_to_print_) > bb.total_adc_values())
-			{
-				TLOG(TLVL_WARNING) << "Asked for more ADC values to file than are in Fragment. Only writing what's here...";
-				numAdcs = bb.total_adc_values();
-			}
-
-			TLOG(TLVL_INFO) << "First " << numAdcs << " ADC values in the fragment:";
-			int rows = 1 + (int)((num_adcs_to_print_ - 1) / columns_to_display_on_screen_);
-			uint32_t adc_counter = 0;
-			for (int idx = 0; idx < rows; ++idx)
-			{
-				std::ostringstream o;
-				o << std::right;
-				o << std::setw(4) << std::setfill('.');
-				o << (idx * columns_to_display_on_screen_) << ": ";
-				for (uint32_t jdx = 0; jdx < columns_to_display_on_screen_; ++jdx)
-				{
-					if (adc_counter >= numAdcs) { break; }
-					o << std::setw(6) << std::setfill(' ');
-					o << bb.adc_value(adc_counter);
-					++adc_counter;
-				}
-				TLOG(TLVL_INFO) << o.str();
 			}
 		}
 	}
