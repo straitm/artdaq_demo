@@ -57,7 +57,7 @@ bool demo::ToySimulator::getNext_(
       fragment_id(), // ditto
       artdaq::Fragment::FirstUserFragmentType, // only one
       0, // metadata.  What happens to this?
-      timestamp_ // What timestamp? In what units?  Who reads this?
+      timestamp_ // This is a uint64_t.  What timestamp? In what units?  Who reads this?
   ));
 
   frags.emplace_back(std::move(fragptr));

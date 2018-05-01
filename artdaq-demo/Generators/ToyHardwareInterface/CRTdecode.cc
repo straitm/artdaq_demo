@@ -111,7 +111,7 @@ The serialized format of a module packet is:
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |                        Unix Time stamp                        |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                  62.5 MHz counter time stamp                  |
+   |                   50 MHz counter time stamp                   |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |               .              hits             .               |
    |               .               .               .               |
@@ -124,7 +124,7 @@ The serialized format of a module packet is:
 
   Time stamp: Unsigned 32 bit integer
 
-    Number of 16ns ticks since last sync pulse.  Shouldn't usually be
+    Number of 20ns ticks since last sync pulse.  Shouldn't usually be
     more than 2^29 - 1.
 
 The format of a hit is:
