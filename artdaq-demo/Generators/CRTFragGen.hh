@@ -1,12 +1,12 @@
-#ifndef artdaq_demo_Generators_ToySimulator_hh
-#define artdaq_demo_Generators_ToySimulator_hh
+#ifndef artdaq_demo_Generators_CRTFragGen_hh
+#define artdaq_demo_Generators_CRTFragGen_hh
 
 #include "fhiclcpp/fwd.h"
 #include "artdaq-core/Data/Fragment.hh"
 #include "artdaq/Application/CommandableFragmentGenerator.hh"
 #include "artdaq-core-demo/Overlays/ToyFragment.hh"
 
-#include "ToyHardwareInterface/ToyHardwareInterface.hh"
+#include "CRTInterface/CRTInterface.hh"
 
 #include <random>
 #include <vector>
@@ -14,12 +14,12 @@
 
 namespace demo
 {
-  class ToySimulator : public artdaq::CommandableFragmentGenerator
+  class CRTFragGen : public artdaq::CommandableFragmentGenerator
   {
     public:
 
-    explicit ToySimulator(fhicl::ParameterSet const& ps);
-    virtual ~ToySimulator();
+    explicit CRTFragGen(fhicl::ParameterSet const& ps);
+    virtual ~CRTFragGen();
 
     private:
 
@@ -47,12 +47,12 @@ namespace demo
     void stop() override;
 
     /** \brief Override of pure virtual function in CommandableFragmentGenerator.
-    * stopNoMutex does not do anything in ToySimulator */
+    * stopNoMutex does not do anything in CRTFragGen */
     void stopNoMutex() override {}
 
-    std::unique_ptr<ToyHardwareInterface> hardware_interface_;
+    std::unique_ptr<CRTInterface> hardware_interface_;
 
-    // I don't know what kind of a time this is.
+    // I don't know what kind of a time this is, except that it is a uint_64t
     artdaq::Fragment::timestamp_t timestamp_;
 
     // Written do by the hardware interface
@@ -60,4 +60,4 @@ namespace demo
   };
 }
 
-#endif /* artdaq_demo_Generators_ToySimulator_hh */
+#endif /* artdaq_demo_Generators_CRTFragGen_hh */

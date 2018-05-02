@@ -3,7 +3,7 @@ needed for the CRT.  When it has some semblance of working, I should rename it
 (it would be nice if the source file matched the header...) and figure out how
 to keep it properly. */
 
-#include "artdaq-demo/Generators/ToySimulator.hh"
+#include "artdaq-demo/Generators/CRTFragGen.hh"
 
 #include "canvas/Utilities/Exception.h"
 
@@ -21,21 +21,21 @@ to keep it properly. */
 #include <unistd.h>
 #include "cetlib_except/exception.h"
 
-demo::ToySimulator::ToySimulator(fhicl::ParameterSet const& ps) :
+demo::CRTFragGen::CRTFragGen(fhicl::ParameterSet const& ps) :
     CommandableFragmentGenerator(ps)
-  , hardware_interface_(new ToyHardwareInterface(ps))
+  , hardware_interface_(new CRTInterface(ps))
   , timestamp_(0)
   , readout_buffer_(nullptr)
 {
   hardware_interface_->AllocateReadoutBuffer(&readout_buffer_);
 }
 
-demo::ToySimulator::~ToySimulator()
+demo::CRTFragGen::~CRTFragGen()
 {
   hardware_interface_->FreeReadoutBuffer(readout_buffer_);
 }
 
-bool demo::ToySimulator::getNext_(
+bool demo::CRTFragGen::getNext_(
   std::list< std::unique_ptr<artdaq::Fragment> > & frags)
 {
   if(should_stop()) return false;
@@ -75,15 +75,15 @@ bool demo::ToySimulator::getNext_(
   return true;
 }
 
-void demo::ToySimulator::start()
+void demo::CRTFragGen::start()
 {
   hardware_interface_->StartDatataking();
 }
 
-void demo::ToySimulator::stop()
+void demo::CRTFragGen::stop()
 {
   hardware_interface_->StopDatataking();
 }
 
 // The following macro is defined in artdaq's GeneratorMacros.hh header
-DEFINE_ARTDAQ_COMMANDABLE_GENERATOR(demo::ToySimulator)
+DEFINE_ARTDAQ_COMMANDABLE_GENERATOR(demo::CRTFragGen)

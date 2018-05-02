@@ -1,6 +1,6 @@
 
-simple_plugin(ToySimulator "generator"
-  artdaq-demo_Generators_ToyHardwareInterface
+simple_plugin(CRTFragGen "generator"
+  artdaq-demo_Generators_CRTInterface
   artdaq-core-demo_Overlays
   artdaq_Application
   artdaq_DAQdata
@@ -43,4 +43,4 @@ simple_plugin(UDPReceiver "generator"
  ${CETLIB_EXCEPT}
     )
 
-add_subdirectory(ToyHardwareInterface)
+add_subdirectory(CRTInterface)

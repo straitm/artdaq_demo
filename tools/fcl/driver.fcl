@@ -1,6 +1,6 @@
 # FHiCL document used to run the "driver" executable.
 
-events_to_generate: 10
+events_to_generate: 1000
 run_number: 101
 transition_timeout: 30
 
@@ -12,7 +12,7 @@ services:
 fragment_receiver:
 {
   # Parameters defining and configuring the fragment generator to be used
-  generator: ToySimulator 
+  generator: CRTFragGen 
   fragment_type: CRT # Make sure downstream modules know about this fragment_type!
 
   # Parameters configuring the fragment generator's parent class

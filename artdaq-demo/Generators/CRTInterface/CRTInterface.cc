@@ -1,6 +1,6 @@
-#include "artdaq-demo/Generators/ToyHardwareInterface/ToyHardwareInterface.hh"
-#include "artdaq-demo/Generators/ToyHardwareInterface/CRTdecode.hh"
-#define TRACE_NAME "ToyHardwareInterface"
+#include "artdaq-demo/Generators/CRTInterface/CRTInterface.hh"
+#include "artdaq-demo/Generators/CRTInterface/CRTdecode.hh"
+#define TRACE_NAME "CRTInterface"
 #include "artdaq/DAQdata/Globals.hh"
 #include "artdaq-core-demo/Overlays/ToyFragment.hh"
 #include "artdaq-core-demo/Overlays/FragmentType.hh"
@@ -27,7 +27,7 @@ static char * next_raw_byte = rawfromhardware;
 
 /**********************************************************************/
 
-ToyHardwareInterface::ToyHardwareInterface(
+CRTInterface::CRTInterface(
   __attribute__((unused)) fhicl::ParameterSet const& ps) :
   taking_data_(false)
 {
@@ -37,7 +37,7 @@ ToyHardwareInterface::ToyHardwareInterface(
 // telling the hardware to start sending data - the uploading of
 // values to registers, etc.
 
-void ToyHardwareInterface::StartDatataking()
+void CRTInterface::StartDatataking()
 {
   taking_data_ = true;
 
@@ -49,7 +49,7 @@ void ToyHardwareInterface::StartDatataking()
   }
 
   if(-1 == (inotifyfd = inotify_init())){
-    perror("ToyHardwareInterface::StartDatataking");
+    perror("CRTInterface::StartDatataking");
     _exit(1);
   }
 
@@ -59,33 +59,34 @@ void ToyHardwareInterface::StartDatataking()
 
   if(-1 == (inotify_watchfd =
             inotify_add_watch(inotifyfd, filename, IN_MODIFY))){
-    perror("ToyHardwareInterface::StartDatataking");
+    fprintf(stderr, "CRTInterface::StartDatataking: Could not open %s\n", filename);
+    perror(NULL);
     _exit(1);
   }
 
   printf("Successful inotify_add_watch, fd %d\n", inotify_watchfd);
 
   if(-1 == (datafile_fd = open(filename, O_RDONLY))){
-    perror("ToyHardwareInterface::StartDatataking");
+    perror("CRTInterface::StartDatataking");
     _exit(1);
   }
 }
 
-void ToyHardwareInterface::StopDatataking()
+void CRTInterface::StopDatataking()
 {
   taking_data_ = false;
   if(-1 == inotify_rm_watch(inotifyfd, inotify_watchfd)){
-    perror("ToyHardwareInterface::StopDatataking");
+    perror("CRTInterface::StopDatataking");
     _exit(1); // maybe not necessary
   }
 }
 
-void ToyHardwareInterface::FillBuffer(char* cooked_data, size_t* bytes_ret)
+void CRTInterface::FillBuffer(char* cooked_data, size_t* bytes_ret)
 {
   *bytes_ret = 0;
 
   if(!taking_data_)
-    throw cet::exception("ToyHardwareInterface") <<
+    throw cet::exception("CRTInterface") <<
       "Attempt to call FillBuffer when not sending data";
 
   char filechange[sizeof(struct inotify_event) + NAME_MAX + 1];
@@ -96,7 +97,7 @@ void ToyHardwareInterface::FillBuffer(char* cooked_data, size_t* bytes_ret)
      (inotify_bread = read(inotifyfd, &filechange, sizeof(filechange)))){
     // Might should be a fatal error.  If we can't read from inotify
     // once, we probably won't be able to again.
-    perror("ToyHardwareInterface::FillBuffer");
+    perror("CRTInterface::FillBuffer");
     return;
   }
 
@@ -128,7 +129,7 @@ void ToyHardwareInterface::FillBuffer(char* cooked_data, size_t* bytes_ret)
   }
 
   if(read_bread == -1){
-    perror("ToyHardwareInterface::FillBuffer");
+    perror("CRTInterface::FillBuffer");
     // Maybe should be fatal?
   }
 
@@ -138,12 +139,12 @@ void ToyHardwareInterface::FillBuffer(char* cooked_data, size_t* bytes_ret)
   printf("Decoded to %ld bytes\n", *bytes_ret);
 }
 
-void ToyHardwareInterface::AllocateReadoutBuffer(char** cooked_data)
+void CRTInterface::AllocateReadoutBuffer(char** cooked_data)
 {
   *cooked_data = new char[COOKEDBUFSIZE];
 }
 
-void ToyHardwareInterface::FreeReadoutBuffer(char* cooked_data)
+void CRTInterface::FreeReadoutBuffer(char* cooked_data)
 {
   delete[] cooked_data;
 }

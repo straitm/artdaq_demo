@@ -1,5 +1,5 @@
-#ifndef artdaq_demo_Generators_ToyHardwareInterface_ToyHardwareInterface_hh
-#define artdaq_demo_Generators_ToyHardwareInterface_ToyHardwareInterface_hh
+#ifndef artdaq_demo_Generators_CRTInterface_CRTInterface_hh
+#define artdaq_demo_Generators_CRTInterface_CRTInterface_hh
 
 #include "artdaq-core-demo/Overlays/FragmentType.hh"
 
@@ -8,11 +8,11 @@
 #include <random>
 #include <chrono>
 
-class ToyHardwareInterface
+class CRTInterface
 {
 public:
 
-	explicit ToyHardwareInterface(fhicl::ParameterSet const& ps);
+	explicit CRTInterface(fhicl::ParameterSet const& ps);
 
 	void StartDatataking();
 
