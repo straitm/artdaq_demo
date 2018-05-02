@@ -99,7 +99,7 @@ char * find_wr_file(const std::string & indir)
     // not to accept a named pipe, etc.
     struct stat st;
     if(stat(dirp->d_name, &st) == -1){
-      // If the file disapears while we're trying to check it, just move on
+      // If the file disappears while we're trying to check it, just move on
       continue;
     }
     if(S_ISDIR(st.st_mode)) continue;
@@ -111,6 +111,7 @@ char * find_wr_file(const std::string & indir)
       // As per readdir(3), this pointer is good until readdir() is called
       // again on this directory.
       return dirp->d_name;
+    errno = 0;
   }
 
   // If errno == 0, it just means we got to the end of the directory.
