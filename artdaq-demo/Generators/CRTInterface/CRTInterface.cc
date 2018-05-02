@@ -12,6 +12,8 @@
 #include <unistd.h>
 #include <iostream>
 #include <cstdlib>
+#include <fcntl.h>
+#include <dirent.h>
 
 #include <sys/inotify.h>
 
@@ -27,8 +29,9 @@ static char * next_raw_byte = rawfromhardware;
 
 /**********************************************************************/
 
-CRTInterface::CRTInterface(
-  __attribute__((unused)) fhicl::ParameterSet const& ps) :
+CRTInterface::CRTInterface(fhicl::ParameterSet const& ps) :
+  indir(ps.get<std::string>("indir")),
+  state(CRT_WAIT),
   taking_data_(false)
 {
 }
@@ -53,23 +56,9 @@ void CRTInterface::StartDatataking()
     _exit(1);
   }
 
-  // Hardcoded for now.  Later to track input files if we go this
-  // route.
-  const char * const filename = "/tmp/1506152664_21";
-
-  if(-1 == (inotify_watchfd =
-            inotify_add_watch(inotifyfd, filename, IN_MODIFY))){
-    fprintf(stderr, "CRTInterface::StartDatataking: Could not open %s\n", filename);
-    perror(NULL);
-    _exit(1);
-  }
-
-  printf("Successful inotify_add_watch, fd %d\n", inotify_watchfd);
-
-  if(-1 == (datafile_fd = open(filename, O_RDONLY))){
-    perror("CRTInterface::StartDatataking");
-    _exit(1);
-  }
+  // Set the file descriptor to non-blocking so that we can immediately
+  // return from FillBuffer() if no data is available.
+  fcntl(inotifyfd, F_SETFL, fcntl(inotifyfd, F_GETFL) | O_NONBLOCK);
 }
 
 void CRTInterface::StopDatataking()
@@ -81,29 +70,133 @@ void CRTInterface::StopDatataking()
   }
 }
 
-void CRTInterface::FillBuffer(char* cooked_data, size_t* bytes_ret)
+char * find_wr_file(const std::string & indir)
 {
-  *bytes_ret = 0;
+  DIR * dp;
+  struct dirent * dirp;
+  errno = 0;
+  if((dp = opendir(indir.c_str())) == NULL){
+    if(errno == ENOENT){
+      fprintf(stderr, "No such directory %s, but will wait for it\n",
+              indir.c_str());
+      // should we sleep for a second or so here?
+      return NULL;
+    }
+    else{
+      // Other conditions we are unlikely to recover from: permission denied,
+      // too many file descriptors in use, too many files open, out of memory,
+      // or the name isn't a directory.
+      perror("CRTInterface find_wr_file");
+      _exit(1);
+    }
+  }
 
-  if(!taking_data_)
-    throw cet::exception("CRTInterface") <<
-      "Attempt to call FillBuffer when not sending data";
+  while((dirp = readdir(dp)) != NULL){
+    // If somehow there ends up being a directory ending in ".wr", ignore it
+    // (and all other directories).  I suppose all other types are fine,
+    // even though we only really expect regular files.  But there's no reason
+    // not to accept a named pipe, etc.
+    struct stat st;
+    if(stat(dirp->d_name, &st) == -1){
+      // If the file disapears while we're trying to check it, just move on
+      continue;
+    }
+    if(S_ISDIR(st.st_mode)) continue;
 
+    // Does this file name end in ".wr"?  Having ".wr" in the middle
+    // somewhere is not sufficient (and also should never happen).
+    if(strstr(dirp->d_name, ".wr") != NULL &&
+       strlen(strstr(dirp->d_name, ".wr")) == strlen(".wr"))
+      // As per readdir(3), this pointer is good until readdir() is called
+      // again on this directory.
+      return dirp->d_name;
+  }
+
+  // If errno == 0, it just means we got to the end of the directory.
+  // Otherwise, something went wrong.  This is unlikely since the only
+  // error condition is "EBADF  Invalid directory stream descriptor dirp."
+  if(errno) perror(NULL);
+
+  return NULL;
+}
+
+/*
+  Check if there is a file ending in ".wr" in the input directory.
+  If so, open it, set an inotify watch on it, and return true.
+  Else return false.
+*/
+bool CRTInterface::try_open_file()
+{
+  const char * const filename = find_wr_file(indir);
+
+  if(filename == NULL) return false;
+
+  if(-1 == (inotify_watchfd =
+            inotify_add_watch(inotifyfd, filename, IN_MODIFY | IN_MOVE_SELF))){
+    if(errno == ENOENT){
+      // It's possible that the file we just found has vanished by the time
+      // we get here, probably by being renamed without the ".wr".  That's
+      // OK, we'll just try again in a moment.
+      return false;
+    }
+    else{
+      // But other inotify_add_watch errors we probably can't recover from
+      fprintf(stderr, "CRTInterface: Could not open %s\n", filename);
+      perror(NULL);
+      _exit(1);
+    }
+  }
+
+  // XXX debugging.  Remove later.
+  printf("Successful inotify_add_watch on %s, fd %d\n", filename, inotify_watchfd);
+
+  if(-1 == (datafile_fd = open(filename, O_RDONLY))){
+    if(errno == ENOENT){
+      // The file we just set a watch on might already be gone, as above.
+      // We'll just get the next one.
+      inotify_rm_watch(inotifyfd, inotify_watchfd);
+      return false;
+    }
+    else{
+      // But other errors probably indicate an unrecoverable problem.
+      perror("CRTInterface::StartDatataking");
+      _exit(1);
+    }
+  }
+
+  state = CRT_READ_ACTIVE;
+
+  return true;
+}
+
+/*
+  Checks for inotify events that alert us to a file being appended to
+  or renamed, and update 'state' appropriately.  If no events, return
+  false, meaning there is nothing to do now.
+*/
+bool CRTInterface::check_events()
+{
   char filechange[sizeof(struct inotify_event) + NAME_MAX + 1];
 
   ssize_t inotify_bread = 0;
 
+  // read() is non-blocking because I set O_NONBLOCK above
   if(-1 ==
      (inotify_bread = read(inotifyfd, &filechange, sizeof(filechange)))){
-    // Might should be a fatal error.  If we can't read from inotify
-    // once, we probably won't be able to again.
+
+    // If there are no events, we get this error
+    if(errno == EAGAIN) return false;
+
+    // Anything else maybe should be a fatal error.  If we can't read from
+    // inotify once, we probably won't be able to again.
     perror("CRTInterface::FillBuffer");
-    return;
+    return false;
   }
 
   if(inotify_bread == 0){
     // This means that the file has not changed, so we have no new data
-    return;
+    // (or maybe this never happens because we'd get EAGAIN above).
+    return false;
   }
 
   if(inotify_bread < (ssize_t)sizeof(struct inotify_event)){
@@ -112,12 +205,45 @@ void CRTInterface::FillBuffer(char* cooked_data, size_t* bytes_ret)
     _exit(1);
   }
 
-  // Oh boy!  Since we're here, it means that the file has changed.
-  // Hopefully that means *appended to*, in which case we're going
-  // to read the new bytes.  At the moment, let's ponderously read one
-  // at a time.  If by "changed", in fact the file was truncated or
-  // that some contents prior to our current position were changed,
-  // we'll get nothing here, which will signal that such shenanigans occured.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+  const uint32_t mask = ((struct inotify_event *)filechange)->mask;
+#pragma GCC diagnostic pop
+
+  if(mask == IN_MODIFY){
+    // Active file has been modified again
+    if(state == CRT_READ_ACTIVE) return true;
+    else{
+      fprintf(stderr, "File modified, but not watching an open file...\n");
+      return false; // Should be fatal?
+    }
+  }
+  else /* mask == IN_MOVE_SELF */ {
+
+    // Active file has been renamed, meaning it will no longer be
+    // written to.  We should read the rest and then find the next file.
+    if(state == CRT_READ_ACTIVE){
+      state = CRT_READ_CLOSED;
+      return true;
+    }
+    else{
+      fprintf(stderr, "Not reached.  Closed file renamed.\n");
+      return false; // should be fatal?
+    }
+  }
+}
+
+/*
+  Reads all available data from the open file.
+*/
+size_t CRTInterface::read_everything_from_file(char * cooked_data)
+{
+  // Oh boy!  Since we're here, it means we have a new file, or that the file
+  // has changed.  Hopefully that means *appended to*, in which case we're
+  // going to read the new bytes.  At the moment, let's ponderously read one at
+  // a time.  If by "changed", in fact the file was truncated or that some
+  // contents prior to our current position were changed, we'll get nothing
+  // here, which will signal that such shenanigans occured.
 
   ssize_t read_bread = 0;
 
@@ -129,14 +255,39 @@ void CRTInterface::FillBuffer(char* cooked_data, size_t* bytes_ret)
   }
 
   if(read_bread == -1){
+    // All read() errors other than *maybe* EINTR should be fatal.
     perror("CRTInterface::FillBuffer");
-    // Maybe should be fatal?
+    _exit(1);
   }
 
   printf("%ld bytes in raw buffer.\n", next_raw_byte - rawfromhardware);
-  *bytes_ret = CRT::raw2cook(cooked_data, COOKEDBUFSIZE,
-                             rawfromhardware, next_raw_byte);
+  return CRT::raw2cook(cooked_data, COOKEDBUFSIZE,
+                       rawfromhardware, next_raw_byte);
+}
+
+void CRTInterface::FillBuffer(char* cooked_data, size_t* bytes_ret)
+{
+  *bytes_ret = 0;
+
+  if(!taking_data_)
+    throw cet::exception("CRTInterface") <<
+      "Attempt to call FillBuffer when not sending data";
+
+  if(state == CRT_WAIT){
+    if(!try_open_file()) return;
+  }
+
+  if(!check_events()) return;
+
+  if(state == CRT_READ_ACTIVE){
+    *bytes_ret = read_everything_from_file(cooked_data);
+  }
+  else /* if(state == CRT_READ_CLOSED */ {
+    *bytes_ret = read_everything_from_file(cooked_data);
+    state = CRT_WAIT;
+  }
   printf("Decoded to %ld bytes\n", *bytes_ret);
+
 }
 
 void CRTInterface::AllocateReadoutBuffer(char** cooked_data)

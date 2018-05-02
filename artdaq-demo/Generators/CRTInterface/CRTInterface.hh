@@ -8,6 +8,21 @@
 #include <random>
 #include <chrono>
 
+enum crt_state_t{
+  // Either we have just started, in which case we go look for an input
+  // file ending in ".wr", or we just finished reading a file, which puts
+  // us in the same situation.
+  CRT_WAIT,
+
+  // We are reading an input file ending in ".wr", i.e. one that is still
+  // being written to.
+  CRT_READ_ACTIVE,
+
+  // We are reading a closed input file that has been renamed not to have
+  // ".wr" at the end.  This can be read all in one go.
+  CRT_READ_CLOSED,
+};
+
 class CRTInterface
 {
 public:
@@ -39,6 +54,14 @@ public:
 
 private:
 
+  // The directory in which to look for input files.  This is probably
+  // something like Run_0000123/binary/. It can be an absolute or relative
+  // path.
+  std::string indir;
+
+  // State: whether we are reading an input file, waiting for one, etc.
+  enum crt_state_t state;
+
 	bool taking_data_;
 
   // File descriptor associated with the inotify event queue, which is
@@ -52,6 +75,11 @@ private:
   int datafile_fd = -1;
 
 	demo::FragmentType fragment_type_;
+
+  // Private functions documented in the implementation.
+  bool try_open_file();
+  bool check_events();
+  size_t read_everything_from_file(char * );
 };
 
 #endif
