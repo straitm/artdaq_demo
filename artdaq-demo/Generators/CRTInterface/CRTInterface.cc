@@ -79,7 +79,7 @@ char * find_wr_file(const std::string & indir)
     if(errno == ENOENT){
       fprintf(stderr, "No such directory %s, but will wait for it\n",
               indir.c_str());
-      // should we sleep for a second or so here?
+      usleep(100000);
       return NULL;
     }
     else{
@@ -91,6 +91,7 @@ char * find_wr_file(const std::string & indir)
     }
   }
 
+  errno = 0;
   while((dirp = readdir(dp)) != NULL){
     // If somehow there ends up being a directory ending in ".wr", ignore it
     // (and all other directories).  I suppose all other types are fine,
@@ -115,7 +116,7 @@ char * find_wr_file(const std::string & indir)
   // If errno == 0, it just means we got to the end of the directory.
   // Otherwise, something went wrong.  This is unlikely since the only
   // error condition is "EBADF  Invalid directory stream descriptor dirp."
-  if(errno) perror(NULL);
+  if(errno) perror("Bottom of find_wr_file");
 
   return NULL;
 }
@@ -142,7 +143,7 @@ bool CRTInterface::try_open_file()
     else{
       // But other inotify_add_watch errors we probably can't recover from
       fprintf(stderr, "CRTInterface: Could not open %s\n", filename);
-      perror(NULL);
+      perror("CRTInterface");
       _exit(1);
     }
   }
