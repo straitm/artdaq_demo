@@ -288,9 +288,13 @@ void CRTInterface::FillBuffer(char* cooked_data, size_t* bytes_ret)
 
   // First see if we can decode another module packet out of the data already
   // read from the input files.
-  printf("%ld bytes in raw buffer before read.\n", next_raw_byte - rawfromhardware);
-  if((*bytes_ret = CRT::raw2cook(cooked_data, COOKEDBUFSIZE,
-                                rawfromhardware, next_raw_byte))) return;
+  if(next_raw_byte - rawfromhardware > 0){
+    printf("%ld bytes in raw buffer before read.\n",
+           next_raw_byte - rawfromhardware);
+    if((*bytes_ret = CRT::raw2cook(cooked_data, COOKEDBUFSIZE,
+                                   rawfromhardware, next_raw_byte)))
+      return;
+  }
 
   // Return nothing if we are waiting for a new input file to be available.
   if(state == CRT_WAIT && !try_open_file()) return;
