@@ -8,20 +8,24 @@
 #include <random>
 #include <chrono>
 
-enum crt_state_t{
-  // Either we have just started, in which case we go look for an input
-  // file ending in ".wr", or we just finished reading a file, which puts
-  // us in the same situation.
-  CRT_WAIT,
+// Either we have just started, in which case we go look for an input
+// file ending in ".wr", or we just finished reading a file, which puts
+// us in the same situation.
+const unsigned int CRT_WAIT = 0x01,
 
-  // We are reading an input file ending in ".wr", i.e. one that is still
-  // being written to.
-  CRT_READ_ACTIVE,
+// We are reading an input file ending in ".wr", i.e. one that is still
+// being written to.
+CRT_READ_ACTIVE = 0x02,
 
-  // We are reading a closed input file that has been renamed not to have
-  // ".wr" at the end.  This can be read all in one go.
-  CRT_READ_CLOSED,
-};
+// We had to stop reading from the file because our internal buffer
+// was filled by a large previous read.  Once we're done draining the buffer,
+// go back to reading the file even though it has not changed.
+CRT_READ_MORE = 0x04,
+
+// We've read some data into our internal buffer and it may decode
+// to one or more module packets, so read it before going back to
+// the input files.
+CRT_DRAIN_BUFFER = 0x08;
 
 class CRTInterface
 {
@@ -65,7 +69,8 @@ private:
   std::string indir;
 
   // State: whether we are reading an input file, waiting for one, etc.
-  enum crt_state_t state;
+  // bitmask of CRT_* defined above
+  unsigned int state;
 
 	bool taking_data_;
 

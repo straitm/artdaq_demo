@@ -233,10 +233,12 @@ bool CRTInterface::check_events()
   }
   else /* mask == IN_MOVE_SELF */ {
 
-    // Active file has been renamed, meaning it will no longer be
-    // written to.  We should read the rest and then find the next file.
+    // Active file has been renamed, meaning we already heard about the
+    // last write to it and read all the data. it will no longer be
+    // written to.  We should find the next file.
     if(state == CRT_READ_ACTIVE){
-      state = CRT_READ_CLOSED;
+      close(datafile_fd);
+      state = CRT_WAIT;
       return true;
     }
     else{
@@ -267,13 +269,22 @@ size_t CRTInterface::read_everything_from_file(char * cooked_data)
     next_raw_byte += read_bread;
   }
 
+  // We're leaving unread data in the file, so we will need to come back and
+  // read more even if we aren't informed that the file has been written to.
+  if(next_raw_byte >= rawfromhardware + RAWBUFSIZE)
+    state |= CRT_READ_MORE;
+
   if(read_bread == -1){
     // All read() errors other than *maybe* EINTR should be fatal.
     perror("CRTInterface::FillBuffer");
     _exit(1);
   }
 
-  printf("%ld bytes in raw buffer after read.\n", next_raw_byte - rawfromhardware);
+  const int bytesleft = next_raw_byte - rawfromhardware;
+  printf("%d bytes in raw buffer after read.\n", bytesleft);
+
+  if(bytesleft > 0) state |= CRT_DRAIN_BUFFER;
+
   return CRT::raw2cook(cooked_data, COOKEDBUFSIZE,
                        rawfromhardware, next_raw_byte);
 }
@@ -288,30 +299,50 @@ void CRTInterface::FillBuffer(char* cooked_data, size_t* bytes_ret)
 
   // First see if we can decode another module packet out of the data already
   // read from the input files.
-  if(next_raw_byte - rawfromhardware > 0){
+  if(state & CRT_DRAIN_BUFFER){
     printf("%ld bytes in raw buffer before read.\n",
            next_raw_byte - rawfromhardware);
     if((*bytes_ret = CRT::raw2cook(cooked_data, COOKEDBUFSIZE,
                                    rawfromhardware, next_raw_byte)))
       return;
+    else
+      state &= ~CRT_DRAIN_BUFFER;
   }
 
-  // Return nothing if we are waiting for a new input file to be available.
-  if(state == CRT_WAIT && !try_open_file()) return;
+  // Then see if we need to read more out of the file, and do so
+  if(state & CRT_READ_MORE){
+    state &= ~CRT_READ_MORE;
+    if((*bytes_ret = read_everything_from_file(cooked_data))) return;
+  }
 
-  // Return nothing if nothing has changed about the input file since last call.
+  // This should only happen when we open the first file.  Otherwise,
+  // the first read to a new file is handled below.
+  if(state & CRT_WAIT){
+    if(!try_open_file()) return;
+
+    // Immediately read from the file, since we won't hear about writes
+    // to it previous to when we set the inotify watch.  If there's nothing
+    // there yet, don't bother checking the events until the next call to
+    // FillBuffer(), because it's unlikely any will have come in yet.
+    *bytes_ret = read_everything_from_file(cooked_data);
+    return;
+  }
+
+  // If we're here, it means we have an open file which we've previously
+  // read and decoded all available data from.  Check if it has changed.
   if(!check_events()) return;
 
-  if(state == CRT_READ_ACTIVE){
-    printf("About to read from active file.\n");
-    *bytes_ret = read_everything_from_file(cooked_data);
-  }
-  else /* if(state == CRT_READ_CLOSED */ {
-    printf("About to read from a closed file.\n");
-    *bytes_ret = read_everything_from_file(cooked_data);
-    state = CRT_WAIT;
-  }
-  printf("Decoded to %ld bytes\n", *bytes_ret);
+  // Ok, it has either been written to or renamed.  Because we first get
+  // notified about the last write to a file and then about its renaming
+  // in separate events (they can't be coalesced because they are different
+  // event types), there will never be anything to read when we hear the
+  // file has been renamed.
+
+  // Either the file is already open and we can go ahead, or it isn't,
+  // and we either find a new file and immediately try to read it, or return.
+  if(state != CRT_READ_ACTIVE && !try_open_file()) return;
+
+  *bytes_ret = read_everything_from_file(cooked_data);
 }
 
 void CRTInterface::AllocateReadoutBuffer(char** cooked_data)
