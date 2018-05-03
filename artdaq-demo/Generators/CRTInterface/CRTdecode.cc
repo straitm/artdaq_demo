@@ -345,7 +345,7 @@ unsigned int raw2cook(char * const cooked_data,
   // the undecoded bytes to the front.
   if(used_raw_bytes){
     printf("Used %u bytes, and rotating %ld to front for later use.\n",
-           used_raw_bytes
+           used_raw_bytes,
            next_raw_byte - rawfromhardware - used_raw_bytes);
     memmove(rawfromhardware, rawfromhardware + used_raw_bytes,
             next_raw_byte - rawfromhardware - used_raw_bytes);
