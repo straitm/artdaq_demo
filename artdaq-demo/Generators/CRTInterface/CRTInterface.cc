@@ -72,8 +72,7 @@ void CRTInterface::StopDatataking()
 
 char * find_wr_file(const std::string & indir)
 {
-  DIR * dp;
-  struct dirent * dirp;
+  DIR * dp = NULL;
   errno = 0;
   if((dp = opendir(indir.c_str())) == NULL){
     if(errno == ENOENT){
@@ -91,27 +90,21 @@ char * find_wr_file(const std::string & indir)
     }
   }
 
-  errno = 0;
-  while((dirp = readdir(dp)) != NULL){
+  struct dirent * dirp = NULL;
+  while(errno = 0, (dirp = readdir(dp)) != NULL){
+    // Does this file name end in ".wr"?  Having ".wr" in the middle somewhere
+    // is not sufficient (and also should never happen).
+    //
     // If somehow there ends up being a directory ending in ".wr", ignore it
-    // (and all other directories).  I suppose all other types are fine,
-    // even though we only really expect regular files.  But there's no reason
-    // not to accept a named pipe, etc.
-    struct stat st;
-    if(stat(dirp->d_name, &st) == -1){
-      // If the file disappears while we're trying to check it, just move on
-      continue;
-    }
-    if(S_ISDIR(st.st_mode)) continue;
-
-    // Does this file name end in ".wr"?  Having ".wr" in the middle
-    // somewhere is not sufficient (and also should never happen).
-    if(strstr(dirp->d_name, ".wr") != NULL &&
+    // (and all other directories).  I suppose all other types are fine, even
+    // though we only really expect regular files.  But there's no reason not
+    // to accept a named pipe, etc.
+    if(dirp->d_type != DT_DIR &&
+       strstr(dirp->d_name, ".wr") != NULL &&
        strlen(strstr(dirp->d_name, ".wr")) == strlen(".wr"))
       // As per readdir(3), this pointer is good until readdir() is called
       // again on this directory.
       return dirp->d_name;
-    errno = 0;
   }
 
   // If errno == 0, it just means we got to the end of the directory.
