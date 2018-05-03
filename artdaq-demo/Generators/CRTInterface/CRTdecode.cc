@@ -194,6 +194,10 @@ unsigned int serialize(char * cooked, const decoded_packet & packet,
   leaving trailing unused words.  If the data in 'raw' cannot be
   decoded, or would decode to a size larger than max_cooked, returns zero and
   leaves 'cooked' undefined. 
+
+  The data written into 'cooked' is in the format described in the comment
+  above serialize().  It consists of zero or more "module packets", each
+  of which is a collection of hits from a single module sharing a time stamp.
 */
 unsigned int make_a_packet(char * cooked, std::deque<uint16_t> & raw,
                            const unsigned int max_cooked)
@@ -296,20 +300,20 @@ unsigned int raw2cook(char * const cooked_data,
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
    Where the bits of A, B, C, and D concatenated make the 24-bit words
-   described in Matt Toups' thesis.
+   described in Matt Toups' thesis.  Besides being protected against
+   undetected errors by the 2-bit counter at the head of each octet, the
+   24-bit data is parity checked; this is handled in make_a_packet().
  */
 
   uint32_t word = 0; // holds 24-bit word being built, must be unsigned
-  char expcounter = 0; // expecting this counter next
+  char expcounter = 0; // expecting this 2-bit counter value next
 
   std::deque<uint16_t> raw16bitdata;
-
-  char * readptr = rawfromhardware;
 
   unsigned int used_raw_bytes = 0;
   unsigned int cooked_bytes = 0;
 
-  for(; readptr < next_raw_byte; readptr++){
+  for(char * readptr = rawfromhardware; readptr < next_raw_byte; readptr++){
     const char counter = ((*readptr) >> 6) & 3;
     const char payload = (*readptr) & 0x3f;
     if(counter == 0){
@@ -331,6 +335,11 @@ unsigned int raw2cook(char * const cooked_data,
                                            max_cooked - cooked_bytes))){
           used_raw_bytes = readptr - rawfromhardware + 1; 
           cooked_bytes += newcookedbytes;
+
+          // Return only one module packet per call.  It is easy enough
+          // to remove this line and return as many as can be constructed,
+          // but I think this will make life easier downstream.
+          break;
         }
       }
     }

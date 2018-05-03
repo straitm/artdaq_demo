@@ -254,9 +254,9 @@ size_t CRTInterface::read_everything_from_file(char * cooked_data)
   // Oh boy!  Since we're here, it means we have a new file, or that the file
   // has changed.  Hopefully that means *appended to*, in which case we're
   // going to read the new bytes.  At the moment, let's ponderously read one at
-  // a time.  If by "changed", in fact the file was truncated or that some
-  // contents prior to our current position were changed, we'll get nothing
-  // here, which will signal that such shenanigans occured.
+  // a time.  (XXX fix this.)  If by "changed", in fact the file was truncated
+  // or that some contents prior to our current position were changed, we'll
+  // get nothing here, which will signal that such shenanigans occured.
 
   ssize_t read_bread = 0;
 
