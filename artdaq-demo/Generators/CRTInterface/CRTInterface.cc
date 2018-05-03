@@ -136,10 +136,12 @@ bool CRTInterface::try_open_file()
 
   if(filename == NULL) return false;
 
+  const std::string fullfilename = indir + "/" + filename;
+
   printf("Found input file: %s\n", filename);
 
   if(-1 == (inotify_watchfd =
-            inotify_add_watch(inotifyfd, (indir + "/" + filename).c_str(),
+            inotify_add_watch(inotifyfd, fullfilename.c_str(),
                               IN_MODIFY | IN_MOVE_SELF))){
     if(errno == ENOENT){
       // It's possible that the file we just found has vanished by the time
@@ -157,9 +159,9 @@ bool CRTInterface::try_open_file()
   }
 
   // XXX debugging.  Remove later.
-  printf("Successful inotify_add_watch on %s, fd %d\n", filename, inotify_watchfd);
+  printf("Successful inotify_add_watch on %s\n", filename);
 
-  if(-1 == (datafile_fd = open(filename, O_RDONLY))){
+  if(-1 == (datafile_fd = open(fullfilename, O_RDONLY))){
     if(errno == ENOENT){
       // The file we just set a watch on might already be gone, as above.
       // We'll just get the next one.
@@ -285,7 +287,6 @@ void CRTInterface::FillBuffer(char* cooked_data, size_t* bytes_ret)
   if(state == CRT_WAIT){
     if(!try_open_file()){
       printf("FillBuffer: Could not open a file\n");
-      fprintf(stderr, "FillBuffer: Could not open a file\n");
       return;
     }
   }
