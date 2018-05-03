@@ -136,6 +136,8 @@ bool CRTInterface::try_open_file()
 
   if(filename == NULL) return false;
 
+  printf("Found input file: %s\n", filename);
+
   if(-1 == (inotify_watchfd =
             inotify_add_watch(inotifyfd, filename, IN_MODIFY | IN_MOVE_SELF))){
     if(errno == ENOENT){
@@ -279,7 +281,11 @@ void CRTInterface::FillBuffer(char* cooked_data, size_t* bytes_ret)
       "Attempt to call FillBuffer when not sending data";
 
   if(state == CRT_WAIT){
-    if(!try_open_file()) return;
+    if(!try_open_file()){
+      printf("FillBuffer: Could not open a file\n");
+      fprintf(stderr, "stderr, FillBuffer: Could not open a file\n");
+      return;
+    }
   }
 
   if(!check_events()) return;
