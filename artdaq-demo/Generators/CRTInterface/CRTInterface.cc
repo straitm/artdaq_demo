@@ -139,11 +139,13 @@ bool CRTInterface::try_open_file()
   printf("Found input file: %s\n", filename);
 
   if(-1 == (inotify_watchfd =
-            inotify_add_watch(inotifyfd, filename, IN_MODIFY | IN_MOVE_SELF))){
+            inotify_add_watch(inotifyfd, (indir + "/" + filename).c_str(),
+                              IN_MODIFY | IN_MOVE_SELF))){
     if(errno == ENOENT){
       // It's possible that the file we just found has vanished by the time
       // we get here, probably by being renamed without the ".wr".  That's
       // OK, we'll just try again in a moment.
+      fprintf(stderr, "File has vanished. We'll wait for another\n");
       return false;
     }
     else{
@@ -283,7 +285,7 @@ void CRTInterface::FillBuffer(char* cooked_data, size_t* bytes_ret)
   if(state == CRT_WAIT){
     if(!try_open_file()){
       printf("FillBuffer: Could not open a file\n");
-      fprintf(stderr, "stderr, FillBuffer: Could not open a file\n");
+      fprintf(stderr, "FillBuffer: Could not open a file\n");
       return;
     }
   }
