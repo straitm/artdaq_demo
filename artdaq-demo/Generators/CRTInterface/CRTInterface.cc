@@ -286,12 +286,7 @@ void CRTInterface::FillBuffer(char* cooked_data, size_t* bytes_ret)
     throw cet::exception("CRTInterface") <<
       "Attempt to call FillBuffer when not sending data";
 
-  if(state == CRT_WAIT){
-    if(!try_open_file()){
-      printf("FillBuffer: Could not open a file\n");
-      return;
-    }
-  }
+  if(state == CRT_WAIT && !try_open_file()) return;
 
   if(!check_events()) return;
 
