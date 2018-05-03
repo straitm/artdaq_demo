@@ -91,8 +91,8 @@ char * find_wr_file(const std::string & indir)
     }
   }
 
-  struct dirent * dirp = NULL;
-  while(errno = 0, (dirp = readdir(dp)) != NULL){
+  struct dirent * de = NULL;
+  while(errno = 0, (de = readdir(dp)) != NULL){
     // Does this file name end in ".wr"?  Having ".wr" in the middle somewhere
     // is not sufficient (and also should never happen).
     //
@@ -100,12 +100,12 @@ char * find_wr_file(const std::string & indir)
     // (and all other directories).  I suppose all other types are fine, even
     // though we only really expect regular files.  But there's no reason not
     // to accept a named pipe, etc.
-    if(dirp->d_type != DT_DIR &&
-       strstr(dirp->d_name, ".wr") != NULL &&
-       strlen(strstr(dirp->d_name, ".wr")) == strlen(".wr"))
+    if(de->d_type != DT_DIR &&
+       strstr(de->d_name, ".wr") != NULL &&
+       strlen(strstr(de->d_name, ".wr")) == strlen(".wr"))
       // As per readdir(3), this pointer is good until readdir() is called
       // again on this directory.
-      return dirp->d_name;
+      return de->d_name;
   }
 
   // If errno == 0, it just means we got to the end of the directory.
@@ -115,7 +115,7 @@ char * find_wr_file(const std::string & indir)
 
   errno = 0;
 
-  closedir(dirp);
+  closedir(dp);
 
   if(errno) perror("find_wr_file closedir");
 
