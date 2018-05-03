@@ -161,7 +161,7 @@ bool CRTInterface::try_open_file()
   // XXX debugging.  Remove later.
   printf("Successful inotify_add_watch on %s\n", filename);
 
-  if(-1 == (datafile_fd = open(fullfilename, O_RDONLY))){
+  if(-1 == (datafile_fd = open(fullfilename.c_str(), O_RDONLY))){
     if(errno == ENOENT){
       // The file we just set a watch on might already be gone, as above.
       // We'll just get the next one.
