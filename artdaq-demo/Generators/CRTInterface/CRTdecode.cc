@@ -219,7 +219,8 @@ unsigned int make_a_packet(char * cooked, std::deque<uint16_t> & raw,
   // First word of all packets other than unix timestamp packets is 0xffff
   // If there's any junk before 0xffff, discard it.
   while(!raw.empty() && raw[0] != 0xffff){
-    fprintf(stderr, "CRT: Discarding a junk word 0x%04x\n", raw[0]);
+    fprintf(stderr, "CRT: Discarding word 0x%04x appearing before 0xffff\n",
+            raw[0]);
     raw.pop_front();
   }
 
@@ -227,7 +228,7 @@ unsigned int make_a_packet(char * cooked, std::deque<uint16_t> & raw,
 
   unsigned int len = raw[ADC_WIDX_MODLEN] & 0xff;
   if(len == 0){
-    fprintf(stderr, "CRT: Discarding empty packet\n");
+    fprintf(stderr, "CRT: Discarding packet with declared length zero.\n");
     raw.clear();
     return 0;
   }
@@ -266,11 +267,15 @@ unsigned int make_a_packet(char * cooked, std::deque<uint16_t> & raw,
     }
   }
 
-  if(parity != raw[len])
-    fprintf(stderr, "CRT: Parity error in USB stream\n");
+  const bool goodparity = parity == raw[len];
 
   // Discard raw data that has been decoded
   for(unsigned int i = 0; i < len + 1; i++) raw.pop_front();
+
+  if(!goodparity){
+    fprintf(stderr, "CRT: Parity error.  Dropping packet.\n");
+    return 0;
+  }
 
   return serialize(cooked, packet, max_cooked);
 }
@@ -336,14 +341,17 @@ unsigned int raw2cook(char * const cooked_data,
     }
   }
 
-  printf("Used %u bytes\n", used_raw_bytes);
-
   // Rotate buffer in the most wasteful way possible, by actually moving
   // the undecoded bytes to the front.
   if(used_raw_bytes){
-    printf("Moving %ld bytes\n", next_raw_byte - rawfromhardware - used_raw_bytes);
+    printf("Used %u bytes, and rotating %ld to front for later use.\n",
+           used_raw_bytes
+           next_raw_byte - rawfromhardware - used_raw_bytes);
     memmove(rawfromhardware, rawfromhardware + used_raw_bytes,
             next_raw_byte - rawfromhardware - used_raw_bytes);
+  }
+  else{
+    printf("Used 0 bytes\n");
   }
 
   next_raw_byte -= used_raw_bytes;

@@ -72,7 +72,6 @@ void CRTInterface::StopDatataking()
 
 char * find_wr_file(const std::string & indir)
 {
-  printf("Hi!  find_wr_file()\n");
   DIR * dp = NULL;
   errno = 0;
   if((dp = opendir(indir.c_str())) == NULL){
@@ -96,11 +95,17 @@ char * find_wr_file(const std::string & indir)
     // Does this file name end in ".wr"?  Having ".wr" in the middle somewhere
     // is not sufficient (and also should never happen).
     //
+    // Ignore baseline (a.k.a. pedestal) files, which are also given ".wr"
+    // names while being written.  We could be even more restrictive and require
+    // that the file be named like <unix time stamp>_NN.wr, but it doesn't
+    // seem necessary.
+    //
     // If somehow there ends up being a directory ending in ".wr", ignore it
     // (and all other directories).  I suppose all other types are fine, even
     // though we only really expect regular files.  But there's no reason not
     // to accept a named pipe, etc.
     if(de->d_type != DT_DIR &&
+       strstr(de->d_name, "baseline") == NULL &&
        strstr(de->d_name, ".wr") != NULL &&
        strlen(strstr(de->d_name, ".wr")) == strlen(".wr")){
       errno = 0;
@@ -157,9 +162,6 @@ bool CRTInterface::try_open_file()
       _exit(1);
     }
   }
-
-  // XXX debugging.  Remove later.
-  printf("Successful inotify_add_watch on %s\n", filename);
 
   if(-1 == (datafile_fd = open(fullfilename.c_str(), O_RDONLY))){
     if(errno == ENOENT){
@@ -295,10 +297,12 @@ void CRTInterface::FillBuffer(char* cooked_data, size_t* bytes_ret)
 
   if(state == CRT_READ_ACTIVE){
     *bytes_ret = read_everything_from_file(cooked_data);
+    printf("Read from active file.\n");
   }
   else /* if(state == CRT_READ_CLOSED */ {
     *bytes_ret = read_everything_from_file(cooked_data);
     state = CRT_WAIT;
+    printf("Read all of this file.  Waiting for new file.\n");
   }
   printf("Decoded to %ld bytes\n", *bytes_ret);
 
