@@ -86,7 +86,7 @@ char * find_wr_file(const std::string & indir)
       // Other conditions we are unlikely to recover from: permission denied,
       // too many file descriptors in use, too many files open, out of memory,
       // or the name isn't a directory.
-      perror("CRTInterface find_wr_file opendir");
+      perror("find_wr_file opendir");
       _exit(1);
     }
   }
@@ -111,7 +111,13 @@ char * find_wr_file(const std::string & indir)
   // If errno == 0, it just means we got to the end of the directory.
   // Otherwise, something went wrong.  This is unlikely since the only
   // error condition is "EBADF  Invalid directory stream descriptor dirp."
-  if(errno) perror("Bottom of find_wr_file");
+  if(errno) perror("find_wr_file readdir");
+
+  errno = 0;
+
+  closedir(dirp);
+
+  if(errno) perror("find_wr_file closedir");
 
   return NULL;
 }
