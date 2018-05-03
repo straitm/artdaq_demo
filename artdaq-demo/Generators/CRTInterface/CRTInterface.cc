@@ -72,6 +72,7 @@ void CRTInterface::StopDatataking()
 
 char * find_wr_file(const std::string & indir)
 {
+  printf("Hi!  find_wr_file()\n");
   DIR * dp = NULL;
   errno = 0;
   if((dp = opendir(indir.c_str())) == NULL){
@@ -85,7 +86,7 @@ char * find_wr_file(const std::string & indir)
       // Other conditions we are unlikely to recover from: permission denied,
       // too many file descriptors in use, too many files open, out of memory,
       // or the name isn't a directory.
-      perror("CRTInterface find_wr_file");
+      perror("CRTInterface find_wr_file opendir");
       _exit(1);
     }
   }
