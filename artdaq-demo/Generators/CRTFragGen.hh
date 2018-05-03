@@ -52,10 +52,10 @@ namespace demo
 
     std::unique_ptr<CRTInterface> hardware_interface_;
 
-    // I don't know what kind of a time this is, except that it is a uint_64t
+    // I don't know what kind of a time this is, except that it is a uint64_t
     artdaq::Fragment::timestamp_t timestamp_;
 
-    // Written do by the hardware interface
+    // Written to by the hardware interface
     char* readout_buffer_;
   };
 }

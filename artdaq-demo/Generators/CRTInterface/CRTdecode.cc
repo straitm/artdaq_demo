@@ -1,8 +1,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
-#include <netinet/in.h>
-#include <arpa/inet.h> // For htons, htonl
 #include <deque>
 #include <vector>
 
@@ -109,18 +107,37 @@ The serialized format of a module packet is:
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |  Magic number | Count of hits |         Module number         |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   |                        Unix Time stamp                        |
+   |                        Unix time stamp                        |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |                   50 MHz counter time stamp                   |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
    |               .              hits             .               |
    |               .               .               .               |
-  
+
   Magic number: 0x4D = "M"
 
   Count of hits: Unsigned 8 bit integer.
-  
+
   Module number: Unsigned 16 bit integer.
+
+  Unix time stamp: Signed 32 bit integer.
+
+    Has the standard meaning: Number of seconds since 0:00 Jan 1,
+    1970 UTC, with leap seconds ignored.  That is, it is always a
+    multiple of 60 at the top of each minute.  To dig it in further:
+    does *not* advance during positive leap seconds.  Advances by two
+    around a negative leap second, should there ever be such a thing.
+    Actual behavior of the system clock around a leap second may further
+    complicate this.
+
+    Comes from the system time of the upstream DAQ and does not tick
+    over with perfect precision, but should be accurate to much better
+    than half a second.
+
+    Since we will only be taking data after 1970, you can probably
+    get away with treating negative numbers as times after Jan 2038
+    when positive numbers run out.  I hope this code is not still in
+    use at that point, though.
 
   Time stamp: Unsigned 32 bit integer
 
@@ -138,15 +155,18 @@ The format of a hit is:
   Magic number: 0x48 = "H"
 
   Channel number: Unsigned 8 bit integer
-    
+
     Actually only uses 5 bits (0-63).
-    
+
   Charge: *Signed* 16 bit integer
 
-    Stored in two's complement.  Represents a 12-bit ADC value.  So we
-    could store this in 13 bits, but there's no great motivation to pack
-    the data so closely, especially because the minimum size of a hit
-    is 18 bits, which I would tend to pad out to 32 anyway.
+    Represents a 12-bit ADC value.  So we could store this in 13 bits, but
+    there's no great motivation to pack the data so closely, especially
+    because the minimum size of a hit is 18 bits, which I would tend to
+    pad out to 32 anyway.
+
+In all cases, it is assumed that the reader of this data is on the same
+machine as the writer.  No attempt is made to standardize endianness.
 
 */
 unsigned int serialize(char * cooked, const decoded_packet & packet,
@@ -185,7 +205,7 @@ unsigned int serialize(char * cooked, const decoded_packet & packet,
   if(bytes != size_needed)
     fprintf(stderr, "CRT: size mismatch %d != %d\n", bytes, size_needed);
 
-  return bytes; 
+  return bytes;
 }
 
 /*
@@ -193,7 +213,7 @@ unsigned int serialize(char * cooked, const decoded_packet & packet,
   returns the length of the packet in bytes.  Deletes the used contents of raw,
   leaving trailing unused words.  If the data in 'raw' cannot be
   decoded, or would decode to a size larger than max_cooked, returns zero and
-  leaves 'cooked' undefined. 
+  leaves 'cooked' undefined.
 
   The data written into 'cooked' is in the format described in the comment
   above serialize().  It consists of zero or more "module packets", each
@@ -333,12 +353,14 @@ unsigned int raw2cook(char * const cooked_data,
            (newcookedbytes = make_a_packet(cooked_data + cooked_bytes,
                                            raw16bitdata,
                                            max_cooked - cooked_bytes))){
-          used_raw_bytes = readptr - rawfromhardware + 1; 
+          used_raw_bytes = readptr - rawfromhardware + 1;
           cooked_bytes += newcookedbytes;
 
           // Return only one module packet per call.  It is easy enough
           // to remove this line and return as many as can be constructed,
-          // but I think this will make life easier downstream.
+          // but I think this will make life easier downstream even though
+          // it is computationally wasteful at this stage because it potentially
+          // incurs many buffer rotations below.
           break;
         }
       }

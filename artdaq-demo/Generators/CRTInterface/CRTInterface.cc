@@ -273,7 +273,7 @@ size_t CRTInterface::read_everything_from_file(char * cooked_data)
     _exit(1);
   }
 
-  printf("%ld bytes in raw buffer.\n", next_raw_byte - rawfromhardware);
+  printf("%ld bytes in raw buffer after read.\n", next_raw_byte - rawfromhardware);
   return CRT::raw2cook(cooked_data, COOKEDBUFSIZE,
                        rawfromhardware, next_raw_byte);
 }
@@ -286,21 +286,28 @@ void CRTInterface::FillBuffer(char* cooked_data, size_t* bytes_ret)
     throw cet::exception("CRTInterface") <<
       "Attempt to call FillBuffer when not sending data";
 
+  // First see if we can decode another module packet out of the data already
+  // read from the input files.
+  printf("%ld bytes in raw buffer before read.\n", next_raw_byte - rawfromhardware);
+  if((*bytes_ret = CRT::raw2cook(cooked_data, COOKEDBUFSIZE,
+                                rawfromhardware, next_raw_byte))) return;
+
+  // Return nothing if we are waiting for a new input file to be available.
   if(state == CRT_WAIT && !try_open_file()) return;
 
+  // Return nothing if nothing has changed about the input file since last call.
   if(!check_events()) return;
 
   if(state == CRT_READ_ACTIVE){
+    printf("About to read from active file.\n");
     *bytes_ret = read_everything_from_file(cooked_data);
-    printf("Read from active file.\n");
   }
   else /* if(state == CRT_READ_CLOSED */ {
+    printf("About to read from a closed file.\n");
     *bytes_ret = read_everything_from_file(cooked_data);
     state = CRT_WAIT;
-    printf("Read all of this file.  Waiting for new file.\n");
   }
   printf("Decoded to %ld bytes\n", *bytes_ret);
-
 }
 
 void CRTInterface::AllocateReadoutBuffer(char** cooked_data)

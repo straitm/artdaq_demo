@@ -44,10 +44,22 @@ bool demo::CRTFragGen::getNext_(
   hardware_interface_->FillBuffer(readout_buffer_, &bytes_read);
 
   if(bytes_read == 0){
-    // Pause for a little bit if we didn't get anything to keep load down. 
+    // Pause for a little bit if we didn't get anything to keep load down.
     usleep(1000);
     return true; // this means "keep taking data"
   }
+
+  assert(sizeof timestamp_ == 8);
+
+  // A module packet must at least have the magic number (1B), hit count
+  // (1B), module number (2B) and timestamps (8B).
+  if(bytes_read < 4 + sizeof(timestamp_)){
+    fprintf(stderr, "Bad result with only %lu bytes from "
+            "CRTInterface::FillBuffer.\n", bytes_read);
+    return false; // means "stop taking data"
+  }
+
+  memcpy(&timestamp_, readout_buffer_ + 4, sizeof(timestamp_));
 
   std::unique_ptr<artdaq::Fragment> fragptr(
     // See $ARTDAQ_DIR/Data/Fragment.hh
@@ -56,8 +68,8 @@ bool demo::CRTFragGen::getNext_(
       ev_counter(), // from base CommandableFragmentGenerator
       fragment_id(), // ditto
       artdaq::Fragment::FirstUserFragmentType, // only one
-      0, // metadata.  What happens to this?
-      timestamp_ // This is a uint64_t.  What timestamp? In what units?  Who reads this?
+      0, // metadata.  We have none.
+      timestamp_
   ));
 
   frags.emplace_back(std::move(fragptr));
@@ -69,8 +81,6 @@ bool demo::CRTFragGen::getNext_(
         artdaq::MetricMode::LastPoint);
 
   ev_counter_inc(); // from base CommandableFragmentGenerator
-
-  timestamp_++; // XXX currently nonsense
 
   return true;
 }

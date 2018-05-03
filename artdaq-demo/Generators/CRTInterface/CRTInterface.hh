@@ -34,9 +34,14 @@ public:
 	void StopDatataking();
 
 	/**
-	 * \brief Use configured generator to fill a buffer with data
-	 * \param buffer Buffer to fill
-	 * \param bytes_read Number of bytes to fill
+	 * \brief Fills a buffer with data from the CRT, if available.
+   *
+   * Provides zero or one "module packet", a collection of hits from
+   * a single module sharing a time stamp.
+   *
+	 * \param buffer Buffer that is filled with data
+	 * \param bytes_read Number of bytes passed back in buffer.  Nonzero
+   * if and only if a module packet is returned in 'buffer'.
 	 */
 	void FillBuffer(char* buffer, size_t* bytes_read);
 
