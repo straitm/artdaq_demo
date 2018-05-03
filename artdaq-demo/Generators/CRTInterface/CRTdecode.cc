@@ -184,7 +184,7 @@ unsigned int serialize(char * cooked, const decoded_packet & packet,
       (1 + sizeof packet.hits[0].charge + sizeof packet.hits[0].channel);
 
   if(size_needed > max_cooked){
-    fprintf(stderr, "Can't write packet of size %d with max %d\n",
+    printf("Can't write packet of size %d with max %d\n",
             size_needed, max_cooked);
     return 0;
   }
@@ -207,7 +207,7 @@ unsigned int serialize(char * cooked, const decoded_packet & packet,
   }
 
   if(bytes != size_needed)
-    fprintf(stderr, "CRT: size mismatch %d != %d\n", bytes, size_needed);
+    printf("CRT: size mismatch %d != %d\n", bytes, size_needed);
 
   return bytes;
 }
@@ -247,8 +247,7 @@ unsigned int make_a_packet(char * cooked, std::deque<uint16_t> & raw,
   // First word of all packets other than unix timestamp packets is 0xffff
   // If there's any junk before 0xffff, discard it.
   while(!raw.empty() && raw[0] != 0xffff){
-    fprintf(stderr, "CRT: Discarding word 0x%04x appearing before 0xffff\n",
-            raw[0]);
+    printf("CRT: Discarding word 0x%04x appearing before 0xffff\n", raw[0]);
     raw.pop_front();
   }
 
@@ -256,7 +255,7 @@ unsigned int make_a_packet(char * cooked, std::deque<uint16_t> & raw,
 
   unsigned int len = raw[ADC_WIDX_MODLEN] & 0xff;
   if(len == 0){
-    fprintf(stderr, "CRT: Discarding packet with declared length zero.\n");
+    printf("CRT: Discarding packet with declared length zero.\n");
     raw.clear();
     return 0;
   }
@@ -265,7 +264,7 @@ unsigned int make_a_packet(char * cooked, std::deque<uint16_t> & raw,
   if(raw.size() < len + 1) return 0;
 
   if(!(raw[ADC_WIDX_MODLEN] >> 15)){
-    fprintf(stderr, "CRT: Non-ADC packet found, skipping\n");
+    printf("CRT: Non-ADC packet found, skipping\n");
 
     // Throw out what we have so far, and then rely upon looking for
     // the leading 0xffff data word to throw out the rest of whatever
@@ -306,7 +305,7 @@ unsigned int make_a_packet(char * cooked, std::deque<uint16_t> & raw,
   for(unsigned int i = 0; i < len + 1; i++) raw.pop_front();
 
   if(!goodparity){
-    fprintf(stderr, "CRT: Parity error.  Dropping packet.\n");
+    printf("CRT: Parity error.  Dropping packet.\n");
     return 0;
   }
 
@@ -375,7 +374,7 @@ unsigned int raw2cook(char * const cooked_data,
       }
     }
     else{
-      fprintf(stderr, "CRT: corrupted data: expected counter %d, got %d\n",
+      printf("CRT: corrupted data: expected counter %d, got %d\n",
               expcounter, counter);
       expcounter = 0;
     }
