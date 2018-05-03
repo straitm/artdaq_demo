@@ -78,7 +78,7 @@ bool raw24bit_to_raw16bit(std::deque<uint16_t> & raw16bitdata,
                           uint32_t in24bitword)
 {
   // Old comment here said "command word, not data" for the case that
-  // the first two bits were 01b. Apparently there are 24 bit words
+  // the first two bits were 01b. Apparently there are 24-bit words
   // undocumented in Matt Toups' thesis that start with values other
   // than 11b, but we just ignore them.
   if(((in24bitword >> 22) & 3) != 3) return false;
@@ -87,6 +87,10 @@ bool raw24bit_to_raw16bit(std::deque<uint16_t> & raw16bitdata,
     set_unix_time(in24bitword);
     return false;
   }
+
+  // If it is something other than a Unix time stamp or hit data (see various
+  // other codes in the comments above is_unix_time_word()), discard it.
+  if((in24bitword >> 16) != 0xc0) return false;
 
   raw16bitdata.push_back(in24bitword & 0xffff);
 
@@ -262,6 +266,11 @@ unsigned int make_a_packet(char * cooked, std::deque<uint16_t> & raw,
 
   if(!(raw[ADC_WIDX_MODLEN] >> 15)){
     fprintf(stderr, "CRT: Non-ADC packet found, skipping\n");
+
+    // Throw out what we have so far, and then rely upon looking for
+    // the leading 0xffff data word to throw out the rest of whatever
+    // this is.
+    raw.clear();
     return 0;
   }
 
