@@ -102,10 +102,15 @@ char * find_wr_file(const std::string & indir)
     // to accept a named pipe, etc.
     if(de->d_type != DT_DIR &&
        strstr(de->d_name, ".wr") != NULL &&
-       strlen(strstr(de->d_name, ".wr")) == strlen(".wr"))
+       strlen(strstr(de->d_name, ".wr")) == strlen(".wr")){
+      errno = 0;
+      closedir(dp);
+      if(errno) perror("find_wr_file closedir");
+
       // As per readdir(3), this pointer is good until readdir() is called
       // again on this directory.
       return de->d_name;
+    }
   }
 
   // If errno == 0, it just means we got to the end of the directory.
@@ -114,9 +119,7 @@ char * find_wr_file(const std::string & indir)
   if(errno) perror("find_wr_file readdir");
 
   errno = 0;
-
   closedir(dp);
-
   if(errno) perror("find_wr_file closedir");
 
   return NULL;
