@@ -4,7 +4,6 @@
 #include "fhiclcpp/fwd.h"
 #include "artdaq-core/Data/Fragment.hh"
 #include "artdaq/Application/CommandableFragmentGenerator.hh"
-#include "artdaq-core-demo/Overlays/ToyFragment.hh"
 
 #include "CRTInterface/CRTInterface.hh"
 

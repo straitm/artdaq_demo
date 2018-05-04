@@ -2,7 +2,6 @@
 #include "artdaq-demo/Generators/CRTInterface/CRTdecode.hh"
 #define TRACE_NAME "CRTInterface"
 #include "artdaq/DAQdata/Globals.hh"
-#include "artdaq-core-demo/Overlays/ToyFragment.hh"
 #include "artdaq-core-demo/Overlays/FragmentType.hh"
 
 #include "fhiclcpp/ParameterSet.h"

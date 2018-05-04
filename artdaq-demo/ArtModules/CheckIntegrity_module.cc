@@ -11,7 +11,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Utilities/Exception.h"
 
-#include "artdaq-core-demo/Overlays/ToyFragment.hh"
+#include "artdaq-core-demo/Overlays/CRTFragment.hh"
 #include "artdaq-core/Data/Fragment.hh"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -29,9 +29,6 @@ namespace demo
 	class CheckIntegrity;
 }
 
-/**
- * \brief Demonstration art::EDAnalyzer which checks that all ToyFragment ADC counts are in the defined range
- */
 class demo::CheckIntegrity : public art::EDAnalyzer
 {
 public:
@@ -52,7 +49,7 @@ public:
 
 	/**
 	* \brief Analyze an event. Called by art for each event in run (based on command line options)
-	* \param evt The art::Event object containing ToyFragments to check
+	* \param evt The art::Event object containing Fragments to check
 	*/
 	virtual void analyze(art::Event const& evt);
 
@@ -77,7 +74,11 @@ void demo::CheckIntegrity::analyze(art::Event const& evt)
 		for (size_t idx = 0; idx < raw->size(); ++idx){
 			const auto& frag((*raw)[idx]);
 
-      printf("First byte of the fragment is %d\n", ((const char *)&frag)[0]);
+      CRTFragment mod(frag);
+
+      printf("First byte of the fragment is %c\n", ((const char *)&frag)[0]);
+
+      printf("Number of hits: %lu\n", mod.num_hits());
 		}
 	}
 	else

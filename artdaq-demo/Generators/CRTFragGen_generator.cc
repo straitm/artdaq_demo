@@ -9,7 +9,6 @@ to keep it properly. */
 
 #include "artdaq/Application/GeneratorMacros.hh"
 #include "artdaq-core/Utilities/SimpleLookupPolicy.hh"
-#include "artdaq-core-demo/Overlays/ToyFragment.hh"
 
 #include "fhiclcpp/ParameterSet.h"
 
