@@ -66,6 +66,8 @@ demo::CheckIntegrity::CheckIntegrity(fhicl::ParameterSet const& pset)
 
 void demo::CheckIntegrity::analyze(art::Event const& evt)
 {
+  printf("Analyzing CRT Fragments\n");
+
 	art::Handle<artdaq::Fragments> raw;
 	evt.getByLabel(raw_data_label_, frag_type_, raw);
 

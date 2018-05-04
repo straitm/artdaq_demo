@@ -4,7 +4,7 @@ physics:
   {
     evtDump:
     {
-      module_type: ToyDump
+      module_type: CRTDump
 
 	  # The maximum number of ADC values to print to screen. -1 to disable printing to screen, 0 for "all"
       num_adcs_to_print: 10
