@@ -87,6 +87,8 @@ demo::CRTDump::~CRTDump() {}
 
 void demo::CRTDump::analyze(art::Event const& evt)
 {
+  printf("Analyzing CRT Fragments\n");
+
   artdaq::Fragments fragments;
   artdaq::FragmentPtrs containerFragments;
   std::vector<std::string> fragment_type_labels{ "CRT", "ContainerCRT" };
