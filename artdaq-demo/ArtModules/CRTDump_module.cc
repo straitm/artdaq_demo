@@ -89,33 +89,20 @@ void demo::CRTDump::analyze(art::Event const& evt)
 {
   printf("Analyzing CRT Fragments\n");
 
-  artdaq::Fragments fragments;
-  artdaq::FragmentPtrs containerFragments;
   std::vector<std::string> fragment_type_labels{ "CRT", "ContainerCRT" };
 
   for (auto label : fragment_type_labels)
   {
-    art::Handle<artdaq::Fragments> fragments_with_label;
+    art::Handle<artdaq::Fragments> fragments;
 
-    evt.getByLabel(raw_data_label_, label, fragments_with_label);
-    if (!fragments_with_label.isValid()) continue;
+    evt.getByLabel(raw_data_label_, label, fragments);
+    if(!fragments.isValid()) continue;
 
-    for (auto cont : *fragments_with_label)
-    {
-      artdaq::ContainerFragment contf(cont);
-      for (size_t ii = 0; ii < contf.block_count(); ++ii)
-      {
-        containerFragments.push_back(contf[ii]);
-        fragments.push_back(*containerFragments.back());
-      }
+    for(unsigned int i = 0; i < fragments->size(); i++){
+      CRTFragment mod((*fragments)[i]); // module packet
+
+      printf("Number of hits: %lu\n", mod.num_hits());
     }
-  }
-
-  for(const auto& frag : fragments) {
-    CRTFragment mod(frag); // module packet
-
-    printf("Number of hits: %lu\n", mod.num_hits());
-
   }
 }
 
