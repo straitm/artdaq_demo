@@ -298,16 +298,22 @@ void CRTInterface::FillBuffer(char* cooked_data, size_t* bytes_ret)
     printf("%ld bytes in raw buffer before read.\n",
            next_raw_byte - rawfromhardware);
     if((*bytes_ret = CRT::raw2cook(cooked_data, COOKEDBUFSIZE,
-                                   rawfromhardware, next_raw_byte)))
+                                   rawfromhardware, next_raw_byte))){
+      fprintf(stderr, "CRT DEBUG: returning %zdB\n", *bytes_ret);
       return;
-    else
+    }
+    else{
       state &= ~CRT_DRAIN_BUFFER;
+    }
   }
 
   // Then see if we need to read more out of the file, and do so
   if(state & CRT_READ_MORE){
     state &= ~CRT_READ_MORE;
-    if((*bytes_ret = read_everything_from_file(cooked_data))) return;
+    if((*bytes_ret = read_everything_from_file(cooked_data))){
+      fprintf(stderr, "CRT DEBUG: returning %zdB\n", *bytes_ret);
+      return;
+    }
   }
 
   // This should only happen when we open the first file.  Otherwise,
@@ -339,6 +345,7 @@ void CRTInterface::FillBuffer(char* cooked_data, size_t* bytes_ret)
   if(state != CRT_READ_ACTIVE && !try_open_file()) return;
 
   *bytes_ret = read_everything_from_file(cooked_data);
+  fprintf(stderr, "CRT DEBUG: returning %zdB\n", *bytes_ret);
 }
 
 void CRTInterface::AllocateReadoutBuffer(char** cooked_data)
