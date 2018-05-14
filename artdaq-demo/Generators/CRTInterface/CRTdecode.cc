@@ -399,7 +399,7 @@ unsigned int raw2cook(char * const cooked_data,
   }
 
   next_raw_byte -= used_raw_bytes;
-  return used_raw_bytes;
+  return cooked_bytes;
 }
 
 } // end namespace CRT
