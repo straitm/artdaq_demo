@@ -320,6 +320,7 @@ void CRTInterface::FillBuffer(char* cooked_data, size_t* bytes_ret)
     // there yet, don't bother checking the events until the next call to
     // FillBuffer(), because it's unlikely any will have come in yet.
     *bytes_ret = read_everything_from_file(cooked_data);
+    fprintf(stderr, "CRT DEBUG: returning %zdB\n", *bytes_ret);
     return;
   }
 
