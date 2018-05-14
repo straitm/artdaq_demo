@@ -22,29 +22,28 @@
 #include <vector>
 #include <iostream>
 
-// XXX probably does not make sense to have in the demo namespace
-namespace demo
+namespace CRT
 {
-  class CRTDump;
+  class Dump;
 }
 
 /**
- * \brief art::EDAnalyzer to display the data from CRTFragment objects
+ * \brief art::EDAnalyzer to display the data from CRT::Fragment objects
  */
-class demo::CRTDump : public art::EDAnalyzer
+class CRT::Dump : public art::EDAnalyzer
 {
 public:
   /**
-   * \brief CRTDump constructor
-   * \param pset ParamterSet used to configure CRTDump
+   * \brief CRT::Dump constructor
+   * \param pset ParamterSet used to configure CRT::Dump
    *
-   * CRTDump accepts the following parameters:
+   * CRT::Dump accepts the following parameters:
    * "raw_data_label" (Default: "daq"): The input module label
    * "raw_data_name"  (Default: "CRT"): The input product instance name
    */
-  explicit CRTDump(fhicl::ParameterSet const& pset);
+  explicit Dump(fhicl::ParameterSet const& pset);
 
-  virtual ~CRTDump();
+  virtual ~Dump();
 
   virtual void analyze(art::Event const& evt);
 
@@ -53,16 +52,16 @@ private:
   std::string raw_data_name_;
 };
 
-demo::CRTDump::CRTDump(fhicl::ParameterSet const& pset)
+CRT::Dump::Dump(fhicl::ParameterSet const& pset)
   : EDAnalyzer(pset)
   , raw_data_label_(pset.get<std::string>("raw_data_label", "daq"))
   , raw_data_name_ (pset.get<std::string>("raw_data_name",  "CRT"))
 {
 }
 
-demo::CRTDump::~CRTDump() {}
+CRT::Dump::~Dump() {}
 
-void demo::CRTDump::analyze(art::Event const& evt)
+void CRT::Dump::analyze(art::Event const& evt)
 {
   art::Handle<artdaq::Fragments> fragments;
 
@@ -74,7 +73,7 @@ void demo::CRTDump::analyze(art::Event const& evt)
   }
 
   for(unsigned int i = 0; i < fragments->size(); i++){
-    CRTFragment mod((*fragments)[i]); // module packet
+    CRT::Fragment mod((*fragments)[i]); // module packet
 
     if(!mod.good_event()) continue;
     mod.print_header();
@@ -82,4 +81,4 @@ void demo::CRTDump::analyze(art::Event const& evt)
   }
 }
 
-DEFINE_ART_MODULE(demo::CRTDump)
+DEFINE_ART_MODULE(CRT::Dump)

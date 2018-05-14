@@ -1,5 +1,5 @@
-#ifndef artdaq_demo_Generators_CRTInterface_CRTInterface_hh
-#define artdaq_demo_Generators_CRTInterface_CRTInterface_hh
+#ifndef artdaq_Generators_CRTInterface_CRTInterface_hh
+#define artdaq_Generators_CRTInterface_CRTInterface_hh
 
 #include "artdaq-core-demo/Overlays/FragmentType.hh"
 
@@ -83,8 +83,6 @@ private:
 
   // File descriptor for the data file we are reading
   int datafile_fd = -1;
-
-	demo::FragmentType fragment_type_;
 
   // Private functions documented in the implementation.
   bool try_open_file();

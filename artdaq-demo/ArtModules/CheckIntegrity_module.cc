@@ -24,12 +24,12 @@
 #include <vector>
 #include <iostream>
 
-namespace demo
+namespace CRT
 {
 	class CheckIntegrity;
 }
 
-class demo::CheckIntegrity : public art::EDAnalyzer
+class CRT::CheckIntegrity : public art::EDAnalyzer
 {
 public:
 	/**
@@ -59,12 +59,12 @@ private:
 };
 
 
-demo::CheckIntegrity::CheckIntegrity(fhicl::ParameterSet const& pset)
+CRT::CheckIntegrity::CheckIntegrity(fhicl::ParameterSet const& pset)
 	: EDAnalyzer(pset)
 	, raw_data_label_(pset.get<std::string>("raw_data_label"))
 	, frag_type_(pset.get<std::string>("frag_type")) {}
 
-void demo::CheckIntegrity::analyze(art::Event const& evt)
+void CRT::CheckIntegrity::analyze(art::Event const& evt)
 {
 	art::Handle<artdaq::Fragments> raw;
 	evt.getByLabel(raw_data_label_, frag_type_, raw);
@@ -74,7 +74,7 @@ void demo::CheckIntegrity::analyze(art::Event const& evt)
 		for (size_t idx = 0; idx < raw->size(); ++idx){
 			const auto& frag((*raw)[idx]);
 
-      CRTFragment mod(frag);
+      CRT::Fragment mod(frag);
 
       printf("First byte of the fragment is %c\n", ((const char *)&frag)[0]);
 
@@ -88,4 +88,4 @@ void demo::CheckIntegrity::analyze(art::Event const& evt)
 	}
 }
 
-DEFINE_ART_MODULE(demo::CheckIntegrity)
+DEFINE_ART_MODULE(CRT::CheckIntegrity)

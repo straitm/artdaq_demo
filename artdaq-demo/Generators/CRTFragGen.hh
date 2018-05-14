@@ -1,5 +1,5 @@
-#ifndef artdaq_demo_Generators_CRTFragGen_hh
-#define artdaq_demo_Generators_CRTFragGen_hh
+#ifndef artdaq_Generators_CRTFragGen_hh
+#define artdaq_Generators_CRTFragGen_hh
 
 #include "fhiclcpp/fwd.h"
 #include "artdaq-core/Data/Fragment.hh"
@@ -11,14 +11,14 @@
 #include <vector>
 #include <atomic>
 
-namespace demo
+namespace CRT
 {
-  class CRTFragGen : public artdaq::CommandableFragmentGenerator
+  class FragGen : public artdaq::CommandableFragmentGenerator
   {
     public:
 
-    explicit CRTFragGen(fhicl::ParameterSet const& ps);
-    virtual ~CRTFragGen();
+    explicit FragGen(fhicl::ParameterSet const& ps);
+    virtual ~FragGen();
 
     private:
 
@@ -46,7 +46,7 @@ namespace demo
     void stop() override;
 
     /** \brief Override of pure virtual function in CommandableFragmentGenerator.
-    * stopNoMutex does not do anything in CRTFragGen */
+    * stopNoMutex does not do anything in CRT::FragGen */
     void stopNoMutex() override {}
 
     std::unique_ptr<CRTInterface> hardware_interface_;
@@ -59,4 +59,4 @@ namespace demo
   };
 }
 
-#endif /* artdaq_demo_Generators_CRTFragGen_hh */
+#endif /* artdaq_Generators_CRTFragGen_hh */

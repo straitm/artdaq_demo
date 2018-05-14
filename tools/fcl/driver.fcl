@@ -12,7 +12,7 @@ services:
 fragment_receiver:
 {
   # Parameters defining and configuring the fragment generator to be used
-  generator: CRTFragGen 
+  generator: CRT::FragGen
   fragment_type: CRT # Make sure downstream modules know about this fragment_type!
 
   indir: "/e/h.0/localdev/readout/data1/OVDAQ/DATA/Run_0000599"

@@ -1,8 +1,3 @@
-/* Ok, I am morphing this slowly into the CommandableFragmentGenerator
-needed for the CRT.  When it has some semblance of working, I should rename it
-(it would be nice if the source file matched the header...) and figure out how
-to keep it properly. */
-
 #include "artdaq-demo/Generators/CRTFragGen.hh"
 
 #include "canvas/Utilities/Exception.h"
@@ -20,7 +15,7 @@ to keep it properly. */
 #include <unistd.h>
 #include "cetlib_except/exception.h"
 
-demo::CRTFragGen::CRTFragGen(fhicl::ParameterSet const& ps) :
+CRT::FragGen::FragGen(fhicl::ParameterSet const& ps) :
     CommandableFragmentGenerator(ps)
   , hardware_interface_(new CRTInterface(ps))
   , timestamp_(0)
@@ -29,12 +24,12 @@ demo::CRTFragGen::CRTFragGen(fhicl::ParameterSet const& ps) :
   hardware_interface_->AllocateReadoutBuffer(&readout_buffer_);
 }
 
-demo::CRTFragGen::~CRTFragGen()
+CRT::FragGen::~FragGen()
 {
   hardware_interface_->FreeReadoutBuffer(readout_buffer_);
 }
 
-bool demo::CRTFragGen::getNext_(
+bool CRT::FragGen::getNext_(
   std::list< std::unique_ptr<artdaq::Fragment> > & frags)
 {
   if(should_stop()) return false;
@@ -84,15 +79,15 @@ bool demo::CRTFragGen::getNext_(
   return true;
 }
 
-void demo::CRTFragGen::start()
+void CRT::FragGen::start()
 {
   hardware_interface_->StartDatataking();
 }
 
-void demo::CRTFragGen::stop()
+void CRT::FragGen::stop()
 {
   hardware_interface_->StopDatataking();
 }
 
 // The following macro is defined in artdaq's GeneratorMacros.hh header
-DEFINE_ARTDAQ_COMMANDABLE_GENERATOR(demo::CRTFragGen)
+DEFINE_ARTDAQ_COMMANDABLE_GENERATOR(CRT::FragGen)
