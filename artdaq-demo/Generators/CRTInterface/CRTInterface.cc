@@ -35,10 +35,6 @@ CRTInterface::CRTInterface(fhicl::ParameterSet const& ps) :
 {
 }
 
-// "StartDatataking" is meant to mimic actions one would take when
-// telling the hardware to start sending data - the uploading of
-// values to registers, etc.
-
 void CRTInterface::StartDatataking()
 {
   taking_data_ = true;

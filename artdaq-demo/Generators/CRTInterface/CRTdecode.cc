@@ -178,10 +178,12 @@ unsigned int serialize(char * cooked, const decoded_packet & packet,
 {
   if(packet.hits.empty()) return 0;
 
-  const unsigned int size_needed = 2 + sizeof packet.module
+  const unsigned int size_needed = 2 /* magic number 'M' (1) +
+    count of hits (1) */ + sizeof packet.module
     + sizeof packet.timeunix + sizeof packet.time16ns
     + packet.hits.size() *
-      (1 + sizeof packet.hits[0].charge + sizeof packet.hits[0].channel);
+      (1 /* magic number 'H' */
+       + sizeof packet.hits[0].charge + sizeof packet.hits[0].channel);
 
   if(size_needed > max_cooked){
     printf("Can't write packet of size %d with max %d\n",
@@ -208,6 +210,9 @@ unsigned int serialize(char * cooked, const decoded_packet & packet,
 
   if(bytes != size_needed)
     printf("CRT: size mismatch %d != %d\n", bytes, size_needed);
+  else
+    printf("CRT DEBUG: serialized size for %lu hits = %uB\n",
+           packet.hits.size(), size_needed);
 
   return bytes;
 }
