@@ -90,4 +90,4 @@ void CRT::FragGen::stop()
 }
 
 // The following macro is defined in artdaq's GeneratorMacros.hh header
-DEFINE_ARTDAQ_COMMANDABLE_GENERATOR(CRTFragGen)
+DEFINE_ARTDAQ_COMMANDABLE_GENERATOR(CRT::FragGen)
