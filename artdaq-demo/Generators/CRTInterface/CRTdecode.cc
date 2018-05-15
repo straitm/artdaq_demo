@@ -315,6 +315,17 @@ unsigned int make_a_packet(char * cooked, std::deque<uint16_t> & raw,
     return 0;
   }
 
+  // Before we get the first Unix timestamp packet, discard all data.
+  // This relieves everything downstream from having to deal with zero
+  // to one seconds of data at the beginning of each run that's
+  // theoretically useful, but almost certainly more trouble than it's
+  // worth.  If you want to try to deal with these events downstream
+  // after all, simply delete this block.
+  if(unix_time_hi == 0){
+    printf("CRT: waiting for first Unix time stamp before returning data.\n");
+    return 0;
+  }
+
   return serialize(cooked, packet, max_cooked);
 }
 
