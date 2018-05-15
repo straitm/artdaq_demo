@@ -10,6 +10,10 @@ namespace CRT{
 // upstream CRT DAQ.  Once we get one of these, copy the latest Unix time into
 // the output events.  Before this point, we'll write zeros, and probably
 // discard that data.  Only a problem if data runs are verys short.
+//
+// XXX If the DAQ is stopped and then restarted, the Unix timestamp might be
+// stale, which would be bad.  It depends how stopping and starting are
+// implemented.
 uint16_t unix_time_hi = 0, unix_time_lo = 0;
 
 // A hit after decoding.
@@ -209,10 +213,7 @@ unsigned int serialize(char * cooked, const decoded_packet & packet,
   }
 
   if(bytes != size_needed)
-    printf("CRT: size mismatch %d != %d\n", bytes, size_needed);
-  else
-    printf("CRT DEBUG: serialized size for %lu hits = %uB\n",
-           packet.hits.size(), size_needed);
+    fprintf(stderr, "CRT: size mismatch %d != %d\n", bytes, size_needed);
 
   return bytes;
 }

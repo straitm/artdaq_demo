@@ -47,12 +47,14 @@ bool CRT::FragGen::getNext_(
 
   // A module packet must at least have the magic number (1B), hit count
   // (1B), module number (2B) and timestamps (8B).
+  const std::size_t minsize = 4 + sizeof(timestamp_);
   if(bytes_read < 4 + sizeof(timestamp_)){
-    fprintf(stderr, "Bad result with only %lu bytes from "
-            "CRTInterface::FillBuffer.\n", bytes_read);
+    fprintf(stderr, "Bad result with only %lu < %lu bytes from "
+            "CRTInterface::FillBuffer.\n", bytes_read, minsize);
     return false; // means "stop taking data"
   }
 
+  // The Unix time stamp concatenated with the 50MHz counter
   memcpy(&timestamp_, readout_buffer_ + 4, sizeof(timestamp_));
 
   std::unique_ptr<artdaq::Fragment> fragptr(
