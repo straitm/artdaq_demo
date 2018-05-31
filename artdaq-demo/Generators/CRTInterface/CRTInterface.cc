@@ -300,10 +300,6 @@ void CRTInterface::FillBuffer(char* cooked_data, size_t* bytes_ret)
 {
   *bytes_ret = 0;
 
-  if(!taking_data_)
-    throw cet::exception("CRTInterface") <<
-      "Attempt to call FillBuffer when not sending data";
-
   // First see if we can decode another module packet out of the data already
   // read from the input files.
   if(state & CRT_DRAIN_BUFFER){
