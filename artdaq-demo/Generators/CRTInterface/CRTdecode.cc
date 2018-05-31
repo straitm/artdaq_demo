@@ -1,3 +1,5 @@
+/* Author: Matthew Strait <mstrait@fnal.gov> */
+
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>

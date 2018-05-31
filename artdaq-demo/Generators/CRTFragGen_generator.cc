@@ -1,3 +1,5 @@
+/* Author: Matthew Strait <mstrait@fnal.gov> */
+
 #include "artdaq-demo/Generators/CRTFragGen.hh"
 
 #include "canvas/Utilities/Exception.h"

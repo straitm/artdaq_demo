@@ -1,3 +1,5 @@
+/* Author: Matthew Strait <mstrait@fnal.gov> */
+
 #ifndef artdaq_Generators_CRTInterface_CRTInterface_hh
 #define artdaq_Generators_CRTInterface_CRTInterface_hh
 

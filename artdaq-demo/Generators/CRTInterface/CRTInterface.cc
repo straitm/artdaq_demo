@@ -1,3 +1,5 @@
+/* Author: Matthew Strait <mstrait@fnal.gov> */
+
 #include "artdaq-demo/Generators/CRTInterface/CRTInterface.hh"
 #include "artdaq-demo/Generators/CRTInterface/CRTdecode.hh"
 #define TRACE_NAME "CRTInterface"

@@ -3,6 +3,7 @@
 // Module Type: analyzer
 // File:        CRTDump_module.cc
 // Description: Prints out information about each event.
+// Author:      Matthew Strait <mstrait@fnal.gov>
 ////////////////////////////////////////////////////////////////////////
 
 #define TRACE_NAME "CRTDump"
