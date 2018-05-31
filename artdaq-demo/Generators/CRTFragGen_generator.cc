@@ -23,6 +23,10 @@ CRT::FragGen::FragGen(fhicl::ParameterSet const& ps) :
   , timestamp_(0)
   , readout_buffer_(nullptr)
 {
+  // NOTE: Strawman scheme: start up Camillo's DAQ here.  Disadvantage:
+  // files will pile up for an arbitrary amount of time. Alternatively,
+  // could do it in start() if 5-10s startup time is acceptable there.
+
   hardware_interface_->AllocateReadoutBuffer(&readout_buffer_);
 }
 
@@ -31,6 +35,13 @@ CRT::FragGen::~FragGen()
   hardware_interface_->FreeReadoutBuffer(readout_buffer_);
 }
 
+
+// NOTE: Ok to return up to, say, 10s of old data on start up.
+// This gets buffered outside of my code and discarded if it isn't
+// wanted.
+
+// We don't have to check if we're keeping up because the artdaq system
+// does that for us.
 bool CRT::FragGen::getNext_(
   std::list< std::unique_ptr<artdaq::Fragment> > & frags)
 {
@@ -56,6 +67,11 @@ bool CRT::FragGen::getNext_(
     return false; // means "stop taking data"
   }
 
+  // NOTE: would like if this timestamp ended up being the full 64-bit
+  // 50MHz clock by the time it got here, possibly via some repair
+  // scheme inside FillBuffer that uses a side channel to get the
+  // correspondence between Unix times and 50MHz times.
+
   // The Unix time stamp concatenated with the 50MHz counter
   memcpy(&timestamp_, readout_buffer_ + 4, sizeof(timestamp_));
 
@@ -65,11 +81,18 @@ bool CRT::FragGen::getNext_(
       bytes_read,
       ev_counter(), // from base CommandableFragmentGenerator
       fragment_id(), // ditto
-      artdaq::Fragment::FirstUserFragmentType, // only one
+
+      // Needs to be updated to work with the rest of ProtoDUNE-SP
+      artdaq::Fragment::FirstUserFragmentType,
+
       0, // metadata.  We have none.
+
       timestamp_
   ));
 
+  // NOTE: we are always returning zero or one fragments, but we
+  // could return more at the cost of some complexity, maybe getting
+  // an efficiency gain.  Check back here if things are too slow.
   frags.emplace_back(std::move(fragptr));
 
   memcpy(frags.back()->dataBeginBytes(), readout_buffer_, bytes_read);
@@ -90,6 +113,9 @@ void CRT::FragGen::start()
 
 void CRT::FragGen::stop()
 {
+  // NOTE: Probably let Camillo's DAQ keep running, and then when we
+  // get start() again, we'll start with the current second's file.
+  // It is ok to return some old data, as in getNext_ comment.
   hardware_interface_->StopDatataking();
 }
 

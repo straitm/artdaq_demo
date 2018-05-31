@@ -37,6 +37,10 @@ CRTInterface::CRTInterface(fhicl::ParameterSet const& ps) :
 {
 }
 
+// XXX Should this function do a system() call (or something less awful)
+// to start the backend DAQ program?  Is it ok to spend several seconds
+// in this function waiting for that program to start up and figuring out
+// where it is putting its output?
 void CRTInterface::StartDatataking()
 {
   taking_data_ = true;
@@ -67,6 +71,8 @@ void CRTInterface::StopDatataking()
   }
 }
 
+// NOTE: probably want to skip forward to the file named after the current
+// second in case Camillo's DAQ was started up a long time ago.
 char * find_wr_file(const std::string & indir)
 {
   DIR * dp = NULL;
@@ -235,6 +241,10 @@ bool CRTInterface::check_events()
     // written to.  We should find the next file.
     if(state == CRT_READ_ACTIVE){
       close(datafile_fd);
+
+      // XXX Is this desired?
+      //unlink(datafile_fd);
+
       state = CRT_WAIT;
       return true;
     }
